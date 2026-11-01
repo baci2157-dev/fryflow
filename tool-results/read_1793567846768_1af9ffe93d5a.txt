@@ -1,0 +1,758 @@
+     1→"use client";
+     2→
+     3→import { useEffect, useMemo, useRef, useState } from "react";
+     4→import { format } from "date-fns";
+     5→import { ru } from "date-fns/locale";
+     6→import {
+     7→  AlertTriangle,
+     8→  Clock,
+     9→  MapPin,
+    10→  Mic,
+    11→  MicOff,
+    12→  Minus,
+    13→  Navigation,
+    14→  Package,
+    15→  Play,
+    16→  Plus,
+    17→  Route as RouteIcon,
+    18→  Square,
+    19→  Truck,
+    20→  UserX,
+    21→  Wallet,
+    22→  X,
+    23→} from "lucide-react";
+    24→
+    25→import { ChainBadge } from "@/components/crm/badges";
+    26→import { RingProgress } from "@/components/dashboard/ring-progress";
+    27→import { useToast } from "@/hooks/use-toast";
+    28→import { useCrmStore } from "@/lib/clients-store";
+    29→import {
+    30→  buildYandexRouteUrl,
+    31→  minutesToTime,
+    32→  planRoute,
+    33→  typicalStopFor,
+    34→} from "@/lib/route-algorithm";
+    35→import type { Client } from "@/types/models";
+    36→import { cn } from "@/lib/utils";
+    37→
+    38→/**
+    39→ * Экран «Маршрут на день».
+    40→ * Кольцо загрузки машины (50 коробок, настройка), предупреждение
+    41→ * о перегрузе, порядок точек по алгоритму «Ближайший сосед» с ETA
+    42→ * и временными окнами, кнопка «Поехать» (Яндекс.Карты, мультимаршрут)
+    43→ * и режим «В дороге» с большими кнопками и голосовыми заметками.
+    44→ */
+    45→
+    46→type StopFlags = Record<string, { done?: boolean; unpaid?: boolean; noshow?: boolean }>;
+    47→
+    48→interface VoiceNote {
+    49→  id: string;
+    50→  url: string;
+    51→  seconds: number;
+    52→  stopName: string;
+    53→  at: Date;
+    54→}
+    55→
+    56→/** Яндекс.Карты поддерживают до 10 точек мультимаршрута (склад + 9). */
+    57→const YANDEX_MAX_STOPS = 9;
+    58→
+    59→export default function RoutePage() {
+    60→  const clients = useCrmStore((s) => s.clients);
+    61→  const routeStops = useCrmStore((s) => s.routeStops);
+    62→  const capacity = useCrmStore((s) => s.capacity);
+    63→  const setCapacity = useCrmStore((s) => s.setCapacity);
+    64→  const setRouteStops = useCrmStore((s) => s.setRouteStops);
+    65→  const setStopBoxes = useCrmStore((s) => s.setStopBoxes);
+    66→  const removeRouteStop = useCrmStore((s) => s.removeRouteStop);
+    67→  const markDelivered = useCrmStore((s) => s.markDelivered);
+    68→  const { toast } = useToast();
+    69→
+    70→  const [flags, setFlags] = useState<StopFlags>({});
+    71→  const [driving, setDriving] = useState(false);
+    72→  const [notes, setNotes] = useState<VoiceNote[]>([]);
+    73→
+    74→  const plan = useMemo(
+    75→    () => planRoute(routeStops, clients, capacity),
+    76→    [routeStops, clients, capacity]
+    77→  );
+    78→
+    79→  const totalBoxes = routeStops.reduce((a, s) => a + s.boxes, 0);
+    80→  const totalSum = routeStops.reduce((a, s) => a + s.orderSum, 0);
+    81→  const overloaded = totalBoxes > capacity;
+    82→  const doneCount = plan.ordered.filter((s) => flags[s.client.id]?.done).length;
+    83→
+    84→  /* ── Автосборка, если маршрут пуст ── */
+    85→  const buildAutoRoute = () => {
+    86→    const stops = clients
+    87→      .filter((c) => c.status === "trial" || c.status === "regular")
+    88→      .map(typicalStopFor);
+    89→    if (stops.length === 0) {
+    90→      toast({
+    91→        title: "Некого возить",
+    92→        description: "Нет клиентов со статусом «Проба» или «Постоянный».",
+    93→        duration: 3200,
+    94→      });
+    95→      return;
+    96→    }
+    97→    setRouteStops(stops);
+    98→    toast({
+    99→      title: "Маршрут собран",
+   100→      description: `${stops.length} точек — проверьте загрузку машины.`,
+   101→      duration: 2800,
+   102→    });
+   103→  };
+   104→
+   105→  /* ── Поехать: Яндекс.Карты, мультимаршрут на авто ── */
+   106→  const openYandex = () => {
+   107→    if (plan.ordered.length === 0) return;
+   108→    const limited =
+   109→      plan.ordered.length > YANDEX_MAX_STOPS
+   110→        ? plan.ordered.slice(0, YANDEX_MAX_STOPS)
+   111→        : plan.ordered;
+   112→    if (plan.ordered.length > YANDEX_MAX_STOPS) {
+   113→      toast({
+   114→        title: "Яндекс ограничивает маршрут 10 точками",
+   115→        description: `Открыли первые ${YANDEX_MAX_STOPS}, остальные — следующей ходкой.`,
+   116→        duration: 3800,
+   117→      });
+   118→    }
+   119→    window.open(buildYandexRouteUrl(limited), "_blank", "noopener");
+   120→  };
+   121→
+   122→  /* ── В дороге: действия по точке ── */
+   123→  const currentStop = plan.ordered.find((s) => !flags[s.client.id]?.done) ?? null;
+   124→
+   125→  const markStop = (
+   126→    client: Client,
+   127→    kind: "delivered" | "unpaid" | "noshow",
+   128→    boxes: number
+   129→  ) => {
+   130→    setFlags((f) => ({
+   131→      ...f,
+   132→      [client.id]: {
+   133→        done: true,
+   134→        unpaid: kind === "unpaid" || undefined,
+   135→        noshow: kind === "noshow" || undefined,
+   136→      },
+   137→    }));
+   138→    if (kind === "delivered") {
+   139→      markDelivered(client.id, boxes);
+   140→      toast({
+   141→        title: `Доставлено: ${client.name}`,
+   142→        description: `${boxes} коробок · ${boxes * 300} ₽ · Health Score обновится к вечеру.`,
+   143→        duration: 3000,
+   144→      });
+   145→    } else if (kind === "unpaid") {
+   146→      toast({
+   147→        title: `Не оплачено: ${client.name}`,
+   148→        description: "Долг зафиксирован — попадёт в раздел «Долги».",
+   149→        duration: 3200,
+   150→      });
+   151→    } else {
+   152→      toast({
+   153→        title: `Клиента нет: ${client.name}`,
+   154→        description: "Точка закрыта, вернёмся в следующий заезд.",
+   155→        duration: 3200,
+   156→      });
+   157→    }
+   158→  };
+   159→
+   160→  /* ── Пустое состояние ── */
+   161→  if (routeStops.length === 0) {
+   162→    return (
+   163→      <div className="mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+   164→        <RouteHeader points={0} />
+   165→        <div className="mt-10 flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border py-20 text-center">
+   166→          <RouteIcon className="size-10 text-ink-soft/40" />
+   167→          <div>
+   168→            <p className="text-[15px] font-semibold text-ink">Маршрут на день пуст</p>
+   169→            <p className="mt-1 max-w-sm text-sm text-ink-soft">
+   170→              Соберите точки со статусом «Проба» и «Постоянный» одной кнопкой
+   171→              или добавляйте клиентов по одному кнопкой «В маршрут» на карте.
+   172→            </p>
+   173→          </div>
+   174→          <button
+   175→            type="button"
+   176→            onClick={buildAutoRoute}
+   177→            className="inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-5 text-sm font-semibold text-[#1C1A17] transition-colors hover:bg-accent/90"
+   178→          >
+   179→            <Plus className="size-4" />
+   180→            Собрать из «Проба + Постоянный»
+   181→          </button>
+   182→        </div>
+   183→      </div>
+   184→    );
+   185→  }
+   186→
+   187→  /* ── Режим «В дороге» ── */
+   188→  if (driving) {
+   189→    return (
+   190→      <DrivingMode
+   191→        currentStop={currentStop}
+   192→        stopsTotal={plan.ordered.length}
+   193→        doneCount={doneCount}
+   194→        notes={notes}
+   195→        setNotes={setNotes}
+   196→        onMark={markStop}
+   197→        onExit={() => setDriving(false)}
+   198→      />
+   199→    );
+   200→  }
+   201→
+   202→  /* ── Обычный режим ── */
+   203→  return (
+   204→    <div className="mx-auto w-full max-w-5xl px-4 pb-8 sm:px-6 lg:px-8">
+   205→      <RouteHeader points={plan.ordered.length} />
+   206→
+   207→      {/* ── Загрузка машины ── */}
+   208→      <section
+   209→        className={cn(
+   210→          "mt-4 flex flex-wrap items-center gap-5 rounded-2xl border bg-surface p-5",
+   211→          overloaded ? "border-[color-mix(in_srgb,var(--tier-red)_45%,transparent)]" : "border-border"
+   212→        )}
+   213→      >
+   214→        <RingProgress
+   215→          value={Math.min(totalBoxes, capacity * 1.4)}
+   216→          max={capacity}
+   217→          size={84}
+   218→          thickness={9}
+   219→          color={overloaded ? "var(--tier-red)" : "var(--accent)"}
+   220→          label={
+   221→            <span className="flex flex-col items-center leading-none">
+   222→              <span className="font-mono text-base font-bold">{totalBoxes}</span>
+   223→              <span className="font-mono text-[9px] text-ink-soft">из {capacity}</span>
+   224→            </span>
+   225→          }
+   226→        />
+   227→        <div className="min-w-0 flex-1">
+   228→          <h2 className="text-[15.5px] font-semibold text-ink">
+   229→            Загружено {totalBoxes} из {capacity} коробок
+   230→          </h2>
+   231→          <p className="mt-1 text-[13px] text-ink-soft">
+   232→            {overloaded
+   233→              ? `${plan.ordered.length} точек в машине, ${plan.skipped.length} на вторую ходку`
+   234→              : `${plan.ordered.length} точек · ${plan.totalKm} км · ~${Math.round(plan.totalMinutes / 60 * 10) / 10} ч в пути`}
+   235→          </p>
+   236→          {overloaded ? (
+   237→            <p
+   238→              className="mt-2 flex items-center gap-1.5 text-[12.5px] font-medium"
+   239→              style={{ color: "var(--tier-red)" }}
+   240→            >
+   241→              <AlertTriangle className="size-3.5" />
+   242→              Перегруз на {totalBoxes - capacity} коробок — уберите точки или
+   243→              увеличьте вместимость
+   244→            </p>
+   245→          ) : null}
+   246→        </div>
+   247→
+   248→        {/* Настройка вместимости */}
+   249→        <div className="flex items-center gap-1.5">
+   250→          <button
+   251→            type="button"
+   252→            onClick={() => setCapacity(Math.max(10, capacity - 5))}
+   253→            aria-label="Уменьшить вместимость"
+   254→            className="flex size-9 items-center justify-center rounded-xl border border-border bg-surface text-ink transition-colors hover:bg-tint"
+   255→          >
+   256→            <Minus className="size-4" />
+   257→          </button>
+   258→          <div className="flex flex-col items-center px-1">
+   259→            <span className="font-mono text-[15px] font-semibold tabular-nums text-ink">
+   260→              {capacity}
+   261→            </span>
+   262→            <span className="text-[10px] uppercase tracking-wide text-ink-soft">
+   263→              коробок
+   264→            </span>
+   265→          </div>
+   266→          <button
+   267→            type="button"
+   268→            onClick={() => setCapacity(Math.min(300, capacity + 5))}
+   269→            aria-label="Увеличить вместимость"
+   270→            className="flex size-9 items-center justify-center rounded-xl border border-border bg-surface text-ink transition-colors hover:bg-tint"
+   271→          >
+   272→            <Plus className="size-4" />
+   273→          </button>
+   274→        </div>
+   275→      </section>
+   276→
+   277→      {/* ── Точки маршрута ── */}
+   278→      <section className="mt-5">
+   279→        <h3 className="text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
+   280→          Точки по порядку объезда («ближайший сосед»)
+   281→        </h3>
+   282→        <ol className="mt-2 space-y-2">
+   283→          {plan.ordered.map((stop) => {
+   284→            const f = flags[stop.client.id];
+   285→            return (
+   286→              <li
+   287→                key={stop.client.id}
+   288→                className={cn(
+   289→                  "flex flex-wrap items-center gap-3 rounded-2xl border bg-surface p-4 sm:flex-nowrap",
+   290→                  f?.done ? "border-border opacity-60" : "border-border"
+   291→                )}
+   292→              >
+   293→                <span className="flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-accent font-mono text-[14px] font-bold text-ink">
+   294→                  {stop.index}
+   295→                </span>
+   296→                <div className="min-w-0 flex-1">
+   297→                  <div className="flex flex-wrap items-center gap-2">
+   298→                    <p className="text-[15px] font-semibold text-ink">
+   299→                      {stop.client.name}
+   300→                    </p>
+   301→                    {stop.client.chainName ? (
+   302→                      <ChainBadge name={stop.client.chainName} size={stop.client.chainSize} />
+   303→                    ) : null}
+   304→                    {f?.unpaid ? (
+   305→                      <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ color: "var(--tier-yellow)", background: "color-mix(in srgb, var(--tier-yellow) 14%, transparent)" }}>
+   306→                        Не оплачено
+   307→                      </span>
+   308→                    ) : null}
+   309→                    {f?.noshow ? (
+   310→                      <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ color: "var(--tier-red)", background: "color-mix(in srgb, var(--tier-red) 12%, transparent)" }}>
+   311→                        Клиента нет
+   312→                      </span>
+   313→                    ) : null}
+   314→                    {f?.done && !f.unpaid && !f.noshow ? (
+   315→                      <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ color: "var(--tier-green)", background: "color-mix(in srgb, var(--tier-green) 12%, transparent)" }}>
+   316→                        Доставлено
+   317→                      </span>
+   318→                    ) : null}
+   319→                  </div>
+   320→                  <p className="mt-0.5 flex items-center gap-1 truncate text-[12.5px] text-ink-soft">
+   321→                    <MapPin className="size-3 shrink-0" />
+   322→                    {stop.client.address} · {stop.client.district}
+   323→                  </p>
+   324→                  <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
+   325→                    <span className="flex items-center gap-1 text-ink-soft">
+   326→                      <Clock className="size-3" />
+   327→                      {minutesToTime(stop.window.from * 60)}–
+   328→                      {minutesToTime(stop.window.to * 60)}
+   329→                    </span>
+   330→                    <span className="font-mono text-ink">≈ {minutesToTime(stop.etaMinutes)}</span>
+   331→                    {stop.late ? (
+   332→                      <span className="flex items-center gap-1 font-medium" style={{ color: "var(--tier-red)" }}>
+   333→                        <AlertTriangle className="size-3" />
+   334→                        приедем к закрытию
+   335→                      </span>
+   336→                    ) : null}
+   337→                  </p>
+   338→                </div>
+   339→
+   340→                {/* Коробки (степпер) + сумма */}
+   341→                <div className="flex shrink-0 items-center gap-1.5">
+   342→                  <button
+   343→                    type="button"
+   344→                    onClick={() =>
+   345→                      setStopBoxes(stop.client.id, Math.max(1, stop.boxes - 1))
+   346→                    }
+   347→                    aria-label="Минус коробка"
+   348→                    className="flex size-8 items-center justify-center rounded-lg border border-border text-ink transition-colors hover:bg-tint"
+   349→                  >
+   350→                    <Minus className="size-3.5" />
+   351→                  </button>
+   352→                  <span className="flex w-16 flex-col items-center">
+   353→                    <span className="font-mono text-[13.5px] font-semibold tabular-nums text-ink">
+   354→                      {stop.boxes} кор.
+   355→                    </span>
+   356→                    <span className="font-mono text-[11.5px] tabular-nums text-ink-soft">
+   357→                      {stop.orderSum.toLocaleString("ru-RU")} ₽
+   358→                    </span>
+   359→                  </span>
+   360→                  <button
+   361→                    type="button"
+   362→                    onClick={() => setStopBoxes(stop.client.id, stop.boxes + 1)}
+   363→                    aria-label="Плюс коробка"
+   364→                    className="flex size-8 items-center justify-center rounded-lg border border-border text-ink transition-colors hover:bg-tint"
+   365→                  >
+   366→                    <Plus className="size-3.5" />
+   367→                  </button>
+   368→                  <button
+   369→                    type="button"
+   370→                    onClick={() => removeRouteStop(stop.client.id)}
+   371→                    aria-label={`Убрать ${stop.client.name} из маршрута`}
+   372→                    className="ml-1 flex size-8 items-center justify-center rounded-lg text-ink-soft transition-colors hover:bg-[color-mix(in_srgb,var(--tier-red)_12%,transparent)] hover:text-[var(--tier-red)]"
+   373→                  >
+   374→                    <X className="size-4" />
+   375→                  </button>
+   376→                </div>
+   377→              </li>
+   378→            );
+   379→          })}
+   380→        </ol>
+   381→
+   382→        {/* Не вместилось */}
+   383→        {plan.skipped.length > 0 ? (
+   384→          <div className="mt-4">
+   385→            <h3 className="text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
+   386→              Не вместилось — на вторую ходку
+   387→            </h3>
+   388→            <ul className="mt-2 space-y-2">
+   389→              {plan.skipped.map((s) => (
+   390→                <li
+   391→                  key={s.client.id}
+   392→                  className="flex items-center gap-3 rounded-2xl border border-dashed border-border p-3.5"
+   393→                >
+   394→                  <Package className="size-4 shrink-0 text-ink-soft" />
+   395→                  <span className="min-w-0 flex-1 truncate text-[13.5px] text-ink">
+   396→                    {s.client.name}
+   397→                  </span>
+   398→                  <span className="font-mono text-[12.5px] tabular-nums text-ink-soft">
+   399→                    {s.boxes} кор.
+   400→                  </span>
+   401→                </li>
+   402→              ))}
+   403→            </ul>
+   404→          </div>
+   405→        ) : null}
+   406→      </section>
+   407→
+   408→      {/* ── Итоговая панель ── */}
+   409→      <section className="sticky bottom-20 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface p-4 shadow-lg shadow-black/5 lg:bottom-4">
+   410→        <div className="min-w-0 flex-1">
+   411→          <p className="font-mono text-[15px] font-semibold tabular-nums text-ink">
+   412→            {plan.ordered.length} точек · {plan.totalKm} км ·{" "}
+   413→            {totalSum.toLocaleString("ru-RU")} ₽
+   414→          </p>
+   415→          <p className="mt-0.5 text-[12px] text-ink-soft">
+   416→            Порядок: «ближайший сосед» от склада · выезд в{" "}
+   417→            {minutesToTime(9 * 60)}
+   418→          </p>
+   419→        </div>
+   420→        <button
+   421→          type="button"
+   422→          onClick={() => {
+   423→            setDriving(true);
+   424→            toast({
+   425→              title: "Выехали!",
+   426→              description: "Режим «В дороге»: кнопки крупнее — тыкайте на ходу.",
+   427→              duration: 2600,
+   428→            });
+   429→          }}
+   430→          className="inline-flex h-11 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-tint"
+   431→        >
+   432→          <Truck className="size-4" />
+   433→          В дороге
+   434→        </button>
+   435→        <button
+   436→          type="button"
+   437→          onClick={openYandex}
+   438→          className="inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-5 text-sm font-semibold text-[#1C1A17] transition-colors hover:bg-accent/90"
+   439→        >
+   440→          <Navigation className="size-4" />
+   441→          Поехать
+   442→        </button>
+   443→      </section>
+   444→    </div>
+   445→  );
+   446→}
+   447→
+   448→/* ── Заголовок страницы ─────────────────────────────────────── */
+   449→
+   450→function RouteHeader({ points }: { points: number }) {
+   451→  const [today, setToday] = useState<Date | null>(null);
+   452→  useEffect(() => {
+   453→    const id = requestAnimationFrame(() => setToday(new Date()));
+   454→    return () => cancelAnimationFrame(id);
+   455→  }, []);
+   456→  return (
+   457→    <header className="flex flex-wrap items-center justify-between gap-3 py-6 lg:py-8">
+   458→      <div className="min-w-0">
+   459→        <h1 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+   460→          <RouteIcon className="size-6 text-accent" />
+   461→          Маршрут на день
+   462→        </h1>
+   463→        <p className="mt-0.5 text-sm capitalize text-ink-soft">
+   464→          {today
+   465→            ? format(today, "EEEE, d MMMM", { locale: ru })
+   466→            : "\u00A0"}
+   467→          {points > 0 ? ` · ${points} точек` : ""}
+   468→        </p>
+   469→      </div>
+   470→    </header>
+   471→  );
+   472→}
+   473→
+   474→/* ── Режим «В дороге» ───────────────────────────────────────── */
+   475→
+   476→function DrivingMode({
+   477→  currentStop,
+   478→  stopsTotal,
+   479→  doneCount,
+   480→  notes,
+   481→  setNotes,
+   482→  onMark,
+   483→  onExit,
+   484→}: {
+   485→  currentStop: {
+   486→    client: Client;
+   487→    boxes: number;
+   488→    index: number;
+   489→    etaMinutes: number;
+   490→  } | null;
+   491→  stopsTotal: number;
+   492→  doneCount: number;
+   493→  notes: VoiceNote[];
+   494→  setNotes: React.Dispatch<React.SetStateAction<VoiceNote[]>>;
+   495→  onMark: (client: Client, kind: "delivered" | "unpaid" | "noshow", boxes: number) => void;
+   496→  onExit: () => void;
+   497→}) {
+   498→  const { toast } = useToast();
+   499→  const recorderRef = useRef<MediaRecorder | null>(null);
+   500→  const streamRef = useRef<MediaStream | null>(null);
+   501→  const [recording, setRecording] = useState(false);
+   502→  const [seconds, setSeconds] = useState(0);
+   503→  const startedAtRef = useRef(0);
+   504→
+   505→  // Таймер записи.
+   506→  useEffect(() => {
+   507→    if (!recording) return;
+   508→    const t = setInterval(() => setSeconds((s) => s + 1), 1000);
+   509→    return () => clearInterval(t);
+   510→  }, [recording]);
+   511→
+   512→  // Освобождаем микрофон при размонтировании.
+   513→  useEffect(
+   514→    () => () => {
+   515→      streamRef.current?.getTracks().forEach((t) => t.stop());
+   516→    },
+   517→    []
+   518→  );
+   519→
+   520→  const startRecording = async () => {
+   521→    if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+   522→      toast({
+   523→        title: "Микрофон недоступен",
+   524→        description: "Браузер запретил запись — заметку можно набрать текстом.",
+   525→        duration: 3400,
+   526→      });
+   527→      return;
+   528→    }
+   529→    try {
+   530→      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+   531→      streamRef.current = stream;
+   532→      const mr = new MediaRecorder(stream);
+   533→      const chunks: Blob[] = [];
+   534→      mr.ondataavailable = (e) => chunks.push(e.data);
+   535→      mr.onstop = () => {
+   536→        const blob = new Blob(chunks, { type: mr.mimeType || "audio/webm" });
+   537→        const url = URL.createObjectURL(blob);
+   538→        const elapsed = Math.max(
+   539→          1,
+   540→          Math.round((Date.now() - startedAtRef.current) / 1000)
+   541→        );
+   542→        setNotes((n) => [
+   543→          {
+   544→            id: `note-${Date.now()}`,
+   545→            url,
+   546→            seconds: elapsed,
+   547→            stopName: currentStop?.client.name ?? "По маршруту",
+   548→            at: new Date(),
+   549→          },
+   550→          ...n,
+   551→        ]);
+   552→        toast({
+   553→          title: "Голосовая заметка сохранена",
+   554→          description: `${elapsed} сек · ${currentStop?.client.name ?? "маршрут"}`,
+   555→          duration: 2400,
+   556→        });
+   557→      };
+   558→      recorderRef.current = mr;
+   559→      startedAtRef.current = Date.now();
+   560→      setSeconds(0);
+   561→      mr.start();
+   562→      setRecording(true);
+   563→    } catch {
+   564→      toast({
+   565→        title: "Микрофон недоступен",
+   566→        description: "Разрешите доступ к микрофону в браузере.",
+   567→        duration: 3400,
+   568→      });
+   569→    }
+   570→  };
+   571→
+   572→  const stopRecording = () => {
+   573→    recorderRef.current?.stop();
+   574→    streamRef.current?.getTracks().forEach((t) => t.stop());
+   575→    setRecording(false);
+   576→  };
+   577→
+   578→  return (
+   579→    <div className="mx-auto flex min-h-[calc(100dvh-96px)] w-full max-w-3xl flex-col px-4 pb-8 sm:px-6 lg:min-h-dvh">
+   580→      <header className="flex items-center justify-between gap-3 py-5">
+   581→        <div>
+   582→          <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-ink">
+   583→            <Truck className="size-6 text-accent" />
+   584→            В дороге
+   585→          </h1>
+   586→          <p className="mt-0.5 text-sm text-ink-soft">
+   587→            Точка{" "}
+   588→            <span className="font-mono tabular-nums">
+   589→              {Math.min(doneCount + 1, stopsTotal)}/{stopsTotal}
+   590→            </span>{" "}
+   591→            закрыто <span className="font-mono tabular-nums">{doneCount}</span>
+   592→          </p>
+   593→        </div>
+   594→        <button
+   595→          type="button"
+   596→          onClick={onExit}
+   597→          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-tint"
+   598→        >
+   599→          <X className="size-4" />
+   600→          Выйти
+   601→        </button>
+   602→      </header>
+   603→
+   604→      {currentStop ? (
+   605→        <>
+   606→          {/* Текущая точка */}
+   607→          <section className="rounded-2xl border border-border bg-surface p-5">
+   608→            <div className="flex items-start justify-between gap-3">
+   609→              <div className="min-w-0">
+   610→                <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
+   611→                  Сейчас на точке
+   612→                </p>
+   613→                <h2 className="mt-1 text-xl font-bold tracking-tight text-ink">
+   614→                  {currentStop.client.name}
+   615→                </h2>
+   616→                <p className="mt-1 text-[13px] text-ink-soft">
+   617→                  {currentStop.client.address} · {currentStop.client.district}
+   618→                </p>
+   619→              </div>
+   620→              <div className="shrink-0 rounded-xl bg-tint px-3 py-2 text-center">
+   621→                <p className="font-mono text-lg font-bold tabular-nums leading-none text-ink">
+   622→                  {currentStop.boxes}
+   623→                </p>
+   624→                <p className="mt-1 text-[10px] uppercase tracking-wide text-ink-soft">
+   625→                  коробок
+   626→                </p>
+   627→              </div>
+   628→            </div>
+   629→          </section>
+   630→
+   631→          {/* Большие кнопки результата */}
+   632→          <section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+   633→            <BigAction
+   634→              label="Доставлено"
+   635→              icon={<Package className="size-7" />}
+   636→              onClick={() => onMark(currentStop.client, "delivered", currentStop.boxes)}
+   637→              fg="var(--tier-green)"
+   638→            />
+   639→            <BigAction
+   640→              label="Не оплачено"
+   641→              icon={<Wallet className="size-7" />}
+   642→              onClick={() => onMark(currentStop.client, "unpaid", currentStop.boxes)}
+   643→              fg="var(--tier-yellow)"
+   644→            />
+   645→            <BigAction
+   646→              label="Клиента нет"
+   647→              icon={<UserX className="size-7" />}
+   648→              onClick={() => onMark(currentStop.client, "noshow", currentStop.boxes)}
+   649→              fg="var(--tier-red)"
+   650→            />
+   651→          </section>
+   652→        </>
+   653→      ) : (
+   654→        <section className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface py-14 text-center">
+   655→          <Package className="size-10" style={{ color: "var(--tier-green)" }} />
+   656→          <p className="text-[16px] font-semibold text-ink">Все точки закрыты</p>
+   657→          <p className="max-w-xs text-sm text-ink-soft">
+   658→            Маршрут выполнен. Возвращайтесь на склад — вторая ходка уже
+   659→            ждёт на экране маршрута.
+   660→          </p>
+   661→        </section>
+   662→      )}
+   663→
+   664→      {/* Голосовая заметка */}
+   665→      <section className="mt-4 rounded-2xl border border-border bg-surface p-4">
+   666→        <div className="flex items-center justify-between gap-3">
+   667→          <div>
+   668→            <p className="text-[14px] font-semibold text-ink">Голосовая заметка</p>
+   669→            <p className="text-[12px] text-ink-soft">
+   670→              Продиктуйте детали по точке — прослушаете на складе
+   671→            </p>
+   672→          </div>
+   673→          <button
+   674→            type="button"
+   675→            onClick={recording ? stopRecording : startRecording}
+   676→            aria-label={recording ? "Остановить запись" : "Записать заметку"}
+   677→            className={cn(
+   678→              "relative flex size-14 items-center justify-center rounded-full text-white shadow-lg transition-transform active:scale-95",
+   679→              recording && "animate-pulse"
+   680→            )}
+   681→            style={{
+   682→              background: recording ? "var(--tier-red)" : "var(--accent)",
+   683→              color: recording ? "#fff" : "#1C1A17",
+   684→            }}
+   685→          >
+   686→            {recording ? <Square className="size-5" /> : <Mic className="size-6" />}
+   687→          </button>
+   688→        </div>
+   689→        {recording ? (
+   690→          <p className="mt-2 text-center font-mono text-[13px] tabular-nums text-ink">
+   691→            ● Запись… {String(Math.floor(seconds / 60)).padStart(2, "0")}:
+   692→            {String(seconds % 60).padStart(2, "0")}
+   693→          </p>
+   694→        ) : null}
+   695→
+   696→        {notes.length > 0 ? (
+   697→          <ul className="mt-3 space-y-2">
+   698→            {notes.map((n) => (
+   699→              <li
+   700→                key={n.id}
+   701→                className="flex items-center gap-3 rounded-xl border border-border px-3 py-2"
+   702→              >
+   703→                <Play className="size-4 shrink-0 text-ink-soft" />
+   704→                <div className="min-w-0 flex-1">
+   705→                  <p className="truncate text-[13px] font-medium text-ink">
+   706→                    {n.stopName}
+   707→                  </p>
+   708→                  <p className="text-[11px] text-ink-soft">
+   709→                    {n.at.toLocaleTimeString("ru-RU", {
+   710→                      hour: "2-digit",
+   711→                      minute: "2-digit",
+   712→                    })}{" "}
+   713→                    · {n.seconds} сек
+   714→                  </p>
+   715→                </div>
+   716→                <audio controls preload="none" src={n.url} className="h-8 max-w-[45%]" />
+   717→              </li>
+   718→            ))}
+   719→          </ul>
+   720→        ) : (
+   721→          <p className="mt-3 flex items-center gap-1.5 text-[12px] text-ink-soft">
+   722→            <MicOff className="size-3.5" />
+   723→            Заметок пока нет
+   724→          </p>
+   725→        )}
+   726→      </section>
+   727→    </div>
+   728→  );
+   729→}
+   730→
+   731→function BigAction({
+   732→  label,
+   733→  icon,
+   734→  onClick,
+   735→  fg,
+   736→}: {
+   737→  label: string;
+   738→  icon: React.ReactNode;
+   739→  onClick: () => void;
+   740→  fg: string;
+   741→}) {
+   742→  return (
+   743→    <button
+   744→      type="button"
+   745→      onClick={onClick}
+   746→      className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-2xl border font-semibold transition-transform active:scale-[0.98]"
+   747→      style={{
+   748→        color: fg,
+   749→        borderColor: `color-mix(in srgb, ${fg} 45%, transparent)`,
+   750→        background: `color-mix(in srgb, ${fg} 10%, transparent)`,
+   751→      }}
+   752→    >
+   753→      {icon}
+   754→      <span className="text-[15px]">{label}</span>
+   755→    </button>
+   756→  );
+   757→}
+   758→
