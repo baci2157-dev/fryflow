@@ -29,9 +29,9 @@ export interface NavItem {
 /**
  * Единый реестр разделов FryFlow.
  * Реализованы: Дашборд, Клиенты, Карта (логистика), Маршрут на день,
- * Звонки (воронка холодных продаж).
- * Остальные — будущие разделы (Заказы, Регионы, ИИ, Финансы, Долги,
- * Склад, Маркетинг, Настройки).
+ * Звонки (воронка холодных продаж), Заказы, Склад, Финансы, Долги
+ * (полный цикл сделки — задача 5).
+ * Остальные — будущие разделы (Регионы, ИИ, Маркетинг, Настройки).
  */
 export const NAV_ITEMS: NavItem[] = [
   { id: "dashboard", title: "Дашборд", href: "/", icon: LayoutDashboard, primary: true, ready: true },
@@ -39,12 +39,12 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "calls", title: "Звонки", href: "/calls", icon: Phone, primary: true, ready: true },
   { id: "logistics", title: "Карта", href: "/logistics", icon: Map, primary: true, ready: true },
   { id: "route", title: "Маршрут", href: "/route", icon: Route, primary: true, ready: true },
-  { id: "orders", title: "Заказы", href: "/orders", icon: ShoppingCart, primary: false, ready: false },
+  { id: "orders", title: "Заказы", href: "/orders", icon: ShoppingCart, primary: false, ready: true },
   { id: "regions", title: "Регионы", href: "/regions", icon: MapPin, primary: false, ready: false },
   { id: "ai", title: "ИИ", href: "/ai", icon: Sparkles, primary: false, ready: false },
-  { id: "finance", title: "Финансы", href: "/finance", icon: Landmark, primary: false, ready: false },
-  { id: "debts", title: "Долги", href: "/debts", icon: Wallet, primary: false, ready: false },
-  { id: "inventory", title: "Склад", href: "/inventory", icon: Warehouse, primary: false, ready: false },
+  { id: "finance", title: "Финансы", href: "/finance", icon: Landmark, primary: false, ready: true },
+  { id: "debts", title: "Долги", href: "/debts", icon: Wallet, primary: false, ready: true },
+  { id: "warehouse", title: "Склад", href: "/warehouse", icon: Warehouse, primary: false, ready: true },
   { id: "marketing", title: "Маркетинг", href: "/marketing", icon: Megaphone, primary: false, ready: false },
   { id: "settings", title: "Настройки", href: "/settings", icon: Settings, primary: false, ready: false },
 ];

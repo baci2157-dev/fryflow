@@ -85,6 +85,100 @@ export interface RouteStop {
   orderSum: number;
 }
 
+/* ── Заказы, склад, финансы (задача 5) ────────────────────── */
+
+/** Заказ — сделка полного цикла: создание → склад → оплата. */
+export interface Order {
+  id: string;
+  clientId: string;
+  /** Копия имени клиента на момент заказа (клиента могут переименовать). */
+  clientName: string;
+  /** Упаковок по 2,5 кг (10 уп. = опт по 300 ₽). */
+  boxesCount: number;
+  /** ₽ за упаковку: 300 — опт от 10 уп., 350 — мелкий опт. */
+  pricePerBox: number;
+  /** boxesCount × pricePerBox, пересчитывается при создании. */
+  totalAmount: number;
+  /** Дата доставки (yyyy-MM-dd). */
+  deliveryDate: string;
+  isPaid: boolean;
+  /** ISO-дата создания заказа. */
+  createdAt: string;
+  /** ISO-дата фактической доставки. */
+  deliveredAt?: string;
+  comment?: string;
+  /** true — заявка-черновик (будущие заявки из Telegram), склад не списывается. */
+  isDraft: boolean;
+}
+
+/** Тип движения по складу. */
+export type MovementType = "in" | "out" | "order";
+
+/** Журнал движения товара по складу. */
+export interface InventoryMovement {
+  id: string;
+  type: MovementType;
+  /** Килограммы (упаковки × 2,5). */
+  quantityKg: number;
+  /** Упаковки. */
+  quantityPacks: number;
+  description: string;
+  createdAt: string;
+}
+
+/** Частичная оплата заказа (суммы копятся, пока не закроют весь долг). */
+export interface Payment {
+  id: string;
+  orderId: string;
+  amount: number;
+  createdAt: string;
+}
+
+/* ── Справочники: заказы и склад ──────────────────────────── */
+
+export const MOVEMENT_LABEL: Record<MovementType, string> = {
+  in: "Приход",
+  out: "Списание",
+  order: "По заказу",
+};
+
+/** Вес одной упаковки, кг. */
+export const PACK_KG = 2.5;
+/** Стартовый запас демо-данных: 3 400 кг = 1 360 упаковок. */
+export const INITIAL_STOCK_KG = 3400;
+export const INITIAL_STOCK_PACKS = 1360;
+/** Порог «Пора заказывать у поставщика», кг. */
+export const LOW_STOCK_KG = 500;
+/** Возраст долга, дни: 1–7 жёлтый, 8–14 оранжевый, 15+ красный. */
+export const DEBT_WARN_DAYS = 8;
+export const DEBT_DANGER_DAYS = 15;
+/** Отсрочка платежа по закону для продуктов питания, дней. */
+export const DEFERMENT_DAYS = 40;
+
+/** Тепловая карта возраста долга. */
+export type DebtAge = "fresh" | "warn" | "danger";
+
+export const DEBT_AGE_LABEL: Record<DebtAge, string> = {
+  fresh: "до 7 дней",
+  warn: "8–14 дней",
+  danger: "15+ дней",
+};
+
+export function debtAge(days: number): DebtAge {
+  if (days >= DEBT_DANGER_DAYS) return "danger";
+  if (days >= DEBT_WARN_DAYS) return "warn";
+  return "fresh";
+}
+
+/** Сколько дней прошло с даты (ISO или yyyy-MM-dd) до сегодня. */
+export function daysSince(isoDate: string): number {
+  const then = new Date(isoDate.length === 10 ? `${isoDate}T00:00:00` : isoDate);
+  return Math.max(
+    0,
+    Math.floor((Date.now() - then.getTime()) / 86_400_000)
+  );
+}
+
 /* ── Справочники ───────────────────────────────────────────── */
 
 /** Районы Ростова-на-Дону. */

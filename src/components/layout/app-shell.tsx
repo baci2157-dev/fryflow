@@ -6,6 +6,7 @@ import { CommandPalette } from "@/components/command-palette";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { useCrmStore } from "@/lib/clients-store";
+import { useOrdersStore } from "@/lib/orders-store";
 import { useUiStore } from "@/lib/ui-store";
 
 /**
@@ -29,6 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     void useCrmStore.persist.rehydrate();
+    void useOrdersStore.persist.rehydrate();
   }, []);
 
   return (

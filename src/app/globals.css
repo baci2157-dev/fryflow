@@ -271,3 +271,66 @@
 .fryflow-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* ── FryFlow: календарь react-day-picker (форма заказа) ────── */
+.fryflow-rdp {
+  --rdp-accent-color: var(--accent);
+  --rdp-accent-color-dark: var(--accent);
+  --rdp-day-height: 38px;
+  --rdp-day-width: 38px;
+  --rdp-day_button-border-radius: 12px;
+  --rdp-outside-opacity: 0.35;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+}
+.fryflow-rdp .rdp-month_caption {
+  font-weight: 600;
+  color: var(--ink);
+}
+.fryflow-rdp .rdp-weekday {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 11.5px;
+}
+.fryflow-rdp .rdp-day_button {
+  color: var(--ink);
+  border: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.fryflow-rdp .rdp-day_button:hover:not([disabled]) {
+  background: var(--tint);
+  border: none;
+}
+.fryflow-rdp .rdp-selected .rdp-day_button {
+  background: var(--accent);
+  color: #1c1a17;
+  font-weight: 600;
+}
+.fryflow-rdp .rdp-today {
+  color: var(--accent);
+  font-weight: 700;
+}
+.fryflow-rdp .rdp-today .rdp-day_button::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: translateX(-50%);
+}
+.fryflow-rdp .rdp-selected .rdp-day_button::after {
+  display: none;
+}
+.fryflow-rdp .rdp-disabled .rdp-day_button {
+  color: var(--ink-soft);
+  opacity: 0.4;
+}
+.fryflow-rdp .rdp-chevron {
+  fill: var(--ink-soft);
+}
+.fryflow-rdp button.rdp-chevron_button:hover {
+  background: var(--tint);
+}

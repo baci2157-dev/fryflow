@@ -15,7 +15,13 @@ import { RecentOrdersCard } from "@/components/dashboard/recent-orders-card";
 import { TodayPlanCard } from "@/components/dashboard/today-plan-card";
 import { useToast } from "@/hooks/use-toast";
 import { useCrmStore } from "@/lib/clients-store";
-import { todayTasks, type Task } from "@/lib/mock-data";
+import {
+  debtDays,
+  debtOrders,
+  useOrdersStore,
+} from "@/lib/orders-store";
+import type { Task } from "@/lib/mock-data";
+import { DEBT_DANGER_DAYS } from "@/types/models";
 
 /** Имитация загрузки данных, мс. */
 const FAKE_LATENCY = 1300;
@@ -27,6 +33,9 @@ export default function DashboardPage() {
   // сохраняем «Перезвонить» в «Звонках» → задача появляется здесь.
   const clients = useCrmStore((s) => s.clients);
   const calls = useCrmStore((s) => s.calls);
+
+  // Сделки: долги 15+ дней попадают в план дня автоматически.
+  const orders = useOrdersStore((s) => s.orders);
 
   /** Отметки задач за сессию (инвертируют исходное состояние). */
   const [doneIds, setDoneIds] = useState<string[]>([]);
@@ -69,14 +78,25 @@ export default function DashboardPage() {
       (a.callbackDate ?? "").localeCompare(b.callbackDate ?? "")
     );
 
-    // Долги — из стабов, раздел «Финансы» появится позже.
-    const debts = todayTasks.filter((t) => t.kind === "debt");
+    // Долги: живые заказы без оплаты, возраст 15+ дней (красная зона).
+    const debtTasks: Task[] = debtOrders(orders)
+      .filter((o) => debtDays(o) >= DEBT_DANGER_DAYS)
+      .map((o) => ({
+        id: `debt-${o.id}`,
+        time: format(new Date(o.createdAt), "d.MM"),
+        title: `Долг: ${o.clientName} — ${debtDays(o)} дн.`,
+        kind: "debt",
+        done: false,
+        overdue: true,
+        href: "/debts",
+      }));
 
-    return [...callbacks, ...debts].map((t) => ({
+    // Красные долги — первыми: день начинается с самого горячего.
+    return [...debtTasks, ...callbacks].map((t) => ({
       ...t,
       done: doneIds.includes(t.id) ? !t.done : t.done,
     }));
-  }, [clients, calls, doneIds]);
+  }, [clients, calls, orders, doneIds]);
 
   const toggleTask = (id: string) => {
     setDoneIds((prev) =>

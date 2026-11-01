@@ -33,9 +33,12 @@ export function TodayPlanCard({
 
   /** Перезвон → карточка клиента в «Звонках», фильтр «Перезвонить». */
   const goClient = (t: Task) => {
-    if (!t.clientId) return;
-    focusCallClient(t.clientId, "callback");
-    router.push("/calls");
+    if (t.clientId) {
+      focusCallClient(t.clientId, "callback");
+      router.push("/calls");
+    } else if (t.href) {
+      router.push(t.href);
+    }
   };
 
   if (loading) {
@@ -88,13 +91,13 @@ export function TodayPlanCard({
                 onCheckedChange={() => onToggle(t.id)}
                 aria-label={`Отметить: ${t.title}`}
               />
-              {t.clientId ? (
-                /* Кликабельный перезвон → «Звонки» */
+              {t.clientId || t.href ? (
+                /* Кликабельная задача: перезвон → «Звонки», долг → «Долги» */
                 <button
                   type="button"
                   onClick={() => goClient(t)}
                   className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                  title={`Перейти к «${t.title.replace("Перезвон: ", "")}» в Звонках`}
+                  title={`Перейти: ${t.title}`}
                 >
                   <span
                     className={cn(
@@ -132,7 +135,7 @@ export function TodayPlanCard({
               <span
                 className={cn(
                   "shrink-0 text-ink-soft/70",
-                  t.clientId && "group-hover:text-accent"
+                  (t.clientId || t.href) && "group-hover:text-accent"
                 )}
               >
                 {t.kind === "call" ? (
