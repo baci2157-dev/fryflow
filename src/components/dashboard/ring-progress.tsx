@@ -12,12 +12,15 @@ export function RingProgress({
   size = 64,
   thickness = 6,
   label,
+  color = "var(--accent)",
 }: {
   value: number;
   max: number;
   size?: number;
   thickness?: number;
   label?: React.ReactNode;
+  /** Цвет дуги, например var(--tier-red) при перегрузе. */
+  color?: string;
 }) {
   const r = (size - thickness) / 2;
   const c = 2 * Math.PI * r;
@@ -39,7 +42,7 @@ export function RingProgress({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="var(--accent)"
+          stroke={color}
           strokeWidth={thickness}
           strokeLinecap="round"
           strokeDasharray={c}

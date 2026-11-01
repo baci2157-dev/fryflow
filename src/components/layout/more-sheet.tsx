@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -11,7 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
-import { SECONDARY_NAV } from "@/lib/navigation";
+import { SECONDARY_NAV, type NavItem } from "@/lib/navigation";
 import { useUiStore } from "@/lib/ui-store";
 
 /** Sheet «Ещё»: остальные разделы, поиск (открывает палитру) и тема. */
@@ -22,13 +23,18 @@ export function MoreSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const router = useRouter();
   const setPaletteOpen = useUiStore((s) => s.setPaletteOpen);
   const { toast } = useToast();
 
-  const openSection = (title: string) => {
+  const openSection = (item: NavItem) => {
     onOpenChange(false);
+    if (item.ready) {
+      router.push(item.href);
+      return;
+    }
     toast({
-      title: `Раздел «${title}» в разработке`,
+      title: `Раздел «${item.title}» в разработке`,
       description: "Появится в следующих задачах.",
       duration: 3200,
     });
@@ -72,7 +78,7 @@ export function MoreSheet({
               <button
                 key={item.id}
                 type="button"
-                onClick={() => openSection(item.title)}
+                onClick={() => openSection(item)}
                 className="flex flex-col items-center gap-2 rounded-xl border border-border bg-surface px-2 py-4 transition-all hover:border-accent/50 active:scale-95"
               >
                 <Icon className="size-5 text-ink-soft" />

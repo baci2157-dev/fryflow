@@ -5,12 +5,15 @@ import { useEffect } from "react";
 import { CommandPalette } from "@/components/command-palette";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { useCrmStore } from "@/lib/clients-store";
 import { useUiStore } from "@/lib/ui-store";
 
 /**
  * Каркас приложения FryFlow.
  * Desktop (≥1024px): сворачиваемый сайдбар. Mobile: BottomNav + Sheet «Ещё».
- * Здесь же — глобальный хоткей командной палитры (Ctrl+K / Cmd+K).
+ * Здесь же — глобальный хоткей командной палитры (Ctrl+K / Cmd+K)
+ * и восстановление CRM-стора из localStorage (после гидратации React,
+ * чтобы не было расхождения SSR ↔ клиент).
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -22,6 +25,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    void useCrmStore.persist.rehydrate();
   }, []);
 
   return (

@@ -32,7 +32,7 @@ export function MobileBottomNav() {
                 <Link
                   href={item.href}
                   onClick={(e) => {
-                    if (item.href !== "/") {
+                    if (!item.ready) {
                       e.preventDefault();
                       toast({
                         title: `Раздел «${item.title}» в разработке`,

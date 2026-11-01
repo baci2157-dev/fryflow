@@ -12,6 +12,11 @@
   --color-tint: var(--tint);
   --color-accent: var(--accent);
 
+  /* CRM: приоритет базы и статусы воронки */
+  --color-tier-green: var(--tier-green);
+  --color-tier-yellow: var(--tier-yellow);
+  --color-tier-red: var(--tier-red);
+
   /* Семантические токены shadcn/ui */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -71,6 +76,19 @@
   --ink-soft: #6E6455;
   --tint: #F0EAE0;
 
+  /* Приоритет базы CRM: green / yellow / red */
+  --tier-green: #2E9E5B;
+  --tier-yellow: #D9A13B;
+  --tier-red: #D2503F;
+
+  /* Статусы воронки продаж */
+  --status-cold: #74859B;
+  --status-no-answer: #9C9285;
+  --status-callback: #C97F2E;
+  --status-trial: #2F8F83;
+  --status-regular: #2E9E5B;
+  --status-refused: #D2503F;
+
   /* Семантика shadcn/ui поверх Warm Precision */
   --radius: 0.625rem;
   --background: var(--bg);
@@ -114,6 +132,19 @@
   --ink-soft: #A39B8F;
   --tint: #242019;
 
+  /* Приоритет базы CRM: green / yellow / red */
+  --tier-green: #4CB871;
+  --tier-yellow: #E8B44F;
+  --tier-red: #E06552;
+
+  /* Статусы воронки продаж */
+  --status-cold: #8FA3BC;
+  --status-no-answer: #B3A99A;
+  --status-callback: #DE9742;
+  --status-trial: #46A99C;
+  --status-regular: #4CB871;
+  --status-refused: #E06552;
+
   /* Семантика shadcn/ui поверх Warm Precision */
   --background: var(--bg);
   --foreground: var(--ink);
@@ -156,6 +187,50 @@
   ::selection {
     background: color-mix(in srgb, var(--accent) 30%, transparent);
   }
+}
+
+/* ── FryFlow CRM: Leaflet (карта логистики) ─────────────────── */
+.leaflet-container {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  background: var(--tint);
+}
+/* кастомные маркеры FryFlow (divIcon без белой подложки) */
+.fryflow-pin {
+  background: transparent;
+  border: none;
+}
+.leaflet-popup-content-wrapper {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+.leaflet-popup-tip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.leaflet-popup-content {
+  margin: 12px 14px;
+  line-height: 1.4;
+}
+.leaflet-popup-close-button {
+  color: var(--ink-soft) !important;
+  padding: 6px 8px 0 0 !important;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--surface);
+  color: var(--ink);
+  border-bottom-color: var(--border);
+}
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  color: var(--ink-soft) !important;
+  font-size: 10px;
+}
+.leaflet-control-attribution a {
+  color: var(--ink-soft) !important;
 }
 
 /* ── FryFlow: skeleton-shimmer на --border ─────────────────── */

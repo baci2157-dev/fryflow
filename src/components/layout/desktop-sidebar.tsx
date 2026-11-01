@@ -132,8 +132,8 @@ function SidebarLink({
   const Icon = item.icon;
 
   const handleClick = (e: React.MouseEvent) => {
-    // реальных страниц разделов ещё нет — честная обратная связь вместо 404
-    if (item.href !== "/") {
+    // нереализованные разделы — честная обратная связь вместо 404
+    if (!item.ready) {
       e.preventDefault();
       toast({
         title: `Раздел «${item.title}» в разработке`,
