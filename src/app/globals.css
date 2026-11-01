@@ -157,3 +157,42 @@
     background: color-mix(in srgb, var(--accent) 30%, transparent);
   }
 }
+
+/* ── FryFlow: skeleton-shimmer на --border ─────────────────── */
+@keyframes fryflow-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.fryflow-skeleton {
+  border-radius: calc(var(--radius) - 2px);
+  background: linear-gradient(
+    100deg,
+    var(--border) 45%,
+    color-mix(in srgb, var(--border) 45%, var(--surface)) 50%,
+    var(--border) 55%
+  );
+  background-size: 200% 100%;
+  animation: fryflow-shimmer 1.8s ease-in-out infinite;
+}
+
+/* ── FryFlow: тонкий скроллбар для внутренних списков ──────── */
+.fryflow-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.fryflow-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.fryflow-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+.fryflow-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}

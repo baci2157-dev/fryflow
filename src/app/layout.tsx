@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/layout/app-shell";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -23,7 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "FryFlow — тёплая точность для быстрых интерфейсов",
   description:
-    "Стартовый каркас FryFlow: Next.js 16 (App Router), TypeScript, Tailwind CSS 4, дизайн-токены Warm Precision, темы Light/Dark, Inter и JetBrains Mono.",
+    "Рабочее место FryFlow: дашборд, звонки, заказы, долги и склад. Next.js 16, TypeScript, Tailwind CSS 4, дизайн-система Warm Precision.",
   applicationName: "FryFlow",
   keywords: [
     "FryFlow",
@@ -31,7 +30,8 @@ export const metadata: Metadata = {
     "TypeScript",
     "Tailwind CSS",
     "Warm Precision",
-    "дизайн-токены",
+    "дашборд",
+    "CRM",
   ],
   icons: { icon: "/fryflow.svg" },
   openGraph: {
@@ -50,11 +50,7 @@ export default function RootLayout({
     <html lang="ru" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
         <ThemeProvider>
-          <div className="flex min-h-dvh flex-col bg-bg">
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-          </div>
+          <AppShell>{children}</AppShell>
           <Toaster />
         </ThemeProvider>
       </body>
