@@ -4,7 +4,16 @@ import { create } from "zustand";
  * Глобальное UI-состояние FryFlow (командная палитра, совет ИИ).
  * Используется только из клиентских компонентов.
  */
-interface UiState {
+/** Фильтр-чипы экрана «Звонки». */
+export type CallsFilter =
+  | "all"
+  | "cold"
+  | "no_answer"
+  | "callback"
+  | "trial"
+  | "refused";
+
+export interface UiState {
   paletteOpen: boolean;
   setPaletteOpen: (open: boolean) => void;
   togglePalette: () => void;
@@ -22,6 +31,14 @@ interface UiState {
   clientFormIntent: ClientFormIntent | null;
   requestClientForm: (intent: ClientFormIntent) => void;
   clearClientFormIntent: () => void;
+  /**
+   * Звонки: переход на карточку клиента в /calls с предвыбранным
+   * фильтром (например, из «Плана на сегодня» на дашборде).
+   * CallsPage подставляет фильтр, подсвечивает карточку и сбрасывает.
+   */
+  callsIntent: { clientId: string; filter?: CallsFilter } | null;
+  focusCallClient: (clientId: string, filter?: CallsFilter) => void;
+  clearCallsIntent: () => void;
 }
 
 export type ClientFormIntent =
@@ -40,4 +57,7 @@ export const useUiStore = create<UiState>((set) => ({
   clientFormIntent: null,
   requestClientForm: (clientFormIntent) => set({ clientFormIntent }),
   clearClientFormIntent: () => set({ clientFormIntent: null }),
+  callsIntent: null,
+  focusCallClient: (clientId, filter) => set({ callsIntent: { clientId, filter } }),
+  clearCallsIntent: () => set({ callsIntent: null }),
 }));

@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { demoCalls, demoClients } from "@/lib/demo-data";
+import { trialStopFor } from "@/lib/route-algorithm";
 import {
   PRICE_PER_PACK,
   type Call,
@@ -39,13 +40,16 @@ interface CrmState {
   updateClient: (id: string, patch: Partial<Client>) => void;
   deleteClient: (id: string) => void;
 
-  /** Логирует звонок и синхронизирует статус воронки клиента. */
+  /** Логирует звонок и синхронизирует статус воронки клиента.
+   *  «Согласился на пробу» автоматически добавляет точку в маршрут дня
+   *  (флаг, который подхватывает экран /route). Возвращает запись и признак
+   *  добавления в маршрут. */
   addCall: (input: {
     clientId: string;
     result: CallResult;
     comment: string;
     callbackDate?: string;
-  }) => Call;
+  }) => { call: Call; addedToRoute: boolean };
 
   setRouteStops: (stops: RouteStop[]) => void;
   toggleRouteStop: (stop: RouteStop) => boolean;
@@ -107,23 +111,44 @@ export const useCrmStore = create<CrmState>()(
         })),
 
       addCall: ({ clientId, result, comment, callbackDate }) => {
+        // Счётчик попыток: сколько звонков этому клиенту уже было + 1.
+        const attemptNumber =
+          get().calls.filter((c) => c.clientId === clientId).length + 1;
         const call: Call = {
           id: newId(),
           clientId,
           result,
           comment,
+          attemptNumber,
           callbackDate: result === "callback" ? callbackDate : undefined,
           createdAt: new Date().toISOString(),
         };
-        set((s) => ({
-          calls: [call, ...s.calls],
-          // Статус воронки клиента синхронизируется с результатом звонка:
-          // проба ставит «Проба», перезвонить — «Перезвонить» и т.д.
-          clients: s.clients.map((c) =>
-            c.id === clientId ? { ...c, status: statusFromResult[result] } : c
-          ),
-        }));
-        return call;
+        let addedToRoute = false;
+        set((s) => {
+          // «Согласился на пробу» → упаковка 2,5 кг за 350 ₽ в маршрут
+          // на завтра (если клиент ещё не в маршруте).
+          const client = s.clients.find((c) => c.id === clientId);
+          const alreadyInRoute = s.routeStops.some(
+            (r) => r.clientId === clientId
+          );
+          const addTrialStop =
+            result === "trial" &&
+            Boolean(client) &&
+            !alreadyInRoute;
+          addedToRoute = addTrialStop;
+          return {
+            calls: [call, ...s.calls],
+            // Статус воронки клиента синхронизируется с результатом звонка:
+            // проба ставит «Проба», перезвонить — «Перезвонить» и т.д.
+            clients: s.clients.map((c) =>
+              c.id === clientId ? { ...c, status: statusFromResult[result] } : c
+            ),
+            routeStops: addTrialStop && client
+              ? [...s.routeStops, trialStopFor(client)]
+              : s.routeStops,
+          };
+        });
+        return { call, addedToRoute };
       },
 
       setRouteStops: (routeStops) => set({ routeStops }),
@@ -172,7 +197,7 @@ export const useCrmStore = create<CrmState>()(
     }),
     {
       name: "fryflow-crm-v1",
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (s) => ({
@@ -181,6 +206,25 @@ export const useCrmStore = create<CrmState>()(
         routeStops: s.routeStops,
         capacity: s.capacity,
       }),
+      // v1 → v2: звонкам проставляем attemptNumber (порядок попыток
+      // внутри клиента по дате — старые записи жили без счётчика).
+      migrate: (persisted, version) => {
+        const state = persisted as
+          | { calls?: Call[]; clients?: Client[]; routeStops?: RouteStop[]; capacity?: number }
+          | null;
+        if (version < 2 && state && Array.isArray(state.calls)) {
+          const counters = new Map<string, number>();
+          const calls = [...state.calls]
+            .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
+            .map((c, i) => {
+              const n = (counters.get(c.clientId) ?? 0) + 1;
+              counters.set(c.clientId, n);
+              return { ...c, attemptNumber: n, id: c.id ?? `migrated-${i}` };
+            }) as Call[];
+          return { ...state, calls } as unknown as CrmState;
+        }
+        return (state ?? {}) as unknown as CrmState;
+      },
       onRehydrateStorage: () => () => {
         useCrmStore.setState({ hydrated: true });
       },

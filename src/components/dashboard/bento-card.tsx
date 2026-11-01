@@ -34,7 +34,8 @@ export function BentoCard({
   delay?: number;
   onClick?: () => void;
   srLabel?: string;
-  children: React.ReactNode;
+  /** В loading-режиме карточка показывает skeleton — children не нужны. */
+  children?: React.ReactNode;
 }) {
   if (loading) {
     return (

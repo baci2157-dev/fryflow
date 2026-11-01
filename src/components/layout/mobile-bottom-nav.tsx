@@ -23,7 +23,7 @@ export function MobileBottomNav() {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
         aria-label="Нижняя навигация"
       >
-        <ul className="mx-auto grid max-w-lg grid-cols-5">
+        <ul className="mx-auto grid max-w-lg grid-cols-6">
           {PRIMARY_NAV.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;

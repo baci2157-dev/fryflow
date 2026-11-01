@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
 
 import { AiAdviceCard } from "@/components/dashboard/ai-advice";
 import { Sk } from "@/components/dashboard/bento-card";
@@ -13,6 +14,7 @@ import {
 import { RecentOrdersCard } from "@/components/dashboard/recent-orders-card";
 import { TodayPlanCard } from "@/components/dashboard/today-plan-card";
 import { useToast } from "@/hooks/use-toast";
+import { useCrmStore } from "@/lib/clients-store";
 import { todayTasks, type Task } from "@/lib/mock-data";
 
 /** Имитация загрузки данных, мс. */
@@ -20,23 +22,71 @@ const FAKE_LATENCY = 1300;
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>(todayTasks);
-  const { toast } = useToast();
+
+  // CRM: перезвоны на сегодня приходят из живого журнала звонков —
+  // сохраняем «Перезвонить» в «Звонках» → задача появляется здесь.
+  const clients = useCrmStore((s) => s.clients);
+  const calls = useCrmStore((s) => s.calls);
+
+  /** Отметки задач за сессию (инвертируют исходное состояние). */
+  const [doneIds, setDoneIds] = useState<string[]>([]);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), FAKE_LATENCY);
     return () => clearTimeout(t);
   }, []);
 
+  const tasks = useMemo<Task[]>(() => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+
+    // Перезвоны: клиент в статусе «Перезвонить» и дата перезвона
+    // уже наступила (включая просроченные — они сверху).
+    const callbacks: Task[] = [];
+    for (const c of clients) {
+      if (c.status !== "callback") continue;
+      const cb = calls
+        .filter(
+          (x) =>
+            x.clientId === c.id &&
+            x.result === "callback" &&
+            x.callbackDate &&
+            x.callbackDate <= todayStr
+        )
+        .sort((a, b) => (a.callbackDate! < b.callbackDate! ? -1 : 1))[0];
+      if (!cb?.callbackDate) continue;
+      callbacks.push({
+        id: `cb-${c.id}`,
+        time: format(new Date(`${cb.callbackDate}T00:00:00`), "d.MM"),
+        title: `Перезвон: ${c.name}`,
+        kind: "call",
+        done: false,
+        clientId: c.id,
+        callbackDate: cb.callbackDate,
+        overdue: cb.callbackDate < todayStr,
+      });
+    }
+    callbacks.sort((a, b) =>
+      (a.callbackDate ?? "").localeCompare(b.callbackDate ?? "")
+    );
+
+    // Долги — из стабов, раздел «Финансы» появится позже.
+    const debts = todayTasks.filter((t) => t.kind === "debt");
+
+    return [...callbacks, ...debts].map((t) => ({
+      ...t,
+      done: doneIds.includes(t.id) ? !t.done : t.done,
+    }));
+  }, [clients, calls, doneIds]);
+
+  const toggleTask = (id: string) => {
+    setDoneIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
   const doneCount = tasks.filter((t) => t.done).length;
   const callsCount = tasks.filter((t) => t.kind === "call").length;
   const debtsCount = tasks.filter((t) => t.kind === "debt").length;
-
-  const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
-    );
-  };
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">

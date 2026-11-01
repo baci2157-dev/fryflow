@@ -28,16 +28,17 @@ export interface NavItem {
 
 /**
  * Единый реестр разделов FryFlow.
- * Реализованы: Дашборд, Клиенты, Карта (логистика), Маршрут на день.
- * Остальные — будущие разделы (Звонки, Заказы, Регионы, ИИ, Финансы,
- * Долги, Склад, Маркетинг, Настройки).
+ * Реализованы: Дашборд, Клиенты, Карта (логистика), Маршрут на день,
+ * Звонки (воронка холодных продаж).
+ * Остальные — будущие разделы (Заказы, Регионы, ИИ, Финансы, Долги,
+ * Склад, Маркетинг, Настройки).
  */
 export const NAV_ITEMS: NavItem[] = [
   { id: "dashboard", title: "Дашборд", href: "/", icon: LayoutDashboard, primary: true, ready: true },
   { id: "clients", title: "Клиенты", href: "/clients", icon: Users, primary: true, ready: true },
+  { id: "calls", title: "Звонки", href: "/calls", icon: Phone, primary: true, ready: true },
   { id: "logistics", title: "Карта", href: "/logistics", icon: Map, primary: true, ready: true },
   { id: "route", title: "Маршрут", href: "/route", icon: Route, primary: true, ready: true },
-  { id: "calls", title: "Звонки", href: "/calls", icon: Phone, primary: false, ready: false },
   { id: "orders", title: "Заказы", href: "/orders", icon: ShoppingCart, primary: false, ready: false },
   { id: "regions", title: "Регионы", href: "/regions", icon: MapPin, primary: false, ready: false },
   { id: "ai", title: "ИИ", href: "/ai", icon: Sparkles, primary: false, ready: false },

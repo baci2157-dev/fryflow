@@ -72,6 +72,8 @@ export interface Call {
   /** Дата перезвона (yyyy-MM-dd) — только для result === "callback". */
   callbackDate?: string;
   createdAt: string;
+  /** Номер попытки: 1 — первый звонок, 2 — второй… */
+  attemptNumber: number;
 }
 
 /** Точка маршрута дня. */
@@ -180,5 +182,19 @@ export const TYPICAL_ORDER_BOXES: Record<ClientType, number> = {
   darkkitchen: 5,
 };
 
-/** Оптовая цена упаковки картофеля фри 2,5 кг. */
+/** Оптовая цена упаковки картофеля фри 2,5 кг (от 10 коробок). */
 export const PRICE_PER_PACK = 300;
+/** Опт от 10 коробок: 300 ₽ / 2,5 кг = 120 ₽/кг. */
+export const PRICE_PER_KG = 120;
+/** Минимальный объём для оптовой цены, коробок. */
+export const MIN_WHOLESALE_BOXES = 10;
+/** Мелкий опт (меньше 10 коробок): 350 ₽ за упаковку. */
+export const SMALL_WHOLESALE_PRICE_PER_PACK = 350;
+/** Мелкий опт: 350 ₽ / 2,5 кг = 140 ₽/кг. */
+export const SMALL_WHOLESALE_PRICE_PER_KG = 140;
+/** Себестоимость закупки, ₽/кг (маржа 20–40 ₽/кг). */
+export const COST_PER_KG = 100;
+/** Пробная партия для холодного лида: одна упаковка 2,5 кг за 350 ₽,
+ *  вычитается из первого оптового заказа. */
+export const TRIAL_PRICE = 350;
+export const TRIAL_PACK_KG = 2.5;

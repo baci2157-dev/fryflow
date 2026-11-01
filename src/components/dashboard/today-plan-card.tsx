@@ -1,14 +1,18 @@
 "use client";
 
-import { CheckCircle2, Phone, Wallet } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, ChevronRight, Phone, Wallet } from "lucide-react";
 
 import { BentoCard, Sk } from "@/components/dashboard/bento-card";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Task } from "@/lib/mock-data";
+import { useUiStore } from "@/lib/ui-store";
 import { cn } from "@/lib/utils";
 
 /**
  * «План на сегодня»: задачи с чекбоксами.
+ * Перезвоны приходят из CRM (живые данные): клик по задаче ведёт
+ * на карточку клиента в «Звонках» с предвыбранным фильтром.
  * Если всё выполнено (или список пуст) — empty state.
  */
 export function TodayPlanCard({
@@ -20,9 +24,19 @@ export function TodayPlanCard({
   tasks: Task[];
   onToggle: (id: string) => void;
 }) {
+  const router = useRouter();
+  const focusCallClient = useUiStore((s) => s.focusCallClient);
+
   const done = tasks.filter((t) => t.done).length;
   const allDone = tasks.length > 0 && done === tasks.length;
   const empty = tasks.length === 0;
+
+  /** Перезвон → карточка клиента в «Звонках», фильтр «Перезвонить». */
+  const goClient = (t: Task) => {
+    if (!t.clientId) return;
+    focusCallClient(t.clientId, "callback");
+    router.push("/calls");
+  };
 
   if (loading) {
     return (
@@ -58,39 +72,75 @@ export function TodayPlanCard({
           </p>
           <p className="max-w-52 text-xs leading-relaxed text-ink-soft">
             {empty
-              ? "Хороший день, чтобы продать пару фритюров"
+              ? "Хороший день, чтобы обзвонить холодную базу"
               : "Отличная работа — можно выдохнуть"}
           </p>
         </div>
       ) : (
         <ul className="fryflow-scroll mt-2 max-h-64 overflow-y-auto pr-1">
           {tasks.map((t) => (
-            <li key={t.id}>
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-tint">
-                <Checkbox
-                  checked={t.done}
-                  onCheckedChange={() => onToggle(t.id)}
-                  aria-label={`Отметить: ${t.title}`}
-                />
-                <span className="w-11 shrink-0 font-mono text-xs text-ink-soft tabular-nums">
-                  {t.time}
-                </span>
-                <span
-                  className={cn(
-                    "truncate text-sm text-ink",
-                    t.done && "text-ink-soft/70 line-through"
-                  )}
+            <li
+              key={t.id}
+              className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-tint"
+            >
+              <Checkbox
+                checked={t.done}
+                onCheckedChange={() => onToggle(t.id)}
+                aria-label={`Отметить: ${t.title}`}
+              />
+              {t.clientId ? (
+                /* Кликабельный перезвон → «Звонки» */
+                <button
+                  type="button"
+                  onClick={() => goClient(t)}
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  title={`Перейти к «${t.title.replace("Перезвон: ", "")}» в Звонках`}
                 >
-                  {t.title}
-                </span>
-                <span className="ml-auto shrink-0 text-ink-soft/70">
-                  {t.kind === "call" ? (
-                    <Phone className="size-3.5" />
-                  ) : (
-                    <Wallet className="size-3.5" />
-                  )}
-                </span>
-              </label>
+                  <span
+                    className={cn(
+                      "w-11 shrink-0 font-mono text-xs tabular-nums",
+                      t.overdue ? "font-semibold text-[var(--tier-red)]" : "text-ink-soft"
+                    )}
+                  >
+                    {t.time}
+                  </span>
+                  <span
+                    className={cn(
+                      "truncate text-sm text-ink group-hover:text-accent",
+                      t.done && "text-ink-soft/70 line-through"
+                    )}
+                  >
+                    {t.title}
+                  </span>
+                  <ChevronRight className="ml-auto size-3.5 shrink-0 text-ink-soft/60 transition-colors group-hover:text-accent" />
+                </button>
+              ) : (
+                <>
+                  <span className="w-11 shrink-0 font-mono text-xs text-ink-soft tabular-nums">
+                    {t.time}
+                  </span>
+                  <span
+                    className={cn(
+                      "truncate text-sm text-ink",
+                      t.done && "text-ink-soft/70 line-through"
+                    )}
+                  >
+                    {t.title}
+                  </span>
+                </>
+              )}
+              <span
+                className={cn(
+                  "shrink-0 text-ink-soft/70",
+                  t.clientId && "group-hover:text-accent"
+                )}
+              >
+                {t.kind === "call" ? (
+                  <Phone className="size-3.5" />
+                ) : (
+                  <Wallet className="size-3.5" />
+                )}
+              </span>
             </li>
           ))}
         </ul>

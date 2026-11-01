@@ -37,6 +37,12 @@ export interface Task {
   title: string;
   kind: "call" | "debt";
   done: boolean;
+  /** CRM-клиент — перезвоны кликабельны и ведут в «Звонки». */
+  clientId?: string;
+  /** Дата перезвона (yyyy-MM-dd) — для сортировки задач. */
+  callbackDate?: string;
+  /** Просроченный перезвон — подсвечиваем красным. */
+  overdue?: boolean;
 }
 
 export const todayTasks: Task[] = [

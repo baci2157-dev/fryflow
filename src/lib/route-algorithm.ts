@@ -1,5 +1,6 @@
 import {
   PRICE_PER_PACK,
+  TRIAL_PRICE,
   WORKING_HOURS,
   type Client,
   type RouteStop,
@@ -209,6 +210,15 @@ export function buildYandexNavUrl(client: Client): string {
 export function typicalStopFor(client: Client): RouteStop {
   const boxes = client.lastOrderBoxes ?? defaultBoxesFor(client);
   return { clientId: client.id, boxes, orderSum: boxes * PRICE_PER_PACK };
+}
+
+/**
+ * Точка «проба» после звонка: одна упаковка 2,5 кг за 350 ₽
+ * (вычитается из первого оптового заказа). Экран /route подхватывает
+ * её в общий план с учётом времени работы и вместимости машины.
+ */
+export function trialStopFor(client: Client): RouteStop {
+  return { clientId: client.id, boxes: 1, orderSum: TRIAL_PRICE };
 }
 
 function defaultBoxesFor(client: Client): number {

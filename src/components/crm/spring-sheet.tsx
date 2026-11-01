@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 /**
  * Spring Sheet FryFlow:
@@ -24,6 +25,8 @@ interface SpringSheetProps {
   children: React.ReactNode;
   variant?: "drawer" | "dialog";
   desktopWidth?: number;
+  /** На мобильных — полноэкранный лист вместо нижнего (панель скриптов). */
+  mobileFullscreen?: boolean;
 }
 
 export function SpringSheet({
@@ -33,6 +36,7 @@ export function SpringSheet({
   children,
   variant = "drawer",
   desktopWidth = 460,
+  mobileFullscreen = false,
 }: SpringSheetProps) {
   const isMobile = useIsMobile();
 
@@ -70,9 +74,14 @@ export function SpringSheet({
           />
 
           {isMobile ? (
-            /* ── Mobile: нижний лист со свайпом вниз ── */
+            /* ── Mobile: нижний лист (или полноэкранный) со свайпом вниз ── */
             <motion.div
-              className="absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col rounded-t-3xl border border-border bg-surface shadow-2xl"
+              className={cn(
+                "absolute inset-x-0 bottom-0 flex flex-col border border-border bg-surface shadow-2xl",
+                mobileFullscreen
+                  ? "inset-0 rounded-none"
+                  : "max-h-[90dvh] rounded-t-3xl"
+              )}
               initial={{ y: "102%" }}
               animate={{ y: 0 }}
               exit={{ y: "102%" }}
@@ -80,6 +89,7 @@ export function SpringSheet({
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 0.6 }}
+              dragListener={!mobileFullscreen}
               onDragEnd={(_, info) => {
                 if (info.offset.y > 110 || info.velocity.y > 700) onClose();
               }}
