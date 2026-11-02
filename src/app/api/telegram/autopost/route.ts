@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { chatCompletion } from "@/lib/ai-sdk";
 import {
   applyStock,
   readConfig,
@@ -32,15 +33,14 @@ interface AutopostBody {
   stockPacks?: number;
 }
 
-/** Живой копирайтер: уникализирует шаблон, сохраняя цифры и смысл. */
+/** Живой копирайтер: уникализирует шаблон, сохраняя цифры и смысл.
+ *  Задача 12: через двухрежимный слой (публичный API / SDK песочницы). */
 async function rewriteWithZai(text: string): Promise<string | null> {
   try {
-    const { default: ZAI } = await import("z-ai-web-dev-sdk");
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
+    const { reply } = await chatCompletion({
       messages: [
         {
-          role: "assistant",
+          role: "system",
           content: [
             "Ты — копирайтер оптового поставщика замороженного картофеля фри. Задача: анти-спам для оптовых групп Telegram.",
             "Перепиши объявление НОВЫМ языком: сохрани все цифры, цены и смысл, но смени подачу (тон, порядок фраз, зачин).",
@@ -52,10 +52,10 @@ async function rewriteWithZai(text: string): Promise<string | null> {
         },
         { role: "user", content: "Перепиши объявление по правилам выше. Верни один готовый текст." },
       ],
-      thinking: { type: "disabled" },
+      maxTokens: 700,
     });
-    const reply = cleanPostText(completion.choices?.[0]?.message?.content?.trim() ?? "");
-    return reply && reply.length > 30 ? reply : null;
+    const post = cleanPostText(reply?.trim() ?? "");
+    return post && post.length > 30 ? post : null;
   } catch {
     return null;
   }

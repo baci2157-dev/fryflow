@@ -171,12 +171,39 @@ function InlineResult({
   );
 }
 
-/* ── Блок «Владелец»: имя для приветствия (задача 10) ────── */
+/* ── Блок «Владелец»: имя для приветствия (задача 10; задача 13 —
+     явное сохранение кнопкой) ───────────────────────────── */
 
 function OwnerSection() {
   const owner = useSettingsStore((s) => s.owner);
   const setOwner = useSettingsStore((s) => s.setOwner);
+  const { toast } = useToast();
   const nameRef = useRef<HTMLInputElement>(null);
+
+  /* Черновик имени: применяется явно кнопкой «Сохранить» (задача 13).
+   * Паттерн «синхронизация при рендере» (без эффекта): когда имя в
+   * сторе меняется снаружи — восстановление из localStorage после
+   * перезагрузки, быстрый выбор чипом — черновик подтягивается сам. */
+  const [draft, setDraft] = useState(owner.name);
+  const [prevOwnerName, setPrevOwnerName] = useState(owner.name);
+  if (owner.name !== prevOwnerName) {
+    setPrevOwnerName(owner.name);
+    setDraft(owner.name);
+  }
+
+  const savedName = owner.name.trim();
+  const draftName = draft.trim().slice(0, 24);
+  const dirty = draftName !== savedName;
+
+  const saveName = () => {
+    if (!dirty || !draftName) return;
+    setOwner({ name: draftName });
+    toast({
+      title: "Имя сохранено",
+      description: `Дашборд поприветствует: «Добрый день, ${draftName}». Имя переживает перезагрузку — хранится в этом браузере.`,
+      duration: 3600,
+    });
+  };
 
   const isPreset = (OWNER_NAME_CHIPS as readonly string[]).includes(owner.name);
 
@@ -193,16 +220,24 @@ function OwnerSection() {
           </span>
           <input
             ref={nameRef}
-            value={owner.name}
-            onChange={(e) => setOwner({ name: e.target.value.slice(0, 24) })}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value.slice(0, 24))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") saveName();
+            }}
             placeholder="Адам"
             autoComplete="off"
             className="mt-1.5 h-11 w-full rounded-xl border border-border bg-bg px-3.5 text-[14px] text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-accent/60 focus:bg-surface"
           />
+          {dirty && (
+            <p className="mt-1 text-[11.5px] text-accent">
+              Не сохранено — нажмите «Сохранить» или Enter
+            </p>
+          )}
         </label>
         <div>
           <span className="text-[12px] font-medium text-ink-soft">
-            Быстрый выбор
+            Быстрый выбор (применяется сразу)
           </span>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {OWNER_NAME_CHIPS.map((n) => (
@@ -210,7 +245,10 @@ function OwnerSection() {
                 key={n}
                 type="button"
                 aria-pressed={owner.name === n}
-                onClick={() => setOwner({ name: n })}
+                onClick={() => {
+                  setDraft(n);
+                  setOwner({ name: n });
+                }}
                 className={cn(
                   "h-11 rounded-xl border px-4 text-[13px] font-medium transition-all active:scale-[0.97]",
                   owner.name === n
@@ -225,7 +263,7 @@ function OwnerSection() {
               type="button"
               aria-pressed={!isPreset && owner.name.trim().length > 0}
               onClick={() => {
-                setOwner({ name: "" });
+                setDraft("");
                 nameRef.current?.focus();
               }}
               className={cn(
@@ -240,12 +278,24 @@ function OwnerSection() {
           </div>
         </div>
       </div>
-      <p className="mt-3 text-[12px] text-ink-soft">
-        Дашборд поприветствует:{" "}
-        <span className="font-medium text-ink">
-          «Добрый день, {owner.name.trim() || "…"}»
-        </span>
-      </p>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[12px] text-ink-soft">
+          Дашборд поприветствует:{" "}
+          <span className="font-medium text-ink">
+            «Добрый день, {draftName || "…"}»
+          </span>
+        </p>
+        <motion.button
+          type="button"
+          whileTap={{ scale: dirty && draftName ? 0.98 : 1 }}
+          onClick={saveName}
+          disabled={!dirty || !draftName}
+          className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#1C1A17] transition-all hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <CheckCircle2 className="size-4" />
+          Сохранить
+        </motion.button>
+      </div>
     </Section>
   );
 }
@@ -1081,27 +1131,9 @@ export default function SettingsPage() {
               </motion.div>
             )}
 
-            {/* Поиск в интернете: для вопросов о трендах и конкурентах */}
-            <div className="mt-4 border-t border-border pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="flex items-center gap-1.5 text-[13.5px] font-medium text-ink">
-                    <Globe className="size-4 text-accent" />
-                    Поиск в интернете
-                  </p>
-                  <p className="mt-0.5 text-[12px] leading-snug text-ink-soft">
-                    Включите, когда спрашиваете ИИ о трендах рынка или
-                    конкурентах: перед ответом он сверится со свежими
-                    публикациями и приложит источники.
-                  </p>
-                </div>
-                <Switch
-                  checked={ai.webSearch}
-                  onCheckedChange={(v) => setAi({ webSearch: v })}
-                  aria-label="Поиск в интернете"
-                />
-              </div>
-            </div>
+            {/* Веб-поиск временно отключён (задача 13, Go-Live): тумблер
+                убран — ИИ-Директор работает на внутреннем контексте базы.
+                Поиск вернётся вместе с «Разведчиком» в следующем обновлении. */}
 
             <Link
               href="/ai-assistant"

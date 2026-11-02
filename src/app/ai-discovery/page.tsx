@@ -36,12 +36,12 @@ import { cn } from "@/lib/utils";
 /**
  * «Найдено ИИ» (задача 11) — раздел веб-разведки новых точек.
  *
- * Кнопка «Найти новые точки» запускает серверный конвейер
- * /api/ai-discovery: веб-поиск по Ростову + извлечение точек
- * моделью. Кандидаты падают сюда со статусом pending. Дальше
- * решает владелец: «Добавить в CRM» (геокодинг + холодный клиент
- * с приоритетом по сегменту) или «Отклонить». Дубликаты по
- * name+address отсеиваются и при поиске, и при добавлении.
+ * Задача 13 (Go-Live): веб-поиск временно отключён — публичный API
+ * Z.AI пока не исполняет инструмент поиска. Кнопка «Найти новые точки»
+ * неактивна, сверху — баннер-заглушка. Найденные раньше кандидаты
+ * остаются: «Добавить в CRM» (геокодинг + холодный лид с приоритетом
+ * по сегменту) и «Отклонить» работают как раньше. Дубликаты по
+ * name+address отсеиваются при добавлении.
  */
 
 /** fallback-координаты: центр Ростова — как в импорте клиентов. */
@@ -202,20 +202,16 @@ function LeadCard({
 
 export default function AiDiscoveryPage() {
   const leads = useDiscoveryStore((s) => s.leads);
-  const addLeads = useDiscoveryStore((s) => s.addLeads);
   const approve = useDiscoveryStore((s) => s.approve);
   const reject = useDiscoveryStore((s) => s.reject);
   const clearHistory = useDiscoveryStore((s) => s.clearHistory);
-  const setLastSearchAt = useDiscoveryStore((s) => s.setLastSearchAt);
   const lastSearchAt = useDiscoveryStore((s) => s.lastSearchAt);
 
   const clients = useCrmStore((s) => s.clients);
   const addClient = useCrmStore((s) => s.addClient);
   const { toast } = useToast();
 
-  const [searching, setSearching] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const pending = useMemo(
     () => leads.filter((l) => l.status === "pending"),
@@ -231,64 +227,9 @@ export default function AiDiscoveryPage() {
   const approvedCount = leads.filter((l) => l.status === "approved").length;
   const rejectedCount = leads.filter((l) => l.status === "rejected").length;
 
-  /* ── Разведка: веб-поиск + извлечение кандидатов ── */
-  const runSearch = async () => {
-    if (searching) return;
-    setSearching(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/ai-discovery", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          existing: clients.map((c) => ({ name: c.name, address: c.address })),
-        }),
-      });
-      const data = (await res.json()) as {
-        candidates?: Array<{
-          name: string;
-          address: string;
-          district: string;
-          phone: string;
-          type: string;
-          source_url: string;
-        }>;
-        error?: string;
-      };
-      if (!res.ok || data.error) {
-        throw new Error(data.error ?? "Разведка не удалась");
-      }
-
-      const incoming = (data.candidates ?? [])
-        .filter((c) => c.name.trim().length >= 2 && c.address.trim().length >= 3)
-        .map((c) => ({
-          name: c.name.trim(),
-          address: c.address.trim(),
-          district: normalizeDistrict(c.district),
-          phone: c.phone.trim(),
-          type: normalizeType(c.type),
-          source: c.source_url,
-        }));
-      const added = addLeads(incoming);
-      setLastSearchAt(new Date().toISOString());
-
-      toast({
-        title:
-          added > 0
-            ? `Найдено новых точек: ${added}`
-            : "Новых точек не нашлось",
-        description:
-          added > 0
-            ? "Кандидаты ждут ниже — добавьте в CRM или отклоните."
-            : "ИИ проверил свежие публикации: похоже, всё уже в базе. Попробуйте позже.",
-        duration: 4500,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Разведка не удалась");
-    } finally {
-      setSearching(false);
-    }
-  };
+  /* ── Разведка отключена (задача 13, Go-Live): веб-поиск вернётся
+   * в следующем обновлении — кнопка выше неактивна, роут-заглушка
+   * отвечает «появится в следующем обновлении». ── */
 
   /* ── Кандидат → клиент CRM: дедуп, геокодинг, холодный лид ── */
   const addToCrm = async (lead: DiscoveredLead) => {
@@ -366,27 +307,39 @@ export default function AiDiscoveryPage() {
             </span>
           </h1>
           <p className="mt-1 text-sm text-ink-soft">
-            Разведка новых точек Ростова через веб-поиск
+            Разведка новых точек Ростова-на-Дону
             {lastSearchAt
               ? ` · последний поиск ${fmtDay(lastSearchAt)}`
               : ""}
           </p>
         </div>
 
+        {/* Кнопка неактивна: поиск вернётся в следующем обновлении (задача 13) */}
         <button
           type="button"
-          onClick={() => void runSearch()}
-          disabled={searching}
-          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-semibold text-[#1C1A17] transition-colors hover:bg-accent/90 disabled:opacity-60"
+          disabled
+          title="Функция поиска новых точек появится в следующем обновлении"
+          className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-semibold text-[#1C1A17] opacity-50"
         >
-          {searching ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Radar className="size-4" />
-          )}
-          {searching ? "ИИ ищет точки…" : "Найти новые точки"}
+          <Radar className="size-4" />
+          Найти новые точки
         </button>
       </header>
+
+      {/* ── Заглушка: поиск временно отключён (задача 13, Go-Live) ── */}
+      <div className="flex items-start gap-3 rounded-2xl border border-dashed border-accent/40 bg-accent/5 px-4 py-3.5">
+        <Radar className="mt-0.5 size-4 shrink-0 text-accent" />
+        <div className="min-w-0">
+          <p className="text-[13.5px] font-semibold text-ink">
+            Функция поиска новых точек появится в следующем обновлении
+          </p>
+          <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">
+            ИИ-Директор уже работает на данных вашей базы — спрашивайте
+            его в чате, кому позвонить первым. Ранее найденные кандидаты
+            остались ниже: их можно добавить в CRM или отклонить.
+          </p>
+        </div>
+      </div>
 
       {/* ── Сводка ── */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-soft">
@@ -410,44 +363,15 @@ export default function AiDiscoveryPage() {
         </span>
       </div>
 
-      {/* ── Ошибка разведки ── */}
-      {error && (
-        <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-tier-red/30 bg-tier-red/5 px-4 py-3 text-sm text-ink">
-          <span>{error}</span>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="shrink-0 text-ink-soft transition-colors hover:text-ink"
-            aria-label="Закрыть"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-      )}
-
       {/* ── Кандидаты ── */}
-      {searching && pending.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
-          <Loader2 className="size-8 animate-spin text-accent" />
-          <p className="max-w-sm text-sm text-ink-soft">
-            ИИ обходит свежие публикации: шаурмичные, бургерные и стрит-фуд
-            точки Ростова-на-Дону. Это займёт полминуты.
-          </p>
-        </div>
-      ) : pending.length === 0 ? (
+      {pending.length === 0 ? (
         <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
           <Radar className="size-8 text-ink-soft/50" />
           <p className="max-w-sm text-sm text-ink-soft">
-            Пока ничего не найдено. Запустите разведку — ИИ проверит свежие
-            публикации о новых точках и принесёт кандидатов сюда.
+            Кандидатов пока нет. Разведка новых точек вернётся в следующем
+            обновлении — а пока добавляйте точки руками или спрашивайте
+            ИИ-Директора по вашей базе.
           </p>
-          <button
-            type="button"
-            onClick={() => void runSearch()}
-            className="text-sm font-medium text-accent hover:underline"
-          >
-            Найти новые точки
-          </button>
         </div>
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">

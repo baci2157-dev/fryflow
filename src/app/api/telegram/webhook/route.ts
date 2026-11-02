@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { chatCompletion } from "@/lib/ai-sdk";
 import {
   addDraft,
   DRAFT_REPLY,
@@ -52,12 +53,10 @@ interface WebhookBody extends TgUpdate {
 /** Попытка вытянуть заявку из текста живой моделью (строгий JSON). */
 async function extractWithZai(text: string) {
   try {
-    const { default: ZAI } = await import("z-ai-web-dev-sdk");
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
+    const { reply } = await chatCompletion({
       messages: [
         {
-          role: "assistant",
+          role: "system",
           content: [
             "Ты — парсер заявок оптового поставщика картофеля фри (упаковка 2,5 кг, минимальный опт 10 уп.).",
             "Из сообщения клиента верни ТОЛЬКО JSON без пояснений:",
@@ -74,9 +73,10 @@ async function extractWithZai(text: string) {
           content: "Разбери сообщение по правилам выше и верни только JSON.",
         },
       ],
-      thinking: { type: "disabled" },
+      maxTokens: 500,
+      temperature: 0.2,
     });
-    const raw = completion.choices?.[0]?.message?.content?.trim() ?? "";
+    const raw = reply?.trim() ?? "";
     const json = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
     const parsed = JSON.parse(json) as { client?: string; boxes?: number; deliveryDate?: string };
     if (parsed.boxes && parsed.boxes > 0 && parsed.boxes <= 5000) {

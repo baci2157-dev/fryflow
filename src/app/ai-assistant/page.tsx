@@ -192,8 +192,6 @@ export default function AiAssistantPage() {
   const regions = useRegionsStore((s) => s.partners);
   const products = useProductsStore((s) => s.products);
   const charter = useSettingsStore((s) => s.ai.charter);
-  /** Тумблер «Поиск в интернете» (задача 10): тренды и конкуренты. */
-  const webSearch = useSettingsStore((s) => s.ai.webSearch);
 
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
@@ -243,7 +241,7 @@ export default function AiAssistantPage() {
       const res = await fetch("/api/ai-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ context, history, charter, webSearch }),
+        body: JSON.stringify({ context, history, charter }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { reply: string; source: "zai" | "offline" };

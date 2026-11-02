@@ -2,34 +2,25 @@ import { NextResponse } from "next/server";
 
 import { cleanMarkdown, offlineAnswer } from "@/lib/ai-offline";
 import type { AiContext } from "@/lib/ai-context";
-import { chatWithFallback } from "@/lib/ai-model";
+import { chatCompletion } from "@/lib/ai-sdk";
 
 /**
  * POST /api/ai-assistant — мозг ИИ-Директора.
  *
  * Принимает живой контекст бизнеса (собирается на клиенте из CRM-стора),
- * историю последних 10 сообщений и Устав ИИ из настроек. Пробует ZAI;
- * если ключа нет или сеть подвела — отвечает офлайн-мозг на тех же цифрах,
- * так что чат не «умирает» никогда.
+ * историю последних 10 сообщений и Устав ИИ из настроек. Отвечает через
+ * двухрежимный слой lib/ai-sdk.ts (задача 12):
+ *   • с ZAI_API_KEY — публичный API Z.AI, модель glm-4.7-flash (деплой);
+ *   • без ключа — SDK песочницы с каскадом моделей (разработка).
+ * Если оба недоступны — офлайн-мозг на тех же цифрах: чат не «умирает».
  *
- * Задача 10:
- *  • роль — «коммерческий директор»: анализ паттернов и сезонности,
- *    активный кросс-сейл («этот берёт только фри — предложи соус»);
- *  • опциональный поиск в интернете (functions.invoke web_search):
- *    для вопросов о трендах и конкурентах ИИ сверяется со свежими
- *    публикациями и прикладывает источники.
- *
- * Задача 11:
- *  • модель — glm-5.2-fast-preview (быстрый флагман, 1M контекста,
- *    нативный веб-поиск) с каскадом фолбэков glm-5.3 → glm-4.5
- *    (см. lib/ai-model.ts, переопределяется FRYFLOW_AI_MODEL);
- *  • контекст дополнен блоком discovery: кандидаты из «Найдено ИИ»
- *    и новые точки за 7 дней — ИИ знает, кому ещё не звонили.
+ * Задача 10: роль «коммерческий директор» — паттерны, сезонность, кросс-сейл.
+ * Задача 11: контекст дополнен discovery (новые точки, кому не звонили).
+ * Задача 13 (Go-Live): веб-поиск временно отключён — ИИ-Директор работает
+ * только на внутреннем контексте (остатки, долги, паттерны, каталог).
  */
 
 export const runtime = "nodejs";
-
-/* Модель и каскад фолбэков — задача 11 (lib/ai-model.ts). */
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -42,11 +33,9 @@ interface AssistantRequest {
   charter?: string;
   /** advice — проактивный совет от триггера, а не ответ в чате. */
   mode?: "chat" | "advice";
-  /** Поиск в интернете перед ответом (тумблер в «Настройках»). */
-  webSearch?: boolean;
 }
 
-function buildSystemPrompt(req: AssistantRequest, webContext: string | null): string {
+function buildSystemPrompt(req: AssistantRequest): string {
   const p = req.context.pricing;
   const base = [
     "Ты — ИИ-Директор FryFlow: коммерческий директор владельца оптового бизнеса картофелем фри в Ростове-на-Дону, а не «ассистент».",
@@ -66,17 +55,6 @@ function buildSystemPrompt(req: AssistantRequest, webContext: string | null): st
     "",
     "ЖИВЫЕ ЦИФРЫ БИЗНЕСА СЕГОДНЯ (истина в последней инстанции, отвечай только ими):",
     JSON.stringify(req.context, null, 1),
-  ];
-
-  if (webContext) {
-    base.push(
-      "",
-      "РЕЗУЛЬТАТЫ ПОИСКА В ИНТЕРНЕТЕ (свежие публикации по теме вопроса; опирайся на них в вопросах о трендах рынка и конкурентах, указывай источники):",
-      webContext
-    );
-  }
-
-  base.push(
     "",
     "ПРАВИЛА ОТВЕТА:",
     "1. Только русский язык, без английских и китайских иероглифов и без эмодзи. Коротко и по делу — владелец читает с телефона между звонками.",
@@ -85,7 +63,7 @@ function buildSystemPrompt(req: AssistantRequest, webContext: string | null): st
     "4. Говори как партнёр: прямо, без канцелярита и без «как интересный вопрос».",
     "5. Если вопроса недостаточно — задай один уточняющий вопрос, но сначала дай то, что уже известно из цифр.",
     "6. Советуя кросс-сейл, называй клиента по имени и товар строго из crossSell.products — «Шаурма на Зорге берёт только фри, предложите соус чесночный за 350 ₽ (маржа 90 ₽)». Цены и маржу бери только из crossSell.products, не из recentOrders."
-  );
+  ];
 
   if (req.mode === "advice") {
     base.push(
@@ -94,31 +72,6 @@ function buildSystemPrompt(req: AssistantRequest, webContext: string | null): st
     );
   }
   return base.join("\n");
-}
-
-/** Свежие публикации по теме вопроса (для трендов и конкурентов). */
-async function searchWeb(query: string): Promise<string | null> {
-  try {
-    const { default: ZAI } = await import("z-ai-web-dev-sdk");
-    const zai = await ZAI.create();
-    const results = await zai.functions.invoke("web_search", {
-      query,
-      num: 5,
-    });
-    if (!Array.isArray(results) || results.length === 0) return null;
-    return results
-      .map(
-        (r) =>
-          `— ${r.name} (${r.host_name}${r.date ? ", " + r.date : ""}): ${r.snippet} [${r.url}]`
-      )
-      .join("\n");
-  } catch (err) {
-    console.warn(
-      "[ai-assistant] web_search недоступен:",
-      err instanceof Error ? err.message : err
-    );
-    return null;
-  }
 }
 
 export async function POST(request: Request) {
@@ -137,24 +90,35 @@ export async function POST(request: Request) {
   const lastUser = [...history].reverse().find((m) => m.role === "user")?.content ?? "";
   const trimmed = history.slice(-10);
 
-  /* Поиск в интернете — до вызова модели, результаты уходят в промпт. */
-  const webContext =
-    body.webSearch && lastUser ? await searchWeb(lastUser) : null;
-
-  /* Пробуем живую модель… */
-  try {
-    const { default: ZAI } = await import("z-ai-web-dev-sdk");
-    const zai = await ZAI.create();
-    const { reply } = await chatWithFallback(zai, [
-      { role: "assistant", content: buildSystemPrompt(body, webContext) },
+  /* Живая модель через двухрежимный слой (задача 12):
+   * публичный API с ключом / SDK песочницы без ключа.
+   * Веб-поиск временно отключён (задача 13): ИИ отвечает только
+   * по внутреннему контексту базы. */
+  const { reply, mode, model, error } = await chatCompletion({
+    messages: [
+      { role: "system", content: buildSystemPrompt(body) },
       ...trimmed.map((m) => ({ role: m.role, content: m.content })),
-    ]);
-    if (reply)
-      return NextResponse.json({ reply: cleanMarkdown(reply), source: "zai" });
-  } catch (err) {
-    console.warn("[ai-assistant] ZAI недоступен, отвечает офлайн-мозг:", err instanceof Error ? err.message : err);
+    ],
+    maxTokens: 2000,
+  });
+
+  if (reply) {
+    return NextResponse.json({
+      reply: cleanMarkdown(reply),
+      source: "zai",
+      mode,
+      model,
+    });
   }
 
+  console.warn(
+    `[ai-assistant] живая модель недоступна (${mode}${error ? `: ${error}` : ""}) — отвечает офлайн-мозг`
+  );
+
   /* …а если не вышло — офлайн-мозг на тех же цифрах. */
-  return NextResponse.json({ reply: offlineAnswer(lastUser, context), source: "offline" });
+  return NextResponse.json({
+    reply: offlineAnswer(lastUser, context),
+    source: "offline",
+    mode,
+  });
 }
