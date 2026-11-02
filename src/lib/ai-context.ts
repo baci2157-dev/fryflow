@@ -11,6 +11,8 @@ import {
   SMALL_WHOLESALE_PRICE_PER_PACK,
   TRIAL_PRICE,
   crossSellSum,
+  daysSince,
+  type Call,
   type Client,
   type InventoryMovement,
   type Order,
@@ -19,6 +21,7 @@ import {
   type ProductCategory,
   type RegionalPartner,
 } from "@/types/models";
+import type { DiscoveredLead } from "@/lib/discovery-store";
 
 /**
  * Сборщик контекста для ИИ-Директора.
@@ -33,6 +36,10 @@ import {
  *   • clientPatterns — средний интервал, средний чек, «берёт только фри»;
  *   • seasonality — месяц, сезон и подсказка, что сейчас в тему;
  *   • crossSell — живой каталог попутных товаров с маржой.
+ *
+ * Задача 11 добавила разведку:
+ *   • discovery — кандидаты из «Найдено ИИ» (веб-поиск) и новые
+ *     точки за 7 дней, включая тех, кому ещё ни разу не звонили.
  */
 
 export interface AiStock {
@@ -108,6 +115,24 @@ export interface AiSeasonality {
   hint: string;
 }
 
+/** Разведка и новые точки (задача 11) — глазами ИИ. */
+export interface AiDiscovery {
+  /** Кандидаты в «Найдено ИИ», ждут решения владельца. */
+  pendingLeads: number;
+  /** Уже добавлены в CRM из «Найдено ИИ». */
+  approvedLeads: number;
+  /** Новых точек в базе за последние 7 дней. */
+  newPoints7d: number;
+  /** Новые точки без единого звонка — кого обзвонить первым. */
+  uncalledNewPoints: Array<{
+    name: string;
+    tier: "green" | "yellow" | "red";
+    segment: string;
+    /** Дней с создания карточки (0 — сегодня). */
+    daysOld: number;
+  }>;
+}
+
 /** Каталог попутных товаров глазами ИИ. */
 export interface AiCrossSell {
   products: Array<{
@@ -163,6 +188,9 @@ export interface AiContext {
   seasonality: AiSeasonality;
   /** Каталог попутных товаров + продажи за 30 дней. */
   crossSell: AiCrossSell;
+  /* ── Задача 11: разведка «Найдено ИИ» и новые точки ── */
+  /** Кандидаты из веб-поиска + новые точки за 7 дней. */
+  discovery: AiDiscovery;
   pricing: {
     wholesalePerBox: number;
     wholesalePerKg: number;
@@ -186,6 +214,10 @@ export interface AiContextDeps {
   /** Каталог попутных товаров (задача 10 — необязательно, старые
    *  вызовы получают пустой каталог и паттерны без интересов). */
   products?: Product[];
+  /** Журнал звонков (задача 11) — для «кому ещё не звонили». */
+  calls?: Call[];
+  /** Кандидаты «Найдено ИИ» (задача 11). */
+  discovered?: DiscoveredLead[];
 }
 
 const rub = (n: number) => Math.round(n);
@@ -221,6 +253,8 @@ export function buildAiContext({
   movements,
   regions,
   products = [],
+  calls = [],
+  discovered = [],
 }: AiContextDeps): AiContext {
   const now = Date.now();
 
@@ -404,6 +438,24 @@ export function buildAiContext({
     last30Orders: crossSellLast30.length,
   };
 
+  /* ── Задача 11: разведка + новые точки ── */
+  const calledIds = new Set(calls.map((c) => c.clientId));
+  const newPoints = clients.filter((c) => daysSince(c.createdAt) < 7);
+  const discovery: AiDiscovery = {
+    pendingLeads: discovered.filter((l) => l.status === "pending").length,
+    approvedLeads: discovered.filter((l) => l.status === "approved").length,
+    newPoints7d: newPoints.length,
+    uncalledNewPoints: newPoints
+      .filter((c) => !calledIds.has(c.id))
+      .map((c) => ({
+        name: c.name,
+        tier: c.priorityTier,
+        segment: CLIENT_TYPE_LABEL[c.type],
+        daysOld: daysSince(c.createdAt),
+      }))
+      .sort((a, b) => a.daysOld - b.daysOld),
+  };
+
   return {
     today: new Date().toISOString().slice(0, 10),
     stock: {
@@ -448,6 +500,7 @@ export function buildAiContext({
     clientPatterns,
     seasonality,
     crossSell,
+    discovery,
     pricing: {
       wholesalePerBox: PRICE_PER_PACK,
       wholesalePerKg: Math.round((PRICE_PER_PACK / PACK_KG) * 10) / 10,

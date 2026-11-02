@@ -7,6 +7,7 @@ import { nextAdvicePrompt } from "@/lib/ai-prompts";
 import { offlineAnswer } from "@/lib/ai-offline";
 import { useAdviceStore, type AdviceRecord } from "@/lib/advice-store";
 import { useCrmStore } from "@/lib/clients-store";
+import { useDiscoveryStore } from "@/lib/discovery-store";
 import { useOrdersStore } from "@/lib/orders-store";
 import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
@@ -61,6 +62,7 @@ export function currentAiContext() {
   const deals = useOrdersStore.getState();
   const regions = useRegionsStore.getState().partners;
   const products = useProductsStore.getState().products;
+  const discovered = useDiscoveryStore.getState().leads;
   return buildAiContext({
     clients: crm.clients,
     orders: deals.orders,
@@ -68,6 +70,8 @@ export function currentAiContext() {
     payments: deals.payments,
     regions,
     products,
+    calls: crm.calls,
+    discovered,
   });
 }
 

@@ -2,7 +2,13 @@
 
 import { Navigation, Pencil, Phone } from "lucide-react";
 
-import { ChainBadge, CallbackBadge, StatusBadge } from "@/components/crm/badges";
+import {
+  CalledIndicator,
+  ChainBadge,
+  CallbackBadge,
+  NewClientBadge,
+  StatusBadge,
+} from "@/components/crm/badges";
 import { HealthRing } from "@/components/crm/health-ring";
 import { useCrmStore } from "@/lib/clients-store";
 import { calcHealthScore } from "@/lib/health-score";
@@ -35,6 +41,9 @@ export function ClientCard({
     .filter((c) => c.clientId === client.id && c.result === "callback" && c.callbackDate)
     .map((c) => ({ ...c, at: new Date(c.callbackDate as string).getTime() }))
     .sort((a, b) => a.at - b.at)[0];
+
+  // Индикатор «звонили / не звонили» (задача 11).
+  const called = calls.some((c) => c.clientId === client.id);
 
   const telHref = client.phone
     ? `tel:${client.phone.replace(/[^+\d]/g, "")}`
@@ -86,6 +95,8 @@ export function ClientCard({
               </span>
             )}
             <StatusBadge status={client.status} />
+            <NewClientBadge createdAt={client.createdAt} />
+            <CalledIndicator called={called} />
             {callback ? <CallbackBadge date={callback.callbackDate as string} /> : null}
           </div>
 

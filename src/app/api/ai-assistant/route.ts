@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { cleanMarkdown, offlineAnswer } from "@/lib/ai-offline";
 import type { AiContext } from "@/lib/ai-context";
+import { chatWithFallback } from "@/lib/ai-model";
 
 /**
  * POST /api/ai-assistant — мозг ИИ-Директора.
@@ -12,19 +13,23 @@ import type { AiContext } from "@/lib/ai-context";
  * так что чат не «умирает» никогда.
  *
  * Задача 10:
- *  • модель — GLM-4.5 (128K контекста): видит всю историю заказов,
- *    паттерны клиентов и каталог разом, советы стали точнее;
  *  • роль — «коммерческий директор»: анализ паттернов и сезонности,
  *    активный кросс-сейл («этот берёт только фри — предложи соус»);
  *  • опциональный поиск в интернете (functions.invoke web_search):
  *    для вопросов о трендах и конкурентах ИИ сверяется со свежими
  *    публикациями и прикладывает источники.
+ *
+ * Задача 11:
+ *  • модель — glm-5.2-fast-preview (быстрый флагман, 1M контекста,
+ *    нативный веб-поиск) с каскадом фолбэков glm-5.3 → glm-4.5
+ *    (см. lib/ai-model.ts, переопределяется FRYFLOW_AI_MODEL);
+ *  • контекст дополнен блоком discovery: кандидаты из «Найдено ИИ»
+ *    и новые точки за 7 дней — ИИ знает, кому ещё не звонили.
  */
 
 export const runtime = "nodejs";
 
-/** Модель чата: GLM-4.5 (128K), можно переопределить env-ом. */
-const AI_MODEL = process.env.FRYFLOW_AI_MODEL || "glm-4.5";
+/* Модель и каскад фолбэков — задача 11 (lib/ai-model.ts). */
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -54,6 +59,7 @@ function buildSystemPrompt(req: AssistantRequest, webContext: string | null): st
     "• Если сезон зима — предложи соленья и сырные соусы; лето — зелень и овощи (смотри seasonality.hint).",
     "• Если клиент давно не заказывал (overdue: true или daysSinceLastOrder сильно больше avgIntervalDays) — предложи акцию или звонок, назови имя клиента.",
     "• Попутные товары едут в той же машине — себестоимость доставки нулевая, вся маржа в плюс. Используй это как аргумент.",
+    "• Раздел discovery — разведка и новые точки (задача 11): на вопрос «есть ли новые точки, которые я ещё не обзвонил» отвечай по discovery.uncalledNewPoints — назови точки поимённо с возрастом в днях и предложи обзвонить их сегодня. Кандидатов из «Найдено ИИ» (discovery.pendingLeads) предлагай добавить в CRM через раздел «Найдено ИИ».",
     "",
     "УСТАВ ВЛАДЕЛЬЦА (приоритетнее общих советов):",
     req.charter?.trim() || "—",
@@ -139,15 +145,10 @@ export async function POST(request: Request) {
   try {
     const { default: ZAI } = await import("z-ai-web-dev-sdk");
     const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
-      model: AI_MODEL,
-      messages: [
-        { role: "assistant", content: buildSystemPrompt(body, webContext) },
-        ...trimmed.map((m) => ({ role: m.role, content: m.content })),
-      ],
-      thinking: { type: "disabled" },
-    });
-    const reply = completion.choices?.[0]?.message?.content?.trim();
+    const { reply } = await chatWithFallback(zai, [
+      { role: "assistant", content: buildSystemPrompt(body, webContext) },
+      ...trimmed.map((m) => ({ role: m.role, content: m.content })),
+    ]);
     if (reply)
       return NextResponse.json({ reply: cleanMarkdown(reply), source: "zai" });
   } catch (err) {

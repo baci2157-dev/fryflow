@@ -3,7 +3,13 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, Phone, PhoneOff, Search } from "lucide-react";
 
-import { CallbackBadge, ChainBadge, StatusBadge } from "@/components/crm/badges";
+import {
+  CalledIndicator,
+  CallbackBadge,
+  ChainBadge,
+  NewClientBadge,
+  StatusBadge,
+} from "@/components/crm/badges";
 import type { Call, Client } from "@/types/models";
 import {
   CALL_RESULT_LABEL,
@@ -130,9 +136,11 @@ export function CallCard({
         )}
       </div>
 
-      {/* Строка 3: статусы воронки + попытки */}
+      {/* Строка 3: статусы воронки + индикаторы новой точки и звонков */}
       <div className="mt-2.5 flex flex-wrap items-center gap-2">
         <StatusBadge status={client.status} />
+        <NewClientBadge createdAt={client.createdAt} />
+        <CalledIndicator called={attempts > 0} />
         {callbackDate ? <CallbackBadge date={callbackDate} /> : null}
         {inRoute ? (
           <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-accent/12 px-2 py-0.5 text-[11px] font-medium text-accent">

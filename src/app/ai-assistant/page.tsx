@@ -21,6 +21,7 @@ import { buildAiContext } from "@/lib/ai-context";
 import { useAiChatStore, type ChatMessage } from "@/lib/ai-chat-store";
 import { greetingMessage, offlineAnswer } from "@/lib/ai-offline";
 import { useCrmStore } from "@/lib/clients-store";
+import { useDiscoveryStore } from "@/lib/discovery-store";
 import { useOrdersStore } from "@/lib/orders-store";
 import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
@@ -68,7 +69,7 @@ const PROMPT_BANK: PromptCategory[] = [
     id: "leads",
     label: "Лиды",
     icon: Phone,
-    prompts: ["Кому звонить сегодня?", "Сколько холодных лидов в базе?"],
+    prompts: ["Кому звонить сегодня?", "Сколько холодных лидов в базе?", "Есть ли новые точки, которые я ещё не обзвонил?"],
   },
   {
     id: "regions",
@@ -183,6 +184,8 @@ export default function AiAssistantPage() {
   const clear = useAiChatStore((s) => s.clear);
 
   const clients = useCrmStore((s) => s.clients);
+  const calls = useCrmStore((s) => s.calls);
+  const discoveredLeads = useDiscoveryStore((s) => s.leads);
   const orders = useOrdersStore((s) => s.orders);
   const movements = useOrdersStore((s) => s.movements);
   const payments = useOrdersStore((s) => s.payments);
@@ -199,8 +202,18 @@ export default function AiAssistantPage() {
 
   /* Живой контекст бизнеса — пересобирается при каждом изменении стора. */
   const context = useMemo(
-    () => buildAiContext({ clients, orders, movements, payments, regions, products }),
-    [clients, orders, movements, payments, regions, products]
+    () =>
+      buildAiContext({
+        clients,
+        orders,
+        movements,
+        payments,
+        regions,
+        products,
+        calls,
+        discovered: discoveredLeads,
+      }),
+    [clients, orders, movements, payments, regions, products, calls, discoveredLeads]
   );
   const greeting = useMemo(() => greetingMessage(context), [context]);
 

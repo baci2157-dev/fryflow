@@ -12,6 +12,7 @@ import { useAiChatStore } from "@/lib/ai-chat-store";
 import { useAiTriggers } from "@/lib/ai-triggers";
 import { useCrmStore } from "@/lib/clients-store";
 import { isLoggedIn } from "@/lib/auth";
+import { useDiscoveryStore } from "@/lib/discovery-store";
 import { initOfflineQueue } from "@/lib/offline-queue";
 import { useMarketingStore } from "@/lib/marketing-store";
 import { useOrdersStore } from "@/lib/orders-store";
@@ -83,6 +84,7 @@ function GuardedShell({ children }: { children: React.ReactNode }) {
     void useRegionsStore.persist.rehydrate();
     void useAdviceStore.persist.rehydrate();
     void useMarketingStore.persist.rehydrate();
+    void useDiscoveryStore.persist.rehydrate();
     /* Офлайн-очередь: следим за сетью, при возврате — автосинхронизация. */
     initOfflineQueue();
   }, []);

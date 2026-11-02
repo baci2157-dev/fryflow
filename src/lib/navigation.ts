@@ -5,6 +5,7 @@ import {
   MapPin,
   Megaphone,
   Phone,
+  Radar,
   Route,
   Settings,
   ShoppingBasket,
@@ -34,11 +35,13 @@ export interface NavItem {
  * (полный цикл сделки — задача 5), ИИ-Директор, PDF-счета и Настройки
  * (задача 6), Регионы и Telegram-интеграция (задача 7), Маркетинг
  * с календарём автопостинга, PWA и офлайн-очередь (задача 8),
- * массовый импорт клиентов и каталог попутных товаров (задача 9).
+ * массовый импорт клиентов и каталог попутных товаров (задача 9),
+ * раздел «Найдено ИИ» — веб-разведка новых точек (задача 11).
  */
 export const NAV_ITEMS: NavItem[] = [
   { id: "dashboard", title: "Дашборд", href: "/", icon: LayoutDashboard, primary: true, ready: true },
   { id: "clients", title: "Клиенты", href: "/clients", icon: Users, primary: true, ready: true },
+  { id: "discovery", title: "Найдено ИИ", href: "/ai-discovery", icon: Radar, primary: false, ready: true },
   { id: "calls", title: "Звонки", href: "/calls", icon: Phone, primary: true, ready: true },
   { id: "logistics", title: "Карта", href: "/logistics", icon: Map, primary: true, ready: true },
   { id: "route", title: "Маршрут", href: "/route", icon: Route, primary: false, ready: true },
