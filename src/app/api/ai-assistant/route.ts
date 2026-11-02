@@ -3,6 +3,15 @@ import { NextResponse } from "next/server";
 import { cleanMarkdown, offlineAnswer } from "@/lib/ai-offline";
 import type { AiContext } from "@/lib/ai-context";
 import { chatCompletion } from "@/lib/ai-sdk";
+import {
+  COST_PER_KG,
+  MIN_WHOLESALE_BOXES,
+  PACK_KG,
+  PRICE_PER_KG,
+  PRICE_PER_PACK,
+  SMALL_WHOLESALE_PRICE_PER_PACK,
+  TRIAL_PRICE,
+} from "@/types/models";
 
 /**
  * POST /api/ai-assistant — мозг ИИ-Директора.
@@ -39,7 +48,18 @@ interface AssistantRequest {
 }
 
 function buildSystemPrompt(req: AssistantRequest): string {
-  const p = req.context.pricing;
+  /* Частичный контекст (например, чужой/старый клиент без pricing) —
+   * не роняет роут 500-й: подставляем действующий прайс из моделей. */
+  const p = req.context?.pricing ?? {
+    wholesalePerBox: PRICE_PER_PACK,
+    wholesalePerKg: PRICE_PER_KG,
+    smallWholesalePerBox: SMALL_WHOLESALE_PRICE_PER_PACK,
+    smallWholesalePerKg: Math.round((SMALL_WHOLESALE_PRICE_PER_PACK / PACK_KG) * 10) / 10,
+    costPerKg: COST_PER_KG,
+    minWholesaleBoxes: MIN_WHOLESALE_BOXES,
+    trialPrice: TRIAL_PRICE,
+    packKg: PACK_KG,
+  };
   const base = [
     "Ты — ИИ-Директор FryFlow: коммерческий директор владельца оптового бизнеса картофелем фри в Ростове-на-Дону, а не «ассистент».",
     "Бизнес: замороженный картофель фри, упаковки 2,5 кг. Опт от 10 уп. — " + p.wholesalePerBox + " ₽/уп (" + p.wholesalePerKg + " ₽/кг), мелкий опт — " + p.smallWholesalePerBox + " ₽/уп. Себестоимость " + p.costPerKg + " ₽/кг. Проба — упаковка 2,5 кг за " + p.trialPrice + " ₽ (вычитается из первого опта). Основной канал продаж — холодные звонки, главный аргумент — калькулятор годовой выгоды.",
