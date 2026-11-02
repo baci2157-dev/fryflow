@@ -8,11 +8,15 @@ import {
   FlaskConical,
   MapPin,
   Phone,
+  Plus,
   Send,
   Truck,
   type LucideIcon,
 } from "lucide-react";
 
+import { SpringSheet } from "@/components/crm/spring-sheet";
+import { formatPhoneInput } from "@/components/crm/client-form-dialog";
+import { useToast } from "@/hooks/use-toast";
 import {
   formatTons,
   pluralRu,
@@ -143,6 +147,216 @@ function StatusSelect({
   );
 }
 
+/* ── Форма новой карточки оптовика ──────────────────────── */
+
+/** Подсказки городов: существующие в базе + типовые города юга. */
+const CITY_SUGGESTIONS = [
+  "Краснодар",
+  "Волгоград",
+  "Ставрополь",
+  "Ростов-на-Дону",
+  "Таганрог",
+  "Сочи",
+  "Майкоп",
+  "Элиста",
+];
+
+const FIELD_CLS =
+  "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-[14px] text-ink placeholder:text-ink-soft/60 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/30";
+
+const LABEL_CLS =
+  "mb-1.5 block text-[11.5px] font-semibold uppercase tracking-wide text-ink-soft";
+
+function PartnerFormDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const addPartner = useRegionsStore((s) => s.addPartner);
+  const partners = useRegionsStore((s) => s.partners);
+  const { toast } = useToast();
+
+  const [company, setCompany] = useState("");
+  const [city, setCity] = useState("");
+  const [contact, setContact] = useState("");
+  const [phone, setPhone] = useState("");
+  const [volume, setVolume] = useState("");
+  const [status, setStatus] = useState<RegionalStatus>("first");
+  const [notes, setNotes] = useState("");
+
+  const cityOptions = useMemo(
+    () =>
+      Array.from(new Set([...partners.map((p) => p.city), ...CITY_SUGGESTIONS])),
+    [partners]
+  );
+
+  const valid =
+    company.trim().length >= 2 &&
+    city.trim().length >= 2 &&
+    contact.trim().length >= 2;
+  const volumeTons = Math.max(
+    0,
+    Math.min(2000, Math.round(Number(volume.replace(",", ".")) || 0))
+  );
+
+  const close = () => {
+    setCompany("");
+    setCity("");
+    setContact("");
+    setPhone("");
+    setVolume("");
+    setStatus("first");
+    setNotes("");
+    onClose();
+  };
+
+  const submit = () => {
+    if (!valid) return;
+    const partner = addPartner({
+      company: company.trim(),
+      city: city.trim(),
+      contactPerson: contact.trim(),
+      phone: phone.trim(),
+      volumeTons,
+      status,
+      notes: notes.trim(),
+    });
+    toast({
+      title: "Оптовик добавлен",
+      description: `${partner.company} — ${partner.city}. Карточка встала первой в списке.`,
+      duration: 3800,
+    });
+    close();
+  };
+
+  return (
+    <SpringSheet
+      open={open}
+      onClose={close}
+      title="Новый оптовик"
+      variant="dialog"
+      desktopWidth={480}
+    >
+      <div className="flex flex-col gap-4">
+        <div>
+          <label className={LABEL_CLS} htmlFor="partner-company">
+            Компания *
+          </label>
+          <input
+            id="partner-company"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            placeholder="ООО «Юг Опт»"
+            className={FIELD_CLS}
+            autoFocus
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className={LABEL_CLS} htmlFor="partner-city">
+              Город *
+            </label>
+            <input
+              id="partner-city"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Краснодар"
+              list="partner-city-options"
+              className={FIELD_CLS}
+            />
+            <datalist id="partner-city-options">
+              {cityOptions.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+          </div>
+          <div>
+            <label className={LABEL_CLS} htmlFor="partner-volume">
+              Объём, т/мес
+            </label>
+            <input
+              id="partner-volume"
+              value={volume}
+              onChange={(e) => setVolume(e.target.value)}
+              inputMode="decimal"
+              placeholder="20"
+              className={cn(FIELD_CLS, "font-mono tabular-nums")}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className={LABEL_CLS} htmlFor="partner-contact">
+            Контактное лицо *
+          </label>
+          <input
+            id="partner-contact"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            placeholder="Сергей Кравцов"
+            className={FIELD_CLS}
+          />
+        </div>
+
+        <div>
+          <label className={LABEL_CLS} htmlFor="partner-phone">
+            Телефон
+          </label>
+          <input
+            id="partner-phone"
+            value={phone}
+            onChange={(e) => setPhone(formatPhoneInput(e.target.value))}
+            inputMode="tel"
+            placeholder="+7 (918) 000-00-00"
+            className={cn(FIELD_CLS, "font-mono tabular-nums")}
+          />
+        </div>
+
+        <div>
+          <span className={LABEL_CLS}>Статус воронки</span>
+          <StatusSelect value={status} onChange={setStatus} />
+        </div>
+
+        <div>
+          <label className={LABEL_CLS} htmlFor="partner-notes">
+            Заметка
+          </label>
+          <textarea
+            id="partner-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Как договорились, объёмы, условия оплаты…"
+            rows={2}
+            className="w-full resize-none rounded-xl border border-border bg-surface px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink-soft/60 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/30"
+          />
+        </div>
+
+        <div className="mt-1 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={close}
+            className="inline-flex h-11 items-center rounded-xl border border-border bg-surface px-4 text-sm font-medium text-ink-soft transition-colors hover:bg-tint hover:text-ink"
+          >
+            Отмена
+          </button>
+          <button
+            type="button"
+            disabled={!valid}
+            onClick={submit}
+            className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-accent px-5 text-sm font-semibold text-[#1C1A17] transition-all hover:bg-accent/90 active:scale-[0.98] disabled:opacity-50"
+          >
+            <Plus className="size-4" />
+            Добавить оптовика
+          </button>
+        </div>
+      </div>
+    </SpringSheet>
+  );
+}
+
 /* ── Строка таблицы (десктоп) ────────────────────────────── */
 
 function PartnerRow({
@@ -258,6 +472,7 @@ export default function RegionsPage() {
   const setStatus = useRegionsStore((s) => s.setStatus);
 
   const [city, setCity] = useState<string>("all");
+  const [formOpen, setFormOpen] = useState(false);
 
   const summary = useMemo(() => regionsSummary(partners), [partners]);
 
@@ -285,15 +500,25 @@ export default function RegionsPage() {
             шаурмичным возим коробками
           </p>
         </div>
-        <a
-          href="https://t.me/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/10"
-        >
-          <Send className="size-4 text-accent" />
-          Написать в Telegram
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFormOpen(true)}
+            className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-semibold text-[#1C1A17] transition-colors hover:bg-accent/90"
+          >
+            <Plus className="size-4" />
+            Добавить оптовика
+          </button>
+          <a
+            href="https://t.me/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/10"
+          >
+            <Send className="size-4 text-accent" />
+            Написать в Telegram
+          </a>
+        </div>
       </header>
 
       {/* ── Сводка: главное сверху ── */}
@@ -394,6 +619,13 @@ export default function RegionsPage() {
             Добавьте оптовика после первого созвона — и наблюдайте, как он
             идёт по воронке к фуре.
           </p>
+          <button
+            type="button"
+            onClick={() => setFormOpen(true)}
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            + Добавить оптовика
+          </button>
         </div>
       ) : (
         <>
@@ -427,6 +659,9 @@ export default function RegionsPage() {
           </div>
         </>
       )}
+
+      {/* Диалог новой карточки оптовика */}
+      <PartnerFormDialog open={formOpen} onClose={() => setFormOpen(false)} />
     </div>
   );
 }

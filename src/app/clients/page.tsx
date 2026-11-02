@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   CircleDot,
+  Database,
   Download,
   Layers,
   Link2,
@@ -47,6 +48,8 @@ type ChipId = "all" | "green" | "yellow" | "red" | "risk" | "chains" | "nophone"
 
 export default function ClientsPage() {
   const clients = useCrmStore((s) => s.clients);
+  const hydrated = useCrmStore((s) => s.hydrated);
+  const seeding = useCrmStore((s) => s.seeding);
   const { toast } = useToast();
   const togglePalette = useUiStore((s) => s.togglePalette);
   const focusClientId = useUiStore((s) => s.crmFocusClientId);
@@ -358,21 +361,56 @@ export default function ClientsPage() {
         </p>
       </div>
 
-      {/* ── Карточки ── */}
-      {filtered.length === 0 ? (
+      {/* Скелетон первого запуска: база 173 точек грузится из сида */}
+      {clients.length === 0 && (!hydrated || seeding) ? (
+        <div className="mt-4">
+          <p className="mb-3 flex items-center gap-2 text-[13px] font-medium text-ink-soft">
+            <Database className="size-4 animate-pulse text-accent" />
+            Загружаем базу — 173 точки Ростова-на-Дону…
+          </p>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[118px] animate-pulse rounded-2xl border border-border bg-surface"
+                style={{ animationDelay: `${i * 120}ms` }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : /* ── Карточки ── */
+      filtered.length === 0 ? (
         <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
           <Users className="size-8 text-ink-soft/50" />
-          <p className="text-sm text-ink-soft">Нет клиентов по этим фильтрам.</p>
-          <button
-            type="button"
-            onClick={() => {
-              setChip("all");
-              setDistrict("all");
-            }}
-            className="text-sm font-medium text-accent hover:underline"
-          >
-            Сбросить фильтры
-          </button>
+          {clients.length === 0 ? (
+            <>
+              <p className="text-sm font-medium text-ink">База пуста</p>
+              <p className="max-w-xs text-[13px] leading-snug text-ink-soft">
+                Восстановите её в Настройках — кнопка «Восстановить базу» — или добавьте точку вручную.
+              </p>
+              <button
+                type="button"
+                onClick={openNewForm}
+                className="text-sm font-medium text-accent hover:underline"
+              >
+                + Добавить клиента
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-ink-soft">Нет клиентов по этим фильтрам.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setChip("all");
+                  setDistrict("all");
+                }}
+                className="text-sm font-medium text-accent hover:underline"
+              >
+                Сбросить фильтры
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">

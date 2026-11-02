@@ -1,0 +1,2458 @@
+[
+  {
+    "name": "Гриль-Пойнт 32",
+    "address": "пр. Вертикальная, 11",
+    "district": "Советский",
+    "phone": "+7 924 414-20-13",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.244855,
+      "lng": 39.652683
+    },
+    "notes": ""
+  },
+  {
+    "name": "Турецкая Лавка 30",
+    "address": "пр. Соколова, 80",
+    "district": "Ленинский",
+    "phone": "+7 972 640-53-32",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.232919,
+      "lng": 39.695274
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фаст-Кэтл 14",
+    "address": "ул. 2-я Краснодарская, 140",
+    "district": "Советский",
+    "phone": "+7 937 771-94-97",
+    "type": "burger",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.246097,
+      "lng": 39.640583
+    },
+    "notes": ""
+  },
+  {
+    "name": "Обед-Экспресс 4",
+    "address": "пр. Стачки, 118",
+    "district": "Советский",
+    "phone": "+7 982 409-16-55",
+    "type": "canteen",
+    "status": "refused",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.215256,
+      "lng": 39.662112
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фуд-Холл Маркет 3",
+    "address": "ул. Страны Советов, 105",
+    "district": "Пролетарский",
+    "phone": "+7 958 327-88-68",
+    "type": "foodcourt",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.217819,
+      "lng": 39.754952
+    },
+    "notes": ""
+  },
+  {
+    "name": "Штефан Бургер (ул. Королёва, 51)",
+    "address": "ул. Королёва, 51",
+    "district": "Ворошиловский",
+    "phone": "+7 956 729-15-72",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "red",
+    "chain_name": "Штефан Бургер",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 2 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Шаурма Shop (ул. Гэсэвская, 145)",
+    "address": "ул. Гэсэвская, 145",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.226937,
+      "lng": 39.727224
+    },
+    "chain_name": "Шаурма Shop",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 2 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Шаурма Shop (ул. Мечникова, 138)",
+    "address": "ул. Мечникова, 138",
+    "district": "Кировский",
+    "phone": "+7 934 997-98-98",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.222691,
+      "lng": 39.740624
+    },
+    "chain_name": "Шаурма Shop",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 5 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Дымный Дом 3",
+    "address": "ул. Гвардейская, 132",
+    "district": "Кировский",
+    "phone": "+7 924 162-71-37",
+    "type": "hookah",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.200853,
+      "lng": 39.743814
+    },
+    "notes": ""
+  },
+  {
+    "name": "Планета Шаурмы 17",
+    "address": "ул. Королёва, 8",
+    "district": "Ворошиловский",
+    "phone": "+7 942 893-47-70",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.252785,
+      "lng": 39.723564
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая №5",
+    "address": "ул. Добровольского, 134",
+    "district": "Первомайский",
+    "phone": "+7 982 684-91-79",
+    "type": "canteen",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.271674,
+      "lng": 39.698137
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кухня на Садовой 6",
+    "address": "ул. Орская, 94",
+    "district": "Первомайский",
+    "phone": "+7 926 845-73-72",
+    "type": "canteen",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.268004,
+      "lng": 39.683157
+    },
+    "notes": ""
+  },
+  {
+    "name": "Ночной Цех 4",
+    "address": "ул. 2-я Краснодарская, 61",
+    "district": "Советский",
+    "phone": "+7 982 441-40-39",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.247221,
+      "lng": 39.638408
+    },
+    "notes": ""
+  },
+  {
+    "name": "МясЦех 2",
+    "address": "ул. Красноармейская, 11",
+    "district": "Ленинский",
+    "phone": "+7 969 842-79-80",
+    "type": "burger",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.225062,
+      "lng": 39.709621
+    },
+    "notes": "Берёт стабильно, объём растёт"
+  },
+  {
+    "name": "Уличный Гриль 21",
+    "address": "ул. Университетский пер., 80",
+    "district": "Октябрьский",
+    "phone": "+7 978 158-32-43",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.23456,
+      "lng": 39.700365
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Бар 19",
+    "address": "Кировский просп., 110",
+    "district": "Кировский",
+    "phone": "+7 963 743-24-51",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.213957,
+      "lng": 39.736296
+    },
+    "notes": ""
+  },
+  {
+    "name": "Чёрный Кот 7",
+    "address": "ул. Тургеневская, 119",
+    "district": "Советский",
+    "phone": "+7 947 817-35-41",
+    "type": "bar",
+    "status": "refused",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.248244,
+      "lng": 39.68913
+    },
+    "notes": ""
+  },
+  {
+    "name": "Штефан Бургер (ул. 2-я Краснодарская, 137)",
+    "address": "ул. 2-я Краснодарская, 137",
+    "district": "Советский",
+    "phone": "+7 932 749-53-62",
+    "type": "burger",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.246123,
+      "lng": 39.638381
+    },
+    "chain_name": "Штефан Бургер",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 1 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Столовая Дорожная 5",
+    "address": "ул. Страны Советов, 118",
+    "district": "Пролетарский",
+    "phone": "+7 956 249-84-32",
+    "type": "canteen",
+    "status": "trial",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.224069,
+      "lng": 39.754979
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дарк-Флоу 7",
+    "address": "ул. Университетский пер., 69",
+    "district": "Октябрьский",
+    "phone": "+7 916 797-87-84",
+    "type": "darkkitchen",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.235761,
+      "lng": 39.704181
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Маркет (ул. Мечникова, 38)",
+    "address": "ул. Мечникова, 38",
+    "district": "Кировский",
+    "phone": "+7 959 563-77-99",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.228961,
+      "lng": 39.738332
+    },
+    "chain_name": "Шаурма Маркет",
+    "chain_size": 4,
+    "notes": "Сеть: филиал 3 из 4 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Планета Шаурмы 17",
+    "address": "ул. Страны Советов, 95",
+    "district": "Пролетарский",
+    "phone": "+7 935 489-79-61",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "notes": ""
+  },
+  {
+    "name": "Ночной Цех 4",
+    "address": "пр. Шолохова, 14",
+    "district": "Первомайский",
+    "phone": "+7 976 247-63-22",
+    "type": "darkkitchen",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.260022,
+      "lng": 39.703674
+    },
+    "notes": ""
+  },
+  {
+    "name": "Светлана-Гриль 25",
+    "address": "ул. Малиновского, 95",
+    "district": "Пролетарский",
+    "phone": "+7 939 413-87-86",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.229642,
+      "lng": 39.743385
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Мастер 11",
+    "address": "ул. Большая Садовая, 39",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223672,
+      "lng": 39.717776
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Бар 19",
+    "address": "ул. Красноармейская, 85",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.224098,
+      "lng": 39.710186
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль-Пойнт 32",
+    "address": "ул. 2-я Краснодарская, 115",
+    "district": "Советский",
+    "phone": "+7 937 819-16-33",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.25031,
+      "lng": 39.642886
+    },
+    "notes": ""
+  },
+  {
+    "name": "Трапезная «Домашняя» 2",
+    "address": "ул. Тургеневская, 176",
+    "district": "Советский",
+    "phone": "+7 931 146-69-81",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.249553,
+      "lng": 39.692585
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Люкс 24",
+    "address": "ул. Топольковая, 56",
+    "district": "Пролетарский",
+    "phone": "+7 975 856-30-62",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.234429,
+      "lng": 39.767702
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у Тёти Люси",
+    "address": "ул. Университетский пер., 83",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.232572,
+      "lng": 39.701079
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая Заводская 3",
+    "address": "пр. Ленина, 67",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "canteen",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.231634,
+      "lng": 39.703322
+    },
+    "notes": ""
+  },
+  {
+    "name": "Рельсы-и-Пиво 9",
+    "address": "ул. Портовая, 122",
+    "district": "Ленинский",
+    "phone": "+7 987 427-86-85",
+    "type": "bar",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.207797,
+      "lng": 39.710667
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кальянная «Дым»",
+    "address": "ул. Тургеневская, 145",
+    "district": "Советский",
+    "phone": "+7 951 286-25-41",
+    "type": "hookah",
+    "status": "no_answer",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.244612,
+      "lng": 39.688935
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Восход 31",
+    "address": "пр. Соколова, 104",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.231226,
+      "lng": 39.694697
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Маркет (пр. Шолохова, 147)",
+    "address": "пр. Шолохова, 147",
+    "district": "Первомайский",
+    "phone": "+7 923 473-65-16",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.258379,
+      "lng": 39.703696
+    },
+    "chain_name": "Шаурма Маркет",
+    "chain_size": 4,
+    "notes": "Берёт стабильно, объём растёт"
+  },
+  {
+    "name": "Крафт Бургер 11",
+    "address": "ул. Зорге, 91",
+    "district": "Октябрьский",
+    "phone": "+7 977 880-87-33",
+    "type": "burger",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.243228,
+      "lng": 39.697453
+    },
+    "notes": ""
+  },
+  {
+    "name": "Графит 6",
+    "address": "ул. Волкова, 34",
+    "district": "Советский",
+    "phone": "+7 916 298-84-47",
+    "type": "bar",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.221993,
+      "lng": 39.667468
+    },
+    "notes": ""
+  },
+  {
+    "name": "Штефан Бургер (пр. Соколова, 144)",
+    "address": "пр. Соколова, 144",
+    "district": "Ленинский",
+    "phone": "+7 973 223-47-77",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.232398,
+      "lng": 39.695308
+    },
+    "chain_name": "Штефан Бургер",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 4 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Штефан Бургер (ул. Университетский пер., 51)",
+    "address": "ул. Университетский пер., 51",
+    "district": "Октябрьский",
+    "phone": "+7 959 726-21-86",
+    "type": "burger",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.237639,
+      "lng": 39.703116
+    },
+    "chain_name": "Штефан Бургер",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 3 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Бургер Хаус 6",
+    "address": "пр. Ленина, 50",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.230098,
+      "lng": 39.701697
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восточная Тишина 6",
+    "address": "ул. Гэсэвская, 25",
+    "district": "Железнодорожный",
+    "phone": "+7 910 479-96-72",
+    "type": "hookah",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.226977,
+      "lng": 39.729258
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургерная «Плот»",
+    "address": "ул. 2-я Краснодарская, 150",
+    "district": "Советский",
+    "phone": "+7 957 817-75-57",
+    "type": "burger",
+    "status": "callback",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.24469,
+      "lng": 39.640906
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бета-Кухня 6",
+    "address": "ул. 339 Стрелковой Дивизии, 17",
+    "district": "Кировский",
+    "phone": "+7 986 205-60-70",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.211295,
+      "lng": 39.752766
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak (ул. 2-я Краснодарская, 65)",
+    "address": "ул. 2-я Краснодарская, 65",
+    "district": "Советский",
+    "phone": "+7 951 680-67-73",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.249176,
+      "lng": 39.640833
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Сеть: филиал 7 из 9 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Мангальный Двор 28",
+    "address": "пр. Ленина, 106",
+    "district": "Октябрьский",
+    "phone": "+7 955 197-54-57",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.229749,
+      "lng": 39.696707
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фрай-Кинг 5",
+    "address": "ул. Малиновского, 174",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "burger",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.224266,
+      "lng": 39.743597
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая Депо 11",
+    "address": "пр. Ворошиловский, 119",
+    "district": "Железнодорожный",
+    "phone": "+7 944 934-25-16",
+    "type": "canteen",
+    "status": "no_answer",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.234078,
+      "lng": 39.721581
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Shop (ул. Соколова, 91)",
+    "address": "ул. Соколова, 91",
+    "district": "Ворошиловский",
+    "phone": "+7 930 366-66-72",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.236296,
+      "lng": 39.708283
+    },
+    "chain_name": "Шаурма Shop",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 4 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Бочка-Бар 8",
+    "address": "пр. Будённовский, 1",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "bar",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.22084,
+      "lng": 39.715949
+    },
+    "notes": ""
+  },
+  {
+    "name": "Хозяйка-Кухня 12",
+    "address": "ул. Добровольского, 98",
+    "district": "Первомайский",
+    "phone": "+7 942 317-38-85",
+    "type": "canteen",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.271351,
+      "lng": 39.70057
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фудкорт «Горизонт»",
+    "address": "пр. Ленина, 162",
+    "district": "Октябрьский",
+    "phone": "+7 930 875-41-90",
+    "type": "foodcourt",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.224914,
+      "lng": 39.700212
+    },
+    "notes": "Берёт стабильно, объём растёт"
+  },
+  {
+    "name": "Комплекс-Обед 7",
+    "address": "Зоологический пер., 92",
+    "district": "Железнодорожный",
+    "phone": "+7 974 707-83-48",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.237638,
+      "lng": 39.736344
+    },
+    "notes": ""
+  },
+  {
+    "name": "Трапезная «Домашняя» 2",
+    "address": "ул. 339 Стрелковой Дивизии, 98",
+    "district": "Кировский",
+    "phone": "+7 953 827-87-20",
+    "type": "canteen",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.213134,
+      "lng": 39.747219
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бараний Рог 10",
+    "address": "ул. Шолохова, 157",
+    "district": "Ворошиловский",
+    "phone": "+7 927 643-70-61",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.241122,
+      "lng": 39.71714
+    },
+    "notes": ""
+  },
+  {
+    "name": "Альбион Паб 10",
+    "address": "ул. Ленинградская, 174",
+    "district": "Пролетарский",
+    "phone": "+7 940 416-58-66",
+    "type": "bar",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.216544,
+      "lng": 39.760476
+    },
+    "notes": ""
+  },
+  {
+    "name": "МясЦех 2",
+    "address": "ул. Топольковая, 131",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "burger",
+    "status": "trial",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.233254,
+      "lng": 39.770086
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма №1 3",
+    "address": "ул. Страны Советов, 89",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.219763,
+      "lng": 39.757035
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дарк-Китчен «Бокс»",
+    "address": "пер. Соборный, 161",
+    "district": "Ворошиловский",
+    "phone": "+7 917 233-57-63",
+    "type": "darkkitchen",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.221097,
+      "lng": 39.716043
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кухня на Садовой 6",
+    "address": "ул. Университетский пер., 55",
+    "district": "Октябрьский",
+    "phone": "+7 971 787-53-56",
+    "type": "canteen",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.235022,
+      "lng": 39.70089
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Гранд 13",
+    "address": "ул. Портовая, 152",
+    "district": "Ленинский",
+    "phone": "+7 961 316-38-72",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.214317,
+      "lng": 39.707013
+    },
+    "notes": ""
+  },
+  {
+    "name": "Доставка-Кухня №1 3",
+    "address": "ул. Гэсэвская, 157",
+    "district": "Железнодорожный",
+    "phone": "+7 963 436-61-21",
+    "type": "darkkitchen",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.228225,
+      "lng": 39.732429
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восток Дона 18",
+    "address": "ул. Горького, 147",
+    "district": "Ленинский",
+    "phone": "+7 983 399-38-31",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.225471,
+      "lng": 39.698625
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak (ул. Тургеневская, 49)",
+    "address": "ул. Тургеневская, 49",
+    "district": "Советский",
+    "phone": "+7 968 859-53-68",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.244875,
+      "lng": 39.690207
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Берёт стабильно, объём растёт"
+  },
+  {
+    "name": "Бургер Хаус 6",
+    "address": "ул. Университетский пер., 168",
+    "district": "Октябрьский",
+    "phone": "+7 920 706-84-92",
+    "type": "burger",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.238145,
+      "lng": 39.702702
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Мастер 11",
+    "address": "ул. Топольковая, 129",
+    "district": "Пролетарский",
+    "phone": "+7 926 511-93-49",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.230379,
+      "lng": 39.767958
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Shop (ул. Мечникова, 31)",
+    "address": "ул. Мечникова, 31",
+    "district": "Кировский",
+    "phone": "+7 933 783-24-87",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.222718,
+      "lng": 39.737224
+    },
+    "chain_name": "Шаурма Shop",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 1 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Шаурма Shop (Кировский просп., 115)",
+    "address": "Кировский просп., 115",
+    "district": "Кировский",
+    "phone": "+7 965 935-33-57",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.21504,
+      "lng": 39.735594
+    },
+    "chain_name": "Шаурма Shop",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 3 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Сити-Фуд 2",
+    "address": "ул. Соколова, 119",
+    "district": "Ворошиловский",
+    "phone": "+7 985 411-94-84",
+    "type": "foodcourt",
+    "status": "regular",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.236148,
+      "lng": 39.711811
+    },
+    "notes": "Берёт стабильно, объём растёт"
+  },
+  {
+    "name": "Доставка-Кухня №1 3",
+    "address": "ул. Королёва, 99",
+    "district": "Ворошиловский",
+    "phone": "+7 943 531-85-21",
+    "type": "darkkitchen",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.254812,
+      "lng": 39.718301
+    },
+    "notes": ""
+  },
+  {
+    "name": "Тёплый Обед 10",
+    "address": "ул. Университетский пер., 1",
+    "district": "Октябрьский",
+    "phone": "+7 935 881-22-49",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.238286,
+      "lng": 39.700173
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Садовой 6",
+    "address": "ул. Тургеневская, 99",
+    "district": "Советский",
+    "phone": "+7 924 733-48-59",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.246155,
+      "lng": 39.690373
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кальян-Бар «Фог» 5",
+    "address": "пр. Космонавтов, 162",
+    "district": "Первомайский",
+    "phone": "+7 914 730-90-38",
+    "type": "hookah",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.265308,
+      "lng": 39.689662
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фудкорт «Аквамолл» 5",
+    "address": "пр. Стачки, 78",
+    "district": "Советский",
+    "phone": "+7 962 877-66-30",
+    "type": "foodcourt",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.213577,
+      "lng": 39.656869
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Маркет (пр. Космонавтов, 163)",
+    "address": "пр. Космонавтов, 163",
+    "district": "Первомайский",
+    "phone": "+7 919 437-10-98",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.264022,
+      "lng": 39.691693
+    },
+    "chain_name": "Шаурма Маркет",
+    "chain_size": 4,
+    "notes": "Сеть: филиал 1 из 4 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Kikchak (Театральный пр., 90)",
+    "address": "Театральный пр., 90",
+    "district": "Кировский",
+    "phone": "+7 917 943-17-37",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.221638,
+      "lng": 39.736579
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Сеть: филиал 6 из 9 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Светлана-Гриль 25",
+    "address": "ул. Таганрогская, 39",
+    "district": "Октябрьский",
+    "phone": "+7 925 205-86-39",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.219424,
+      "lng": 39.708321
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дымный Кебаб 23",
+    "address": "пр. Космонавтов, 146",
+    "district": "Первомайский",
+    "phone": "+7 955 886-16-17",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.261307,
+      "lng": 39.69197
+    },
+    "notes": ""
+  },
+  {
+    "name": "Хаус-оф-Шиша 4",
+    "address": "пр. Стачки, 116",
+    "district": "Советский",
+    "phone": "+7 979 209-10-55",
+    "type": "hookah",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.2159,
+      "lng": 39.66104
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дон-Кебаб 2",
+    "address": "пр. Будённовский, 140",
+    "district": "Ленинский",
+    "phone": "+7 915 431-98-47",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.22205,
+      "lng": 39.72112
+    },
+    "notes": ""
+  },
+  {
+    "name": "Мята-Лаундж 7",
+    "address": "ул. Доватора, 128",
+    "district": "Ленинский",
+    "phone": "+7 943 537-67-26",
+    "type": "hookah",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.24844,
+      "lng": 39.639693
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль-Барbecue 7",
+    "address": "пр. Соколова, 152",
+    "district": "Ленинский",
+    "phone": "+7 967 499-81-60",
+    "type": "burger",
+    "status": "regular",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.228015,
+      "lng": 39.697479
+    },
+    "notes": ""
+  },
+  {
+    "name": "Мидл-Байт 12",
+    "address": "ул. Горького, 81",
+    "district": "Ленинский",
+    "phone": "+7 963 806-68-46",
+    "type": "burger",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.223391,
+      "lng": 39.698954
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak (пр. Стачки, 80)",
+    "address": "пр. Стачки, 80",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.213126,
+      "lng": 39.660079
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Сеть: филиал 3 из 9 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Шаурма №1 3",
+    "address": "ул. Днепровский пер., 103",
+    "district": "Кировский",
+    "phone": "+7 951 672-26-49",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.218739,
+      "lng": 39.726528
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak (пр. Вертикальная, 42)",
+    "address": "пр. Вертикальная, 42",
+    "district": "Советский",
+    "phone": "+7 916 641-42-77",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.240959,
+      "lng": 39.653524
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Сеть: филиал 1 из 9 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Уста-Кебаб 12",
+    "address": "ул. Волкова, 178",
+    "district": "Советский",
+    "phone": "+7 915 399-23-62",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.224189,
+      "lng": 39.67098
+    },
+    "notes": ""
+  },
+  {
+    "name": "Сырный Двор 4",
+    "address": "ул. 339 Стрелковой Дивизии, 16",
+    "district": "Кировский",
+    "phone": "+7 977 626-39-48",
+    "type": "burger",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.212819,
+      "lng": 39.749896
+    },
+    "notes": ""
+  },
+  {
+    "name": "Уличный Гриль 21",
+    "address": "ул. Волкова, 174",
+    "district": "Советский",
+    "phone": "+7 920 157-68-88",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.22487,
+      "lng": 39.66719
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Пятёрочка-Экспресс 29",
+    "address": "ул. Тургеневская, 25",
+    "district": "Советский",
+    "phone": "+7 931 106-29-50",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.246934,
+      "lng": 39.691051
+    },
+    "notes": ""
+  },
+  {
+    "name": "Сырный Двор 4",
+    "address": "ул. Доватора, 79",
+    "district": "Ленинский",
+    "phone": "+7 933 432-58-12",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.247085,
+      "lng": 39.637306
+    },
+    "notes": ""
+  },
+  {
+    "name": "Обед-Экспресс 4",
+    "address": "ул. 339 Стрелковой Дивизии, 17",
+    "district": "Кировский",
+    "phone": "+7 924 335-91-31",
+    "type": "canteen",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.210043,
+      "lng": 39.748374
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гост-Китчен 5",
+    "address": "ул. Доватора, 159",
+    "district": "Ленинский",
+    "phone": "+7 967 961-87-41",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.248137,
+      "lng": 39.637302
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дарк-Флоу 7",
+    "address": "ул. Страны Советов, 90",
+    "district": "Пролетарский",
+    "phone": "+7 980 927-25-39",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.220482,
+      "lng": 39.756678
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая Дорожная 5",
+    "address": "ул. 2-я Краснодарская, 1",
+    "district": "Советский",
+    "phone": "+7 979 852-14-73",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.24667,
+      "lng": 39.64225
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восток Дона 18",
+    "address": "ул. Мечникова, 164",
+    "district": "Кировский",
+    "phone": "+7 950 213-90-23",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.22837,
+      "lng": 39.742576
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фаст-Гриль 27",
+    "address": "ул. Зорге, 41",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.243475,
+      "lng": 39.697284
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кебаб-Трейлер 26",
+    "address": "пр. Вертикальная, 10",
+    "district": "Советский",
+    "phone": "+7 962 195-25-65",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.245188,
+      "lng": 39.650985
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургер-Лаб 10",
+    "address": "пер. Соборный, 77",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223002,
+      "lng": 39.715488
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Садовой 6",
+    "address": "ул. Добровольского, 149",
+    "district": "Первомайский",
+    "phone": "+7 987 400-10-67",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.269441,
+      "lng": 39.699482
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дарк-Китчен «Бокс»",
+    "address": "ул. Малиновского, 38",
+    "district": "Пролетарский",
+    "phone": "+7 947 751-71-40",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.225533,
+      "lng": 39.744233
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кальянная «Дым»",
+    "address": "ул. Шолохова, 84",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "hookah",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.237769,
+      "lng": 39.717725
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у Тёти Люси",
+    "address": "ул. Красноармейская, 1",
+    "district": "Ленинский",
+    "phone": "+7 979 762-94-53",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.223006,
+      "lng": 39.708766
+    },
+    "notes": ""
+  },
+  {
+    "name": "Тайная Кухня 8",
+    "address": "бул. Комарова, 135",
+    "district": "Первомайский",
+    "phone": "+7 940 977-38-97",
+    "type": "darkkitchen",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.267525,
+      "lng": 39.716675
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Универсам 16",
+    "address": "ул. Красноармейская, 118",
+    "district": "Ленинский",
+    "phone": "+7 916 628-30-24",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "green",
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Универсам 16",
+    "address": "ул. Мечникова, 53",
+    "district": "Кировский",
+    "phone": "+7 979 373-98-84",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.229592,
+      "lng": 39.738301
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кебаб-Трейлер 26",
+    "address": "ул. Добровольского, 49",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.267252,
+      "lng": 39.699557
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Гранд 13",
+    "address": "ул. Малиновского, 2",
+    "district": "Пролетарский",
+    "phone": "+7 944 393-90-91",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.227412,
+      "lng": 39.742764
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak (ул. Шолохова, 95)",
+    "address": "ул. Шолохова, 95",
+    "district": "Ворошиловский",
+    "phone": "+7 952 605-25-45",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.241473,
+      "lng": 39.714774
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Сеть: филиал 9 из 9 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Мангальный Двор 28",
+    "address": "ул. Топольковая, 109",
+    "district": "Пролетарский",
+    "phone": "+7 971 979-88-33",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.230643,
+      "lng": 39.769067
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бета-Кухня 6",
+    "address": "пер. Соборный, 125",
+    "district": "Ворошиловский",
+    "phone": "+7 950 793-62-96",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.222398,
+      "lng": 39.716039
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кебаб на Стачки 15",
+    "address": "ул. Волкова, 22",
+    "district": "Советский",
+    "phone": "+7 960 486-90-42",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.224459,
+      "lng": 39.671576
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гараж-Бар 2",
+    "address": "ул. Волкова, 152",
+    "district": "Советский",
+    "phone": "+7 971 161-80-28",
+    "type": "bar",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.223153,
+      "lng": 39.670515
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Восход 31",
+    "address": "пр. Ленина, 127",
+    "district": "Октябрьский",
+    "phone": "+7 960 706-89-61",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.228063,
+      "lng": 39.697836
+    },
+    "notes": ""
+  },
+  {
+    "name": "Ночной Дым 8",
+    "address": "пр. Вертикальная, 167",
+    "district": "Советский",
+    "phone": "+7 987 909-83-38",
+    "type": "hookah",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.241524,
+      "lng": 39.651852
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая Строитель 8",
+    "address": "ул. Днепровский пер., 74",
+    "district": "Кировский",
+    "phone": "+7 980 645-76-52",
+    "type": "canteen",
+    "status": "regular",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.220014,
+      "lng": 39.728464
+    },
+    "notes": ""
+  },
+  {
+    "name": "Король Кебаба 20",
+    "address": "Театральный пр., 56",
+    "district": "Кировский",
+    "phone": "+7 954 131-82-27",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.219653,
+      "lng": 39.738705
+    },
+    "notes": ""
+  },
+  {
+    "name": "Арабика Шаурма 7",
+    "address": "пр. Шолохова, 108",
+    "district": "Пролетарский",
+    "phone": "+7 987 631-23-90",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236598,
+      "lng": 39.748012
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у Тёти Люси",
+    "address": "ул. Топольковая, 129",
+    "district": "Пролетарский",
+    "phone": "+7 974 206-69-15",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.235686,
+      "lng": 39.773404
+    },
+    "notes": ""
+  },
+  {
+    "name": "Лофт-Бар 4",
+    "address": "пр. Стачки, 169",
+    "district": "Советский",
+    "phone": "+7 962 253-44-74",
+    "type": "bar",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.215967,
+      "lng": 39.65953
+    },
+    "notes": ""
+  },
+  {
+    "name": "Халяль-Сити 14",
+    "address": "пр. Ленина, 73",
+    "district": "Октябрьский",
+    "phone": "+7 942 970-98-23",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.227592,
+      "lng": 39.703224
+    },
+    "notes": ""
+  },
+  {
+    "name": "Тайная Кухня 8",
+    "address": "пр. Вертикальная, 129",
+    "district": "Советский",
+    "phone": "+7 925 133-69-28",
+    "type": "darkkitchen",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.239774,
+      "lng": 39.646892
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма 24/7 22",
+    "address": "пр. Шолохова, 41",
+    "district": "Первомайский",
+    "phone": "+7 974 834-78-91",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.261795,
+      "lng": 39.702604
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Пятёрочка-Экспресс 29",
+    "address": "ул. Ленинградская, 49",
+    "district": "Пролетарский",
+    "phone": "+7 989 731-72-74",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.212803,
+      "lng": 39.763254
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Дяди Дена 9",
+    "address": "ул. Соколова, 47",
+    "district": "Ворошиловский",
+    "phone": "+7 917 872-36-29",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.23648,
+      "lng": 39.710979
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak (пр. Вертикальная, 151)",
+    "address": "пр. Вертикальная, 151",
+    "district": "Советский район",
+    "phone": "+7 953 315-65-39",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.241583,
+      "lng": 39.648437
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Сеть: филиал 4 из 9 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Арабика Шаурма 7",
+    "address": "пер. Соборный, 51",
+    "district": "Ворошиловский",
+    "phone": "+7 950 827-58-12",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.219612,
+      "lng": 39.715142
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak (ул. Таганрогская, 127)",
+    "address": "ул. Таганрогская, 127",
+    "district": "Октябрьский",
+    "phone": "+7 927 991-74-23",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.217762,
+      "lng": 39.707198
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Сеть: филиал 5 из 9 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Мясной Двор 8",
+    "address": "пр. Ленина, 25",
+    "district": "Октябрьский",
+    "phone": "+7 978 701-85-74",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.227777,
+      "lng": 39.698054
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak (пр. Ворошиловский, 173)",
+    "address": "пр. Ворошиловский, 173",
+    "district": "Ворошиловский",
+    "phone": "+7 978 707-48-60",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.232141,
+      "lng": 39.720585
+    },
+    "chain_name": "Kikchak",
+    "chain_size": 9,
+    "notes": "Сеть: филиал 8 из 9 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Фрай-Кинг 5",
+    "address": "пр. Вертикальная, 68",
+    "district": "Советский",
+    "phone": "+7 970 523-92-80",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.240305,
+      "lng": 39.650625
+    },
+    "notes": ""
+  },
+  {
+    "name": "Порт-Паб 5",
+    "address": "пр. Ворошиловский, 175",
+    "district": "Железнодорожный",
+    "phone": "+7 939 447-63-11",
+    "type": "bar",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236058,
+      "lng": 39.722263
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бараний Рог 10",
+    "address": "Кировский просп., 56",
+    "district": "Кировский",
+    "phone": "+7 946 560-27-89",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.217892,
+      "lng": 39.732578
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Дяди Дена 9",
+    "address": "ул. Красноармейская, 73",
+    "district": "Ленинский",
+    "phone": "+7 984 648-68-16",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.226446,
+      "lng": 39.711707
+    },
+    "notes": "Берёт стабильно, объём растёт"
+  },
+  {
+    "name": "Шаурма Маркет (пр. Ворошиловский, 64)",
+    "address": "пр. Ворошиловский, 64",
+    "district": "Железнодорожный",
+    "phone": "+7 931 392-86-58",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.235578,
+      "lng": 39.723318
+    },
+    "chain_name": "Шаурма Маркет",
+    "chain_size": 4,
+    "notes": "Сеть: филиал 4 из 4 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Бургер Бразерс 3",
+    "address": "ул. Зорге, 117",
+    "district": "Октябрьский",
+    "phone": "+7 946 645-73-14",
+    "type": "burger",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.242726,
+      "lng": 39.703391
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гастро-Ряд 8",
+    "address": "ул. Соколова, 27",
+    "district": "Ворошиловский",
+    "phone": "+7 945 145-37-27",
+    "type": "foodcourt",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.235787,
+      "lng": 39.713528
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дон-Кебаб 2",
+    "address": "ул. Ленинградская, 175",
+    "district": "Пролетарский",
+    "phone": "+7 910 988-45-55",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.212008,
+      "lng": 39.756934
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дон-Кебаб 2",
+    "address": "ул. Красноармейская, 105",
+    "district": "Ленинский",
+    "phone": "+7 939 691-97-49",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.221286,
+      "lng": 39.710767
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кебаб на Стачки 15",
+    "address": "пр. Ворошиловский, 14",
+    "district": "Ворошиловский",
+    "phone": "+7 952 639-19-61",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.233671,
+      "lng": 39.721534
+    },
+    "notes": ""
+  },
+  {
+    "name": "Булочная-Бургерная 13",
+    "address": "пр. Стачки, 138",
+    "district": "Советский",
+    "phone": "+7 943 862-57-34",
+    "type": "burger",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.213312,
+      "lng": 39.660124
+    },
+    "notes": ""
+  },
+  {
+    "name": "Патрики 8",
+    "address": "ул. Таганрогская, 178",
+    "district": "Октябрьский",
+    "phone": "+7 975 537-53-35",
+    "type": "burger",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.219028,
+      "lng": 39.702746
+    },
+    "notes": ""
+  },
+  {
+    "name": "Турецкая Лавка 30",
+    "address": "ул. Соколова, 90",
+    "district": "Ворошиловский",
+    "phone": "+7 922 872-71-19",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.234765,
+      "lng": 39.71313
+    },
+    "notes": ""
+  },
+  {
+    "name": "Халяль-Сити 14",
+    "address": "ул. Красноармейская, 126",
+    "district": "Ленинский",
+    "phone": "+7 954 749-30-23",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.225463,
+      "lng": 39.713489
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая Заводская 3",
+    "address": "ул. 2-я Краснодарская, 161",
+    "district": "Советский район",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.245598,
+      "lng": 39.640799
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кураж-Фудкорт 7",
+    "address": "ул. Доватора, 37",
+    "district": "Ленинский",
+    "phone": "+7 987 826-83-29",
+    "type": "foodcourt",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.247174,
+      "lng": 39.637417
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фаст-Гриль 27",
+    "address": "пр. Шолохова, 34",
+    "district": "Пролетарский",
+    "phone": "+7 934 283-68-93",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.235046,
+      "lng": 39.750665
+    },
+    "notes": ""
+  },
+  {
+    "name": "Уста-Кебаб 12",
+    "address": "ул. Большая Садовая, 111",
+    "district": "Железнодорожный",
+    "phone": "+7 934 437-32-99",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223696,
+      "lng": 39.720754
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гост-Китчен 5",
+    "address": "пр. Соколова, 165",
+    "district": "Ленинский",
+    "phone": "+7 987 990-55-35",
+    "type": "darkkitchen",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.227351,
+      "lng": 39.695417
+    },
+    "notes": ""
+  },
+  {
+    "name": "Экспресс-Фуд 6",
+    "address": "бул. Комарова, 126",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "foodcourt",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.270276,
+      "lng": 39.712981
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кебаб Хаус 5",
+    "address": "ул. Пушкинская, 177",
+    "district": "Ворошиловский",
+    "phone": "+7 927 611-20-98",
+    "type": "shawarma",
+    "status": "regular",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.224627,
+      "lng": 39.716761
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кухня-Призрак 2",
+    "address": "пр. Соколова, 144",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.233373,
+      "lng": 39.692164
+    },
+    "notes": ""
+  },
+  {
+    "name": "Патрики 8",
+    "address": "пр. Шолохова, 94",
+    "district": "Первомайский",
+    "phone": "+7 929 155-59-21",
+    "type": "burger",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.263518,
+      "lng": 39.702057
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фудкорт «Горизонт»",
+    "address": "пр. Ленина, 8",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "foodcourt",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.229046,
+      "lng": 39.70214
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургерная «Плот»",
+    "address": "пр. Будённовский, 134",
+    "district": "Ленинский",
+    "phone": "+7 969 568-34-92",
+    "type": "burger",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.221631,
+      "lng": 39.717593
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма 24/7 22",
+    "address": "ул. Гвардейская, 61",
+    "district": "Кировский",
+    "phone": "+7 924 219-90-28",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.202273,
+      "lng": 39.739745
+    },
+    "notes": ""
+  },
+  {
+    "name": "Штефан Бургер (ул. 339 Стрелковой Дивизии, 162)",
+    "address": "ул. 339 Стрелковой Дивизии, 162",
+    "district": "Кировский",
+    "phone": "+7 918 355-66-46",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.215842,
+      "lng": 39.750207
+    },
+    "chain_name": "Штефан Бургер",
+    "chain_size": 5,
+    "notes": "Сеть: филиал 5 из 5 — один звонок в офис закрывает все точки"
+  },
+  {
+    "name": "Хоп-Хаус 3",
+    "address": "ул. Днепровский пер., 59",
+    "district": "Кировский",
+    "phone": "+7 937 856-90-56",
+    "type": "bar",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.222296,
+      "lng": 39.72622
+    },
+    "notes": ""
+  },
+  {
+    "name": "Мясной Двор 8",
+    "address": "пр. Будённовский, 30",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.219884,
+      "lng": 39.719365
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургер Бразерс 3",
+    "address": "Зоологический пер., 35",
+    "district": "Железнодорожный",
+    "phone": "+7 921 531-82-75",
+    "type": "burger",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.236168,
+      "lng": 39.73125
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кухня-Призрак 2",
+    "address": "ул. Гвардейская, 150",
+    "district": "Кировский",
+    "phone": "+7 946 358-11-32",
+    "type": "darkkitchen",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.206643,
+      "lng": 39.742778
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дымный Кебаб 23",
+    "address": "ул. Страны Советов, 121",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.223789,
+      "lng": 39.754866
+    },
+    "notes": ""
+  },
+  {
+    "name": "Сытный Грек 4",
+    "address": "ул. 2-я Краснодарская, 46",
+    "district": "Советский",
+    "phone": "+7 951 269-76-72",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.249,
+      "lng": 39.638527
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шиша-Лаунж 2",
+    "address": "пр. Соколова, 42",
+    "district": "Ленинский",
+    "phone": "+7 927 317-10-41",
+    "type": "hookah",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.229873,
+      "lng": 39.693379
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Люкс 24",
+    "address": "ул. Добровольского, 19",
+    "district": "Первомайский",
+    "phone": "+7 970 206-25-44",
+    "type": "shawarma",
+    "status": "refused",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.265131,
+      "lng": 39.700095
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кебаб Хаус 5",
+    "address": "ул. Гэсэвская, 161",
+    "district": "Железнодорожный",
+    "phone": "+7 956 789-69-10",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.225554,
+      "lng": 39.728236
+    },
+    "notes": ""
+  },
+  {
+    "name": "Паб «Донской»",
+    "address": "ул. Красноармейская, 44",
+    "district": "Ленинский",
+    "phone": "+7 941 482-67-42",
+    "type": "bar",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.225408,
+      "lng": 39.709925
+    },
+    "notes": ""
+  },
+  {
+    "name": "Стрит-Фуд Пойнт 4",
+    "address": "ул. Тургеневская, 153",
+    "district": "Советский",
+    "phone": "+7 956 992-10-33",
+    "type": "foodcourt",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.244894,
+      "lng": 39.689547
+    },
+    "notes": ""
+  },
+  {
+    "name": "Смэш-Пойнт 9",
+    "address": "ул. Тургеневская, 175",
+    "district": "Советский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.247415,
+      "lng": 39.692999
+    },
+    "notes": ""
+  },
+  {
+    "name": "Первое-Второе 9",
+    "address": "ул. Зорге, 79",
+    "district": "Октябрьский",
+    "phone": "+7 934 319-96-72",
+    "type": "canteen",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.241703,
+      "lng": 39.698823
+    },
+    "notes": ""
+  },
+  {
+    "name": "Король Кебаба 20",
+    "address": "пр. Соколова, 112",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.227433,
+      "lng": 39.694663
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль-Барbecue 7",
+    "address": "ул. Добровольского, 72",
+    "district": "Первомайский",
+    "phone": "+7 928 746-70-13",
+    "type": "burger",
+    "status": "regular",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.268154,
+      "lng": 39.699871
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая №5",
+    "address": "ул. Шолохова, 16",
+    "district": "Ворошиловский",
+    "phone": "+7 946 705-33-89",
+    "type": "canteen",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.243026,
+      "lng": 39.713413
+    },
+    "notes": ""
+  },
+  {
+    "name": "Сытный Грек 4",
+    "address": "ул. Днепровский пер., 80",
+    "district": "Кировский",
+    "phone": "+7 959 128-29-30",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.223412,
+      "lng": 39.725564
+    },
+    "notes": ""
+  }
+]

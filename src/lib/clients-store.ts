@@ -3,7 +3,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { demoCalls, demoClients } from "@/lib/demo-data";
 import { trialStopFor } from "@/lib/route-algorithm";
 import {
   PRICE_PER_PACK,
@@ -17,13 +16,16 @@ import {
 /**
  * CRM-стор FryFlow: клиенты, журнал звонков и маршрут дня.
  *
- * Данные живут в localStorage (ключ fryflow-crm-v1) — массовое
- * добавление реальных клиентов будет позже. Пока при первом запуске
- * база засеивается 10 демо-клиентами Ростова-на-Дону.
+ * Данные живут в localStorage (ключ fryflow-crm-v1). При первом
+ * запуске база НЕ сеится демо-карточками: AppShell после rehydrate
+ * вызывает ensureBaseSeeded() (lib/seed-base.ts), которая асинхронно
+ * грузит базу владельца — 173 точки Ростова-на-Дону из
+ * public/seed/clients.json через тот же конвейер, что и ручный
+ * импорт (валидация → дедуп → геокодинг).
  *
  * Гидратация: skipHydration + ручной rehydrate() в AppShell, чтобы
- * серверный рендер и гидратация клиента совпали (демо-данные),
- * а уже затем стор подхватил сохранённые правки пользователя.
+ * серверный рендер и гидратация клиента совпали (пустой старт),
+ * а уже затем стор подхватил сохранённые данные пользователя.
  */
 
 export type NewClientInput = Omit<Client, "id" | "createdAt">;
@@ -36,6 +38,8 @@ interface CrmState {
   capacity: number;
   /** true после восстановления из localStorage (для скелетонов). */
   hydrated: boolean;
+  /** Идёт авто-загрузка базы из сида (скелетон на «Клиентах»). */
+  seeding: boolean;
 
   addClient: (input: NewClientInput) => Client;
   updateClient: (id: string, patch: Partial<Client>) => void;
@@ -65,7 +69,9 @@ interface CrmState {
   /** Отметка «доставлено»: обновляет историю заказов и Health Score. */
   markDelivered: (clientId: string, boxes: number) => void;
 
-  /** Сброс к демо-базе (Настройки → «Демо-данные»). */
+  /** Сброс базы (Настройки): клиенты/звонки/маршрут — пустые.
+   * Базу владельца вернёт авто-сид (ensureBaseSeeded) или кнопка
+   * «Восстановить базу (173 точки)». */
   resetDemo: () => void;
 }
 
@@ -82,9 +88,10 @@ const statusFromResult: Record<CallResult, Client["status"]> = {
   no_answer: "no_answer",
 };
 
+/* Первый запуск — пустой: реальную базу (173 точки) подложит
+ * авто-сид из lib/seed-base.ts. Демо-карточки больше не сеятся. */
 function seedState() {
-  const clients = demoClients();
-  return { clients, calls: demoCalls(clients) };
+  return { clients: [], calls: [] };
 }
 
 export const useCrmStore = create<CrmState>()(
@@ -94,6 +101,7 @@ export const useCrmStore = create<CrmState>()(
       routeStops: [],
       capacity: 50,
       hydrated: false,
+      seeding: false,
 
       addClient: (input) => {
         const client: Client = {
@@ -236,7 +244,8 @@ export const useCrmStore = create<CrmState>()(
 
       resetDemo: () =>
         set((s) => ({
-          ...seedState(),
+          clients: [],
+          calls: [],
           routeStops: [],
           capacity: s.capacity,
           hydrated: true,

@@ -3,7 +3,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { demoMovements, demoOrders, demoPayments } from "@/lib/demo-orders";
 import { useProductsStore } from "@/lib/products-store";
 import {
   PACK_KG,
@@ -76,13 +75,15 @@ interface OrdersState {
 const newMovementId = () =>
   `mov-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
+/* Первый запуск — без демо-заказов: они ссылались на демо-клиентов,
+ * которых больше нет (базу владельца сеет lib/seed-base.ts).
+ * Владелец начинает с чистого журнала — первый заказ получит № 1001. */
 function seed() {
-  const orders = demoOrders();
   return {
-    orders,
-    movements: demoMovements(orders),
-    payments: demoPayments(),
-    nextOrderNumber: 1048,
+    orders: [],
+    movements: [],
+    payments: [],
+    nextOrderNumber: 1001,
   };
 }
 

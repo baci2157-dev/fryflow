@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
+  ArchiveRestore,
   BadgeCheck,
   CheckCircle2,
   Database,
@@ -40,6 +41,7 @@ import {
 import { useCrmStore } from "@/lib/clients-store";
 import { queueFetch } from "@/lib/offline-queue";
 import { purgeDemoData } from "@/lib/purge-demo";
+import { ensureBaseSeeded, seedClientsBase } from "@/lib/seed-base";
 import { useOrdersStore } from "@/lib/orders-store";
 import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
@@ -969,11 +971,20 @@ export default function SettingsPage() {
   /* Сброс демо-данных — двухшаговое подтверждение (случайный тап не обнулит базу). */
   const [confirmReset, setConfirmReset] = useState(false);
   const [confirmPurge, setConfirmPurge] = useState(false);
+  /* Восстановление базы 173 точек из сида (public/seed/clients.json). */
+  const [confirmRestore, setConfirmRestore] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   useEffect(() => {
     if (!confirmReset) return;
     const t = setTimeout(() => setConfirmReset(false), 5000);
     return () => clearTimeout(t);
   }, [confirmReset]);
+
+  useEffect(() => {
+    if (!confirmRestore) return;
+    const t = setTimeout(() => setConfirmRestore(false), 5000);
+    return () => clearTimeout(t);
+  }, [confirmRestore]);
 
   useEffect(() => {
     if (!confirmPurge) return;
@@ -1330,6 +1341,67 @@ export default function SettingsPage() {
               Скачать резервную копию (JSON)
             </button>
 
+            {/* Восстановление базы владельца: 173 точки из сида.
+             * Дедуп сам вернёт только недостающее — ручные правки
+             * и добавленные клиенты не трогаются. */}
+            <button
+              type="button"
+              disabled={restoring}
+              onClick={async () => {
+                if (!confirmRestore) {
+                  setConfirmRestore(true);
+                  return;
+                }
+                setConfirmRestore(false);
+                setRestoring(true);
+                try {
+                  const o = await seedClientsBase();
+                  toast({
+                    title:
+                      o.imported > 0
+                        ? `База восстановлена: +${o.imported} точек`
+                        : "База уже полная — новых точек нет",
+                    description:
+                      o.imported > 0
+                        ? [
+                            o.duplicates > 0
+                              ? `${o.duplicates} уже были в базе — пропущены`
+                              : null,
+                            o.warnings.length > 0
+                              ? `${o.warnings.length} без точных координат (пунктир на карте)`
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ") || "Все записи на месте."
+                        : "Все 173 точки уже в базе — дубликаты не создаём.",
+                    duration: 5200,
+                  });
+                } catch {
+                  toast({
+                    title: "Не удалось загрузить базу",
+                    description:
+                      "Файл сида недоступен. Проверьте соединение и попробуйте ещё раз.",
+                    duration: 4200,
+                  });
+                } finally {
+                  setRestoring(false);
+                }
+              }}
+              className={cn(
+                "inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-60",
+                confirmRestore
+                  ? "border-accent/50 bg-accent/10 text-accent"
+                  : "border-border bg-surface text-ink hover:border-accent/40 hover:bg-accent/10"
+              )}
+            >
+              <ArchiveRestore className="size-4" />
+              {restoring
+                ? "Загружаем базу…"
+                : confirmRestore
+                  ? "Точно? Нажмите ещё раз для загрузки"
+                  : "Восстановить базу (173 точки)"}
+            </button>
+
             {/* Удаление демо-карточек — перед импортом реальной базы:
                 сносит только демо-записи (клиенты cl-, заказы ord-1042…1047),
                 реальные клиенты и заказы остаются */}
@@ -1382,10 +1454,13 @@ export default function SettingsPage() {
                 resetProducts();
                 resetAdvice();
                 clearChat();
+                /* База владельца возвращается автоматически: стор пуст →
+                 * авто-сид грузит 173 точки из public/seed/clients.json. */
+                void ensureBaseSeeded();
                 toast({
-                  title: "Демо-данные восстановлены",
+                  title: "Всё сброшено к первому запуску",
                   description:
-                    "Клиенты, звонки, заказы, регионы, каталог товаров, склад, совет ИИ и чат — как при первом запуске. Настройки не тронуты.",
+                    "Клиентская база (173 точки) загружается заново из сида, звонки и заказы — пустые, регионы и каталог — по умолчанию. Настройки, реквизиты и устав ИИ не тронуты.",
                   duration: 4200,
                 });
               }}

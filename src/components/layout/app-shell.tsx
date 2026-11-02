@@ -11,6 +11,7 @@ import { useAdviceStore } from "@/lib/advice-store";
 import { useAiChatStore } from "@/lib/ai-chat-store";
 import { useAiTriggers } from "@/lib/ai-triggers";
 import { useCrmStore } from "@/lib/clients-store";
+import { ensureBaseSeeded } from "@/lib/seed-base";
 import { isLoggedIn } from "@/lib/auth";
 import { useDiscoveryStore } from "@/lib/discovery-store";
 import { initOfflineQueue } from "@/lib/offline-queue";
@@ -76,7 +77,13 @@ function GuardedShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    void useCrmStore.persist.rehydrate();
+    /* CRM первым: после его восстановления решаем, нужен ли
+     * авто-сид базы (пустой localStorage / чистые демо-карточки →
+     * грузим 173 точки владельца из public/seed/clients.json). */
+    void (async () => {
+      await useCrmStore.persist.rehydrate();
+      await ensureBaseSeeded();
+    })();
     void useOrdersStore.persist.rehydrate();
     void useProductsStore.persist.rehydrate();
     void useSettingsStore.persist.rehydrate();

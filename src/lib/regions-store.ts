@@ -23,6 +23,10 @@ interface RegionsState {
   setStatus: (id: string, status: RegionalStatus) => void;
   /** Заметка менеджера — редактируется на месте. */
   setNotes: (id: string, notes: string) => void;
+  /** Новая карточка оптовика (кнопка «Добавить оптовика» на /regions). */
+  addPartner: (input: Omit<RegionalPartner, "id" | "createdAt">) => RegionalPartner;
+  /** Удаление карточки оптовика (создана по ошибке). */
+  removePartner: (id: string) => void;
 
   /** Сброс к демо-базе (Настройки → «Демо-данные»). */
   resetDemo: () => void;
@@ -47,6 +51,24 @@ export const useRegionsStore = create<RegionsState>()(
             p.id === id ? { ...p, notes } : p
           ),
         })),
+
+      addPartner: (input) => {
+        const partner: RegionalPartner = {
+          ...input,
+          id:
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? `rg-${crypto.randomUUID()}`
+              : `rg-${Date.now().toString(36)}-${Math.random()
+                  .toString(36)
+                  .slice(2, 8)}`,
+          createdAt: new Date().toISOString(),
+        };
+        set((s) => ({ partners: [partner, ...s.partners] }));
+        return partner;
+      },
+
+      removePartner: (id) =>
+        set((s) => ({ partners: s.partners.filter((p) => p.id !== id) })),
 
       resetDemo: () =>
         set({ partners: demoRegions(), hydrated: true }),
