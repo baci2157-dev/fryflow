@@ -10,13 +10,20 @@ import {
   PhoneOff,
   Plus,
   Search,
+  Upload,
   Users,
 } from "lucide-react";
 
 import { ClientCard } from "@/components/crm/client-card";
 import { ClientFormDialog } from "@/components/crm/client-form-dialog";
 import { ClientSheet } from "@/components/crm/client-sheet";
+import { ImportDialog } from "@/components/shared/import-dialog";
 import { useToast } from "@/hooks/use-toast";
+import {
+  CLIENT_IMPORT_SAMPLE,
+  parseClientsFile,
+  runClientsImport,
+} from "@/lib/import-clients";
 import { useCrmStore } from "@/lib/clients-store";
 import { calcHealthScore, isAtRisk } from "@/lib/health-score";
 import { useUiStore } from "@/lib/ui-store";
@@ -49,6 +56,7 @@ export default function ClientsPage() {
 
   const [chip, setChip] = useState<ChipId>("all");
   const [district, setDistrict] = useState<string>("all");
+  const [importOpen, setImportOpen] = useState(false);
   // Локальные источники открытия + производные от интентов палитры —
   // без копирования в эффектах (setState-в-effect запрещён линтером).
   const [localSheetId, setLocalSheetId] = useState<string | null>(null);
@@ -263,6 +271,14 @@ export default function ClientsPage() {
           </button>
           <button
             type="button"
+            onClick={() => setImportOpen(true)}
+            className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-tint"
+          >
+            <Upload className="size-4" />
+            Импорт JSON
+          </button>
+          <button
+            type="button"
             onClick={exportCsv}
             className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-tint"
           >
@@ -382,6 +398,31 @@ export default function ClientsPage() {
         open={localFormOpen || formIntent !== null}
         onClose={closeForm}
         editClient={editClient}
+      />
+
+      {/* ── Массовый импорт JSON (задача 9): валидация + дедуп + геокодинг ── */}
+      <ImportDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title="Импорт клиентов из JSON"
+        what="клиентов"
+        sample={CLIENT_IMPORT_SAMPLE}
+        sampleName="fryflow-clients-sample.json"
+        run={(text, onProgress) => runClientsImport(parseClientsFile(text), onProgress)}
+        onDone={(o) =>
+          toast({
+            title: `Импорт завершён: +${o.imported} клиентов`,
+            description:
+              [
+                o.duplicates > 0 ? `${o.duplicates} дублей пропущено` : null,
+                o.errors.length > 0 ? `${o.errors.length} с ошибками` : null,
+                o.warnings.length > 0 ? `${o.warnings.length} без точных координат` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "Чистая загрузка — все записи в базе.",
+            duration: 5000,
+          })
+        }
       />
     </div>
   );

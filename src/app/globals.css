@@ -89,6 +89,14 @@
   --status-regular: #2E9E5B;
   --status-refused: #D2503F;
 
+  /* Категории попутных товаров (задача 9) */
+  --cat-oil: #C68A1B;
+  --cat-sauce: #C25B4A;
+  --cat-greens: #4E9E52;
+  --cat-vegetables: #D97B29;
+  --cat-semis: #7B68B8;
+  --cat-packaging: #5B8BA6;
+
   /* Семантика shadcn/ui поверх Warm Precision */
   --radius: 0.625rem;
   --background: var(--bg);
@@ -144,6 +152,14 @@
   --status-trial: #46A99C;
   --status-regular: #4CB871;
   --status-refused: #E06552;
+
+  /* Категории попутных товаров (задача 9) */
+  --cat-oil: #E5A83B;
+  --cat-sauce: #E0725F;
+  --cat-greens: #6FC274;
+  --cat-vegetables: #F0954A;
+  --cat-semis: #9D8BE0;
+  --cat-packaging: #7FB0CC;
 
   /* Семантика shadcn/ui поверх Warm Precision */
   --background: var(--bg);

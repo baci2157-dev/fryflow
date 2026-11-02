@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { AiAdviceCard } from "@/components/dashboard/ai-advice";
 import { Sk } from "@/components/dashboard/bento-card";
 import {
+  CrossSellCard,
   DebtsCard,
   InventoryCard,
   MarginCard,
@@ -132,6 +133,7 @@ export default function DashboardPage() {
         <AiAdviceCard loading={loading} />
 
         <MarginCard loading={loading} />
+        <CrossSellCard loading={loading} />
         <TodayPlanCard loading={loading} tasks={tasks} onToggle={toggleTask} />
         <RecentOrdersCard loading={loading} />
       </div>

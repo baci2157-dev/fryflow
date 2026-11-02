@@ -1,6 +1,8 @@
 "use client";
 
 import { getSupabase, TABLES } from "@/lib/supabase";
+import { useProductsStore, type NewProductInput } from "@/lib/products-store";
+import type { Product } from "@/types/models";
 import { syncSupabaseAction } from "@/lib/offline-queue";
 import { useCrmStore, type NewClientInput } from "@/lib/clients-store";
 import {
@@ -93,6 +95,7 @@ function orderToRow(o: Order) {
     is_draft: o.isDraft,
     source: o.source ?? "manual",
     external_id: o.externalId ?? null,
+    items: (o.items ?? []) as unknown as Record<string, unknown>[],
   };
 }
 
@@ -439,6 +442,72 @@ export function setRegionalNotes(id: string, notes: string): void {
   }
 }
 
+/* ── Попутные товары (задача 9) ──────────────────────────── */
+
+function productToRow(p: Product) {
+  return {
+    id: p.id,
+    name: p.name,
+    category: p.category,
+    unit: p.unit,
+    price: p.price,
+    cost: p.cost,
+    stock: p.stock,
+    description: p.description,
+  };
+}
+
+/** Добавить товар в каталог (масло, соус, зелень…). */
+export function addProduct(input: NewProductInput): Product {
+  const sb = getSupabase();
+  const product = useProductsStore.getState().addProduct(input);
+  if (sb) {
+    void syncSupabaseAction({
+      kind: "partner",
+      label: `Товар · ${product.name}`,
+      table: TABLES.products,
+      op: "insert",
+      row: { ...productToRow(product), created_at: new Date().toISOString() },
+    });
+  }
+  return product;
+}
+
+/** Обновить товар каталога. */
+export function updateProduct(id: string, patch: Partial<Product>): void {
+  const sb = getSupabase();
+  useProductsStore.getState().updateProduct(id, patch);
+  if (sb) {
+    const product = useProductsStore.getState().products.find((p) => p.id === id);
+    if (product) {
+      void syncSupabaseAction({
+        kind: "partner",
+        label: `Товар · ${product.name}`,
+        table: TABLES.products,
+        op: "update",
+        row: { ...productToRow(product), id },
+      });
+    }
+  }
+}
+
+/** Удалить товар каталога. */
+export function deleteProduct(id: string): void {
+  const sb = getSupabase();
+  const name =
+    useProductsStore.getState().products.find((p) => p.id === id)?.name ?? id;
+  useProductsStore.getState().deleteProduct(id);
+  if (sb) {
+    void syncSupabaseAction({
+      kind: "partner",
+      label: `Удаление товара · ${name}`,
+      table: TABLES.products,
+      op: "delete",
+      row: { id },
+    });
+  }
+}
+
 /* ── Настройки ───────────────────────────────────────────── */
 
 /** Сохранить настройки (реквизиты + ИИ-устав) — одна строка-синглтон. */
@@ -468,7 +537,7 @@ export async function fetchAllFromSupabase() {
   if (!sb) return null;
   const select = async (table: string) =>
     (await sb.from(table).select("*")).data ?? [];
-  const [clients, calls, orders, movements, payments, partners, settings, drafts] =
+  const [clients, calls, orders, movements, payments, partners, settings, drafts, products] =
     await Promise.all([
       select(TABLES.clients),
       select(TABLES.calls),
@@ -478,6 +547,7 @@ export async function fetchAllFromSupabase() {
       select(TABLES.partners),
       select(TABLES.settings),
       select(TABLES.drafts),
+      select(TABLES.products),
     ]);
-  return { clients, calls, orders, movements, payments, partners, settings, drafts };
+  return { clients, calls, orders, movements, payments, partners, settings, drafts, products };
 }

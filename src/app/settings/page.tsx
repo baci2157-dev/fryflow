@@ -26,6 +26,7 @@ import { backupCounts, downloadBackup } from "@/lib/backup";
 import { useCrmStore } from "@/lib/clients-store";
 import { queueFetch } from "@/lib/offline-queue";
 import { useOrdersStore } from "@/lib/orders-store";
+import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
 import {
   CHARTER_EXAMPLES,
@@ -605,6 +606,7 @@ export default function SettingsPage() {
   const resetCrm = useCrmStore((s) => s.resetDemo);
   const resetOrders = useOrdersStore((s) => s.resetDemo);
   const resetRegions = useRegionsStore((s) => s.resetDemo);
+  const resetProducts = useProductsStore((s) => s.resetDemo);
   const resetAdvice = useAdviceStore((s) => s.reset);
   const clearChat = useAiChatStore((s) => s.clear);
   const { toast } = useToast();
@@ -968,12 +970,13 @@ export default function SettingsPage() {
                 resetCrm();
                 resetOrders();
                 resetRegions();
+                resetProducts();
                 resetAdvice();
                 clearChat();
                 toast({
                   title: "Демо-данные восстановлены",
                   description:
-                    "Клиенты, звонки, заказы, регионы, склад, совет ИИ и чат — как при первом запуске. Настройки не тронуты.",
+                    "Клиенты, звонки, заказы, регионы, каталог товаров, склад, совет ИИ и чат — как при первом запуске. Настройки не тронуты.",
                   duration: 4200,
                 });
               }}

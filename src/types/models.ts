@@ -62,6 +62,11 @@ export interface Client {
   orderFrequencyDays?: number;
   /** Коробок в последнем заказе (для автосборки маршрута). */
   lastOrderBoxes?: number;
+
+  /* ── Задача 9: попутные товары (cross-sell) ── */
+  /** Интересы клиента — категории попутных товаров (масло, соус…).
+   *  Основано на истории закупок: «этот обычно берёт масло и соус». */
+  interests?: ProductCategory[];
 }
 
 export interface Call {
@@ -76,6 +81,14 @@ export interface Call {
   attemptNumber: number;
 }
 
+/** Попутный товар, взятый в маршрут дня (задача 9). */
+export interface RouteCrossSell {
+  productId: string;
+  name: string;
+  qty: number;
+  price: number;
+}
+
 /** Точка маршрута дня. */
 export interface RouteStop {
   clientId: string;
@@ -83,6 +96,8 @@ export interface RouteStop {
   boxes: number;
   /** Сумма заказа, ₽ (коробки × 300 ₽). */
   orderSum: number;
+  /** Попутные товары к точке: «заодно захватить масло». */
+  crossSell?: RouteCrossSell[];
 }
 
 /* ── Заказы, склад, финансы (задача 5) ────────────────────── */
@@ -113,6 +128,10 @@ export interface Order {
   source?: "manual" | "telegram";
   /** id заявки на сервере Telegram-роута (дедуп при синхронизации). */
   externalId?: string;
+
+  /* ── Задача 9: попутные товары в заказе ── */
+  /** Попутные товары (масло, соус…) — снимок на момент заказа. */
+  items?: OrderItem[];
 }
 
 /** Тип движения по складу. */
@@ -136,6 +155,67 @@ export interface Payment {
   orderId: string;
   amount: number;
   createdAt: string;
+}
+
+/* ── Попутные товары: каталог и строки заказа (задача 9) ── */
+
+/** Категория попутного товара. */
+export type ProductCategory =
+  | "oil" // масло
+  | "sauce" // соус
+  | "greens" // зелень
+  | "vegetables" // овощи
+  | "semis" // полуфабрикаты
+  | "packaging"; // упаковка
+
+/** Товар каталога попутных позиций. */
+export interface Product {
+  id: string;
+  name: string;
+  category: ProductCategory;
+  /** Единица: л / кг / шт. */
+  unit: "л" | "кг" | "шт";
+  /** Цена продажи, ₽ (за фасовку из описания: канистра, ведро, пачка). */
+  price: number;
+  /** Закупочная цена, ₽ (для маржи). */
+  cost: number;
+  /** Остаток на складе попутных товаров (в фасовках). */
+  stock: number;
+  description: string;
+}
+
+/** Попутный товар в заказе — снимок цен на момент продажи. */
+export interface OrderItem {
+  productId: string;
+  name: string;
+  category: ProductCategory;
+  unit: "л" | "кг" | "шт";
+  qty: number;
+  price: number;
+}
+
+export const PRODUCT_CATEGORY_LABEL: Record<ProductCategory, string> = {
+  oil: "Масло",
+  sauce: "Соус",
+  greens: "Зелень",
+  vegetables: "Овощи",
+  semis: "Полуфабрикаты",
+  packaging: "Упаковка",
+};
+
+/** Цветной бейдж категории (CSS-переменные заданы в globals.css). */
+export const PRODUCT_CATEGORY_COLOR: Record<ProductCategory, string> = {
+  oil: "var(--cat-oil)",
+  sauce: "var(--cat-sauce)",
+  greens: "var(--cat-greens)",
+  vegetables: "var(--cat-vegetables)",
+  semis: "var(--cat-semis)",
+  packaging: "var(--cat-packaging)",
+};
+
+/** Сумма попутных товаров заказа (строки × количество), ₽. */
+export function crossSellSum(items: OrderItem[] | undefined): number {
+  return (items ?? []).reduce((sum, i) => sum + i.qty * i.price, 0);
 }
 
 /* ── Регионы: оптовики юга (задача 7) ────────────────────── */

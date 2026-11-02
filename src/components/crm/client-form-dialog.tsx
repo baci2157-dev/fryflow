@@ -18,10 +18,13 @@ import {
   CLIENT_TYPE_LABEL,
   DISTRICTS,
   PRIORITY_COLOR_VAR,
+  PRODUCT_CATEGORY_COLOR,
+  PRODUCT_CATEGORY_LABEL,
   type Client,
   type ClientStatus,
   type ClientType,
   type PriorityTier,
+  type ProductCategory,
 } from "@/types/models";
 import { cn } from "@/lib/utils";
 
@@ -63,6 +66,9 @@ const clientSchema = z
     district: z.string().refine((v) => (DISTRICTS as readonly string[]).includes(v), "Выберите район"),
     address: z.string().trim().min(3, "Адрес — минимум 3 символа"),
     notes: z.string(),
+    interests: z.array(
+      z.enum(["oil", "sauce", "greens", "vegetables", "semis", "packaging"])
+    ),
     isChain: z.boolean(),
     chainName: z.string().trim(),
     chainSize: z.number().int().min(1, "Минимум 1 филиал").max(500).optional(),
@@ -79,6 +85,7 @@ type ClientFormValues = z.infer<typeof clientSchema>;
 const TYPE_KEYS = Object.keys(CLIENT_TYPE_LABEL) as ClientType[];
 const STATUS_KEYS = Object.keys(CLIENT_STATUS_LABEL) as ClientStatus[];
 const TIERS: PriorityTier[] = ["green", "yellow", "red"];
+const INTEREST_KEYS = Object.keys(PRODUCT_CATEGORY_LABEL) as ProductCategory[];
 
 /** Ростов-на-Дону, центр — стартовые координаты нового клиента. */
 const ROSTOV_CENTER = { lat: 47.2225, lng: 39.7188 };
@@ -92,6 +99,7 @@ const DEFAULTS: ClientFormValues = {
   district: "",
   address: "",
   notes: "",
+  interests: [],
   isChain: false,
   chainName: "",
   chainSize: undefined,
@@ -146,6 +154,7 @@ export function ClientFormDialog({
         district: editClient.district,
         address: editClient.address,
         notes: editClient.notes,
+        interests: editClient.interests ?? [],
         isChain: Boolean(editClient.chainName),
         chainName: editClient.chainName ?? "",
         chainSize: editClient.chainSize,
@@ -170,6 +179,7 @@ export function ClientFormDialog({
       chainName: values.isChain ? values.chainName.trim() : undefined,
       chainSize: values.isChain ? values.chainSize : undefined,
       coordinates: { lat: values.lat, lng: values.lng },
+      interests: values.interests.length > 0 ? values.interests : undefined,
     };
 
     if (editClient) {
@@ -352,6 +362,55 @@ export function ClientFormDialog({
 
         {/* Адрес + геокодинг Nominatim (debounce 1,5 с) */}
         <AddressFieldWithGeocode register={register} setValue={setValue} control={control} error={errors.address?.message} />
+
+        {/* Интересы — попутные товары (задача 9) */}
+        <Field label="Интересы — попутные товары" hint="что обычно берёт вместе с фри">
+          <Controller
+            control={control}
+            name="interests"
+            render={({ field }) => (
+              <div className="flex flex-wrap gap-1.5">
+                {INTEREST_KEYS.map((cat) => {
+                  const active = field.value.includes(cat);
+                  const color = PRODUCT_CATEGORY_COLOR[cat];
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() =>
+                        field.onChange(
+                          active
+                            ? field.value.filter((c) => c !== cat)
+                            : [...field.value, cat]
+                        )
+                      }
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-medium transition-colors"
+                      style={{
+                        color: active ? color : "var(--ink-soft)",
+                        borderColor: active
+                          ? `color-mix(in srgb, ${color} 55%, transparent)`
+                          : "var(--border)",
+                        background: active
+                          ? `color-mix(in srgb, ${color} 12%, transparent)`
+                          : "var(--surface)",
+                      }}
+                    >
+                      <span
+                        className="size-2 rounded-full"
+                        style={{ background: color }}
+                      />
+                      {PRODUCT_CATEGORY_LABEL[cat]}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
+          <p className="mt-1.5 text-[11.5px] text-ink-soft">
+            Подсказка при создании заказа («этот обычно берёт масло») и бейдж «Попутно» в маршруте дня.
+          </p>
+        </Field>
 
         {/* Сеть */}
         <Field label="Сеть точек">

@@ -25,6 +25,7 @@ export const TABLES = {
   partners: "regional_partners",
   settings: "settings",
   drafts: "order_drafts",
+  products: "products",
 } as const;
 
 let cached: SupabaseClient | null | undefined;

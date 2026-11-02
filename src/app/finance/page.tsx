@@ -10,6 +10,7 @@ import {
   BadgeCheck,
   Landmark,
   MessageCircle,
+  ShoppingBasket,
   Wallet,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ import { AgeBadge, money } from "@/components/orders/order-views";
 import { useToast } from "@/hooks/use-toast";
 import { useCrmStore } from "@/lib/clients-store";
 import {
+  crossSellStats,
   debtDays,
   debtOrders,
   ordersTotal,
@@ -40,12 +42,16 @@ export default function FinancePage() {
   const handleInvoice = useInvoiceAction();
 
   const [paidFilter, setPaidFilter] = useState(false);
+  /** «Показать только попутные товары» — заказы с items (задача 9). */
+  const [crossOnly, setCrossOnly] = useState(false);
 
   const unpaid = useMemo(() => debtOrders(orders), [orders]);
   const paid = useMemo(
     () => orders.filter((o) => !o.isDraft && o.isPaid),
     [orders]
   );
+
+  const crossStats = crossSellStats(orders);
 
   const receivable = ordersTotal(unpaid);
   const overdue15 = ordersTotal(unpaid.filter((o) => debtDays(o) >= DEBT_DANGER_DAYS));
@@ -57,8 +63,15 @@ export default function FinancePage() {
     return m;
   }, [clients]);
 
-  /** Показать оплаченные вместо долгов. */
-  const list = paidFilter ? paid.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : unpaid;
+  /** Показать оплаченные вместо долгов; «только попутные» — из обоих
+   *  списков сразу (долг и оплата рядом, оцениваем канал целиком). */
+  const list = crossOnly
+    ? [...unpaid, ...paid]
+        .filter((o) => (o.items ?? []).length > 0)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    : paidFilter
+      ? paid.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      : unpaid;
 
   const remind = (order: Order) => {
     const phone = phoneByClient.get(order.clientId);
@@ -153,11 +166,29 @@ export default function FinancePage() {
             </button>
           ))}
         </div>
-        <p className="text-xs text-ink-soft">
-          возраст долга: <span className="font-semibold text-tier-yellow">1–7 дн</span>{" "}
-          · <span className="font-semibold text-[var(--status-callback)]">8–14</span> ·{" "}
-          <span className="font-semibold text-tier-red">15+</span>
-        </p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            aria-pressed={crossOnly}
+            onClick={() => setCrossOnly((v) => !v)}
+            className={
+              crossOnly
+                ? "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-accent bg-accent/12 px-3.5 text-[13px] font-medium text-accent"
+                : "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-[13px] font-medium text-ink-soft transition-colors hover:bg-tint hover:text-ink"
+            }
+          >
+            <ShoppingBasket className="size-3.5" />
+            Только попутные
+            <span className="font-mono text-[11px] tabular-nums opacity-70">
+              {crossStats.ordersWithItems}
+            </span>
+          </button>
+          <p className="hidden text-xs text-ink-soft sm:block">
+            возраст долга: <span className="font-semibold text-tier-yellow">1–7 дн</span>{" "}
+            · <span className="font-semibold text-[var(--status-callback)]">8–14</span> ·{" "}
+            <span className="font-semibold text-tier-red">15+</span>
+          </p>
+        </div>
       </div>
 
       {/* ── Список ── */}
@@ -165,7 +196,11 @@ export default function FinancePage() {
         <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
           <Wallet className="size-8 text-ink-soft/50" />
           <p className="text-sm text-ink-soft">
-            {paidFilter ? "Оплаченных заказов пока нет" : "Все заказы оплачены — красавчики!"}
+            {crossOnly
+              ? "Заказов с попутными товарами пока нет — добавьте их при создании заказа"
+              : paidFilter
+                ? "Оплаченных заказов пока нет"
+                : "Все заказы оплачены — красавчики!"}
           </p>
         </div>
       ) : (
@@ -197,6 +232,19 @@ export default function FinancePage() {
                       <span className="shrink-0 font-mono text-[11px] text-ink-soft tabular-nums">
                         #{orderNumber(order)}
                       </span>
+                      {order.items && order.items.length > 0 && (
+                        <span
+                          className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-medium"
+                          style={{
+                            color: "var(--accent)",
+                            background: "color-mix(in srgb, var(--accent) 12%, transparent)",
+                          }}
+                          title={order.items.map((i) => i.name).join(", ")}
+                        >
+                          <ShoppingBasket className="size-3" />+{order.items.length}{" "}
+                          {order.items.length === 1 ? "товар" : "товара"}
+                        </span>
+                      )}
                     </p>
                     <p className="mt-0.5 font-mono text-[11.5px] text-ink-soft tabular-nums">
                       {format(new Date(order.createdAt), "d MMMM", { locale: ru })}

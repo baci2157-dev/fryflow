@@ -13,6 +13,7 @@ import { useCrmStore } from "@/lib/clients-store";
 import { initOfflineQueue } from "@/lib/offline-queue";
 import { useMarketingStore } from "@/lib/marketing-store";
 import { useOrdersStore } from "@/lib/orders-store";
+import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
 import { useSettingsStore } from "@/lib/settings-store";
 import { useUiStore } from "@/lib/ui-store";
@@ -43,6 +44,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void useCrmStore.persist.rehydrate();
     void useOrdersStore.persist.rehydrate();
+    void useProductsStore.persist.rehydrate();
     void useSettingsStore.persist.rehydrate();
     void useAiChatStore.persist.rehydrate();
     void useRegionsStore.persist.rehydrate();

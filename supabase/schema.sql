@@ -69,7 +69,8 @@ create table if not exists public.orders (
   comment       text,
   is_draft      boolean not null default false,          -- черновик: склад не списывается
   source        text not null default 'manual' check (source in ('manual','telegram')),
-  external_id   text                                    -- id заявки на сервере Telegram (дедуп)
+  external_id   text                                    -- id заявки на сервере Telegram (дедуп),
+  items         jsonb default '[]'::jsonb                -- попутные товары (задача 9): [{productId, name, qty, price}]
 );
 
 -- ─────────────────────────────────────────────────────────────
@@ -140,6 +141,19 @@ create table if not exists public.order_drafts (
 -- ИНДЕКСЫ — по district, status, created_at (и рабочим связям)
 -- ════════════════════════════════════════════════════════════
 
+-- ── Попутные товары (задача 9) ──────────────────────────────────
+create table if not exists public.products (
+  id          text primary key,
+  name        text not null,
+  category    text not null check (category in ('oil','sauce','greens','vegetables','semis','packaging')),
+  unit        text not null check (unit in ('л','кг','шт')),
+  price       integer not null check (price >= 0),
+  cost        integer not null default 0 check (cost >= 0),
+  stock       integer not null default 0 check (stock >= 0),
+  description text not null default '',
+  created_at  timestamptz not null default now()
+);
+
 create index if not exists idx_clients_district     on public.clients (district);
 create index if not exists idx_clients_status       on public.clients (status);
 create index if not exists idx_clients_priority     on public.clients (priority_tier);
@@ -165,6 +179,7 @@ create index if not exists idx_partners_status      on public.regional_partners 
 create index if not exists idx_partners_created_at  on public.regional_partners (created_at desc);
 
 create index if not exists idx_drafts_status        on public.order_drafts (status);
+create index if not exists idx_products_category    on public.products (category);
 create index if not exists idx_drafts_received_at   on public.order_drafts (received_at desc);
 
 -- ════════════════════════════════════════════════════════════
@@ -184,6 +199,7 @@ alter table public.payments            enable row level security;
 alter table public.regional_partners   enable row level security;
 alter table public.settings            enable row level security;
 alter table public.order_drafts        enable row level security;
+alter table public.products            enable row level security;
 
 drop policy if exists "clients_authenticated" on public.clients;
 create policy "clients_authenticated" on public.clients
@@ -215,6 +231,10 @@ create policy "settings_authenticated" on public.settings
 
 drop policy if exists "drafts_authenticated" on public.order_drafts;
 create policy "drafts_authenticated" on public.order_drafts
+  for all to authenticated using (true) with check (true);
+
+drop policy if exists "products_authenticated" on public.products;
+create policy "products_authenticated" on public.products
   for all to authenticated using (true) with check (true);
 
 -- Вебхук Telegram (server-side, сервисный доступ при наличии

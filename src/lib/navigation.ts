@@ -7,6 +7,7 @@ import {
   Phone,
   Route,
   Settings,
+  ShoppingBasket,
   ShoppingCart,
   Sparkles,
   Users,
@@ -32,7 +33,8 @@ export interface NavItem {
  * Звонки (воронка холодных продаж), Заказы, Склад, Финансы, Долги
  * (полный цикл сделки — задача 5), ИИ-Директор, PDF-счета и Настройки
  * (задача 6), Регионы и Telegram-интеграция (задача 7), Маркетинг
- * с календарём автопостинга, PWA и офлайн-очередь (задача 8).
+ * с календарём автопостинга, PWA и офлайн-очередь (задача 8),
+ * массовый импорт клиентов и каталог попутных товаров (задача 9).
  */
 export const NAV_ITEMS: NavItem[] = [
   { id: "dashboard", title: "Дашборд", href: "/", icon: LayoutDashboard, primary: true, ready: true },
@@ -41,6 +43,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "logistics", title: "Карта", href: "/logistics", icon: Map, primary: true, ready: true },
   { id: "route", title: "Маршрут", href: "/route", icon: Route, primary: false, ready: true },
   { id: "orders", title: "Заказы", href: "/orders", icon: ShoppingCart, primary: false, ready: true },
+  { id: "catalog", title: "Каталог", href: "/catalog", icon: ShoppingBasket, primary: false, ready: true },
   { id: "regions", title: "Регионы", href: "/regions", icon: MapPin, primary: false, ready: true },
   { id: "ai", title: "ИИ-Директор", href: "/ai-assistant", icon: Sparkles, primary: true, ready: true },
   { id: "finance", title: "Финансы", href: "/finance", icon: Landmark, primary: false, ready: true },

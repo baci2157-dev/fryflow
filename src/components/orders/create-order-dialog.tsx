@@ -13,6 +13,7 @@ import {
   Package,
   Plus,
   Search,
+  ShoppingBasket,
   Snowflake,
   UserRound,
   Wallet,
@@ -22,12 +23,16 @@ import { SpringSheet } from "@/components/crm/spring-sheet";
 import { useToast } from "@/hooks/use-toast";
 import { useCrmStore } from "@/lib/clients-store";
 import { stockPacks, useOrdersStore } from "@/lib/orders-store";
+import { useProductsStore } from "@/lib/products-store";
 import { createOrder as createOrderQ } from "@/lib/queries";
 import {
   MIN_WHOLESALE_BOXES,
   PRICE_PER_PACK,
+  PRODUCT_CATEGORY_LABEL,
   SMALL_WHOLESALE_PRICE_PER_PACK,
+  crossSellSum,
   type Client,
+  type OrderItem,
 } from "@/types/models";
 import { cn } from "@/lib/utils";
 
@@ -70,8 +75,11 @@ export function CreateOrderDialog({ open, onClose }: CreateOrderDialogProps) {
   );
   const [isPaid, setIsPaid] = useState(true);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  /* Попутные товары (задача 9): список строк заказа. */
+  const [items, setItems] = useState<OrderItem[]>([]);
+  const products = useProductsStore((s) => s.products);
 
-  const total = boxesCount * pricePerBox;
+  const total = boxesCount * pricePerBox + crossSellSum(items);
   const stockAfter = remaining - boxesCount;
   const notEnough = stockAfter < 0;
   const smallWholesale = boxesCount < MIN_WHOLESALE_BOXES;
@@ -97,6 +105,41 @@ export function CreateOrderDialog({ open, onClose }: CreateOrderDialogProps) {
       .slice(0, 6);
   }, [clients, query]);
 
+  /* ── Cross-sell: клиент с интересами → подсказка «обычно берёт» ── */
+  const interests = client?.interests ?? [];
+  const suggestions = useMemo(() => {
+    if (interests.length === 0) return [] as typeof products;
+    return products.filter(
+      (p) => interests.includes(p.category) && p.stock > 0 &&
+        !items.some((i) => i.productId === p.id)
+    );
+  }, [interests, products, items]);
+
+  const addSuggested = (productId: string) => {
+    const prod = products.find((p) => p.id === productId);
+    if (!prod) return;
+    setItems((prev) => [
+      ...prev,
+      {
+        productId: prod.id,
+        name: prod.name,
+        category: prod.category,
+        unit: prod.unit,
+        qty: 1,
+        price: prod.price,
+      },
+    ]);
+  };
+
+  const addItemQty = (productId: string, delta: number) =>
+    setItems((prev) =>
+      prev.map((i) =>
+        i.productId === productId
+          ? { ...i, qty: Math.min(99, Math.max(0, i.qty + delta)) }
+          : i
+      ).filter((i) => i.qty > 0)
+    );
+
   const changeCount = (delta: number) => {
     const next = Math.min(200, Math.max(1, boxesCount + delta));
     setBoxesCount(next);
@@ -119,6 +162,7 @@ export function CreateOrderDialog({ open, onClose }: CreateOrderDialogProps) {
       pricePerBox,
       deliveryDate,
       isPaid,
+      items: items.length > 0 ? items : undefined,
     });
     toast({
       title: `Заказ #${order.id.replace("ord-", "")} создан`,
@@ -138,6 +182,7 @@ export function CreateOrderDialog({ open, onClose }: CreateOrderDialogProps) {
     setDeliveryDate(isoDay(addDays(new Date(), 1)));
     setIsPaid(true);
     setCalendarOpen(false);
+    setItems([]);
     onClose();
   };
 
@@ -249,6 +294,106 @@ export function CreateOrderDialog({ open, onClose }: CreateOrderDialogProps) {
               Сменить
             </button>
           </div>
+
+          {/* ── Cross-sell: «этот клиент обычно берёт…» (задача 9) ── */}
+          {interests.length > 0 && (
+            <div className="mt-3 rounded-2xl border border-accent/35 bg-accent/8 p-4">
+              <p className="text-[13px] leading-snug text-ink">
+                Этот клиент обычно берёт:{" "}
+                <span className="font-semibold">
+                  {interests
+                    .slice(0, 3)
+                    .map((c) => PRODUCT_CATEGORY_LABEL[c].toLowerCase())
+                    .join(", ")}
+                </span>
+                . Добавить в заказ?
+              </p>
+              {suggestions.length > 0 ? (
+                <div className="mt-2.5 space-y-1.5">
+                  {suggestions.slice(0, 4).map((prod) => (
+                    <div
+                      key={prod.id}
+                      className="flex items-center gap-2.5 rounded-xl border border-border bg-surface px-3 py-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13.5px] font-medium text-ink">
+                          {prod.name}
+                        </p>
+                        <p className="font-mono text-[11.5px] text-ink-soft tabular-nums">
+                          {money(prod.price)} ₽ · остаток {prod.stock}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => addSuggested(prod.id)}
+                        className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg bg-accent/15 px-3 text-[12.5px] font-semibold text-accent transition-colors hover:bg-accent/25"
+                      >
+                        <Plus className="size-3.5" />
+                        Добавить
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-2 text-[12px] text-ink-soft">
+                  Всё из интересов уже в заказе или закончилось на складе.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* ── Строки попутных товаров ── */}
+          {items.length > 0 && (
+            <div className="mt-3 rounded-2xl border border-border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-ink-soft">
+                  <ShoppingBasket className="size-4 text-accent" />
+                  Попутные товары
+                </span>
+                <span className="font-mono text-[13px] font-semibold text-accent tabular-nums">
+                  +{money(crossSellSum(items))} ₽
+                </span>
+              </div>
+              <div className="mt-2.5 space-y-1.5">
+                {items.map((i) => (
+                  <div
+                    key={i.productId}
+                    className="flex items-center gap-2.5 rounded-xl bg-tint/60 px-3 py-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13.5px] font-medium text-ink">
+                        {i.name}
+                      </p>
+                      <p className="font-mono text-[11.5px] text-ink-soft tabular-nums">
+                        {money(i.price)} ₽ × {i.qty} = {money(i.price * i.qty)} ₽
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => addItemQty(i.productId, -1)}
+                        aria-label={`Минус ${i.name}`}
+                        className="flex size-7 items-center justify-center rounded-lg border border-border bg-surface text-ink transition-colors hover:bg-tint"
+                      >
+                        <Minus className="size-3" />
+                      </button>
+                      <span className="w-6 text-center font-mono text-[13px] font-semibold text-ink tabular-nums">
+                        {i.qty}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => addItemQty(i.productId, 1)}
+                        aria-label={`Плюс ${i.name}`}
+                        className="flex size-7 items-center justify-center rounded-lg border border-border bg-surface text-ink transition-colors hover:bg-tint"
+                      >
+                        <Plus className="size-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── 2. Количество упаковок: степперы ── */}
           <div className="mt-4 rounded-2xl border border-border p-4">

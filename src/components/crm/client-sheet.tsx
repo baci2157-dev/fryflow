@@ -22,6 +22,11 @@ import { logCall as logCallQ } from "@/lib/queries";
 import { buildYandexNavUrl, typicalStopFor } from "@/lib/route-algorithm";
 import { calcHealthScore } from "@/lib/health-score";
 import {
+  PRODUCT_CATEGORY_COLOR,
+  PRODUCT_CATEGORY_LABEL,
+  type ProductCategory,
+} from "@/types/models";
+import {
   CALL_RESULT_LABEL,
   CLIENT_STATUS_LABEL,
   CLIENT_TYPE_LABEL,
@@ -219,6 +224,33 @@ export function ClientSheet({
             label="В базе с"
             value={format(new Date(client.createdAt), "d MMM y", { locale: ru })}
           />
+          {client.interests && client.interests.length > 0 ? (
+            <div className="sm:col-span-2">
+              <InfoRow
+                label="Интересы"
+                value={
+                  <span className="flex flex-wrap gap-1.5">
+                    {client.interests.map((cat: ProductCategory) => (
+                      <span
+                        key={cat}
+                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11.5px] font-medium"
+                        style={{
+                          color: PRODUCT_CATEGORY_COLOR[cat],
+                          background: `color-mix(in srgb, ${PRODUCT_CATEGORY_COLOR[cat]} 12%, transparent)`,
+                        }}
+                      >
+                        <span
+                          className="size-1.5 rounded-full"
+                          style={{ background: PRODUCT_CATEGORY_COLOR[cat] }}
+                        />
+                        {PRODUCT_CATEGORY_LABEL[cat]}
+                      </span>
+                    ))}
+                  </span>
+                }
+              />
+            </div>
+          ) : null}
           {client.notes ? (
             <div className="sm:col-span-2">
               <InfoRow label="Заметки" value={client.notes} />

@@ -5,6 +5,7 @@ import { getSupabase } from "@/lib/supabase";
 import { useAdviceStore } from "@/lib/advice-store";
 import { useCrmStore } from "@/lib/clients-store";
 import { useOrdersStore } from "@/lib/orders-store";
+import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
 import { useSettingsStore } from "@/lib/settings-store";
 
@@ -54,6 +55,7 @@ export async function collectBackup(): Promise<BackupFile> {
   const regions = useRegionsStore.getState();
   const settings = useSettingsStore.getState();
   const advice = useAdviceStore.getState();
+  const products = useProductsStore.getState();
 
   return {
     app: "FryFlow",
@@ -70,6 +72,7 @@ export async function collectBackup(): Promise<BackupFile> {
       payments: deals.payments,
       nextOrderNumber: deals.nextOrderNumber,
       regionalPartners: regions.partners,
+      products: products.products,
       settings: { invoice: settings.invoice, ai: settings.ai },
       advice: advice.last,
     },

@@ -4,6 +4,7 @@ import {
   WORKING_HOURS,
   type Client,
   type RouteStop,
+  RouteCrossSell,
 } from "@/types/models";
 
 /**
@@ -62,6 +63,8 @@ export interface PlannedStop {
   client: Client;
   boxes: number;
   orderSum: number;
+  /** Попутные товары к точке (задача 9) — пробрасываются из RouteStop. */
+  crossSell?: RouteCrossSell[];
   /** Порядковый номер точки в маршруте (1-based). */
   index: number;
   /** Расстояние от предыдущей точки, км. */
@@ -160,6 +163,7 @@ export function planRoute(
       client: next.client,
       boxes: next.stop.boxes,
       orderSum: next.stop.orderSum,
+      crossSell: next.stop.crossSell,
       index: ordered.length + 1,
       distanceFromPrevKm: bestDist,
       cumulativeKm,

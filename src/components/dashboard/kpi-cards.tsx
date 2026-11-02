@@ -3,12 +3,13 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowUpRight, TrendingUp } from "lucide-react";
+import { ArrowUpRight, ShoppingBasket, TrendingUp } from "lucide-react";
 
 import { BentoCard, KpiSkeleton } from "@/components/dashboard/bento-card";
 import { CountUp } from "@/components/dashboard/count-up";
 import { RingProgress } from "@/components/dashboard/ring-progress";
 import {
+  crossSellStats,
   debtDays,
   debtOrders,
   ordersTotal,
@@ -282,6 +283,45 @@ export function MarginCard({ loading }: { loading: boolean }) {
           </span>
         </div>
       </div>
+    </BentoCard>
+  );
+}
+
+
+/* ── KPI: попутные продажи (задача 9) ───────────────────────── */
+
+export function CrossSellCard({ loading }: { loading: boolean }) {
+  const router = useRouter();
+  const orders = useOrdersStore((s) => s.orders);
+
+  const { sum, ordersWithItems } = crossSellStats(orders);
+
+  if (loading) {
+    return <BentoCard loading skeleton={<KpiSkeleton />} />;
+  }
+
+  return (
+    <BentoCard
+      onClick={() => router.push("/catalog")}
+      srLabel="Перейти в каталог попутных товаров"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-medium text-ink-soft">Попутные продажи</h3>
+        <ShoppingBasket className="relative z-20 size-4 text-accent" />
+      </div>
+
+      <p className="mt-3 text-right font-mono text-3xl font-semibold tracking-tight text-ink tabular-nums">
+        <CountUp value={sum} />
+        <span className="ml-1.5 text-lg text-ink-soft">₽</span>
+      </p>
+      <p className="mt-1 text-right text-sm text-ink-soft">
+        за 30 дней · <span className="font-mono tabular-nums">{ordersWithItems}</span>{" "}
+        {ordersWithItems === 1 ? "заказ" : "заказа"} с товарами
+      </p>
+
+      <p className="mt-3 border-t border-border/70 pt-2.5 text-[11.5px] leading-snug text-ink-soft">
+        Масло, соусы, зелень к фри — та же машина, маржа выше
+      </p>
     </BentoCard>
   );
 }

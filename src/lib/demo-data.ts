@@ -20,6 +20,7 @@ export function demoClients(): Client[] {
     {
       id: "cl-zorge",
       name: "Шаурма на Зорге",
+      interests: ["oil", "sauce", "greens"],
       address: "ул. Зорге, 19",
       district: "Советский",
       phone: "+7 (918) 558-34-12",
@@ -35,6 +36,7 @@ export function demoClients(): Client[] {
     {
       id: "cl-shef",
       name: "Шеф-шаурма",
+      interests: ["sauce"],
       address: "пр. Стачки, 220",
       district: "Кировский",
       phone: "+7 (928) 615-07-89",
@@ -50,6 +52,7 @@ export function demoClients(): Client[] {
     {
       id: "cl-shop",
       name: "Шаурма Shop",
+      interests: ["oil", "semis"],
       address: "ул. Красноармейская, 126",
       district: "Кировский",
       phone: "+7 (903) 472-18-55",
@@ -65,6 +68,7 @@ export function demoClients(): Client[] {
     {
       id: "cl-bebop",
       name: "The Bebop Burgers",
+      interests: ["sauce", "packaging"],
       address: "ул. Суворова, 19/21",
       district: "Ворошиловский",
       phone: "+7 (918) 340-26-74",
@@ -110,6 +114,7 @@ export function demoClients(): Client[] {
     {
       id: "cl-manchester",
       name: "Манчестер Паб",
+      interests: ["sauce"],
       address: "ул. Темерницкая, 57",
       district: "Кировский",
       phone: "+7 (929) 817-63-94",

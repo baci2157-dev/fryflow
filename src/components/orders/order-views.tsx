@@ -11,12 +11,13 @@ import {
   PackageCheck,
   Send,
   X,
+  ShoppingBasket,
 } from "lucide-react";
 
 import { formatMoney } from "@/lib/mock-data";
 import { orderNumber } from "@/lib/orders-store";
 import { orderReceiptText, waLink } from "@/lib/whatsapp";
-import { debtAge, type Order } from "@/types/models";
+import { crossSellSum, debtAge, type Order } from "@/types/models";
 import { cn } from "@/lib/utils";
 
 /**
@@ -150,6 +151,23 @@ export function OrderCard({
           {money(order.totalAmount)} ₽
         </p>
       </div>
+
+      {order.items && order.items.length > 0 && (
+        <p
+          className="mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
+          style={{
+            color: "var(--accent)",
+            background: "color-mix(in srgb, var(--accent) 12%, transparent)",
+          }}
+          title={order.items.map((i) => `${i.name} ×${i.qty}`).join(", ")}
+        >
+          <ShoppingBasket className="size-3" />
+          Попутно: {order.items.map((i) => i.name).join(", ")} ·{" "}
+          <span className="font-mono tabular-nums">
+            {money(crossSellSum(order.items))} ₽
+          </span>
+        </p>
+      )}
 
       <p className="mt-1.5 text-[12px] text-ink-soft">
         Доставка: {delivery}

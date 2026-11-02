@@ -10,6 +10,7 @@ import {
   type Call,
   type CallResult,
   type Client,
+  type RouteCrossSell,
   type RouteStop,
 } from "@/types/models";
 
@@ -54,6 +55,9 @@ interface CrmState {
   setRouteStops: (stops: RouteStop[]) => void;
   toggleRouteStop: (stop: RouteStop) => boolean;
   removeRouteStop: (clientId: string) => void;
+  /** Попутные товары к точке маршрута (задача 9): «заодно захватить масло». */
+  addRouteCrossSell: (clientId: string, item: RouteCrossSell) => void;
+  removeRouteCrossSell: (clientId: string, productId: string) => void;
   setStopBoxes: (clientId: string, boxes: number) => void;
   setCapacity: (capacity: number) => void;
   clearRoute: () => void;
@@ -169,6 +173,38 @@ export const useCrmStore = create<CrmState>()(
       removeRouteStop: (clientId) =>
         set((s) => ({
           routeStops: s.routeStops.filter((r) => r.clientId !== clientId),
+        })),
+
+      addRouteCrossSell: (clientId, item) =>
+        set((s) => ({
+          routeStops: s.routeStops.map((r) => {
+            if (r.clientId !== clientId) return r;
+            const exists = r.crossSell?.find((c) => c.productId === item.productId);
+            return {
+              ...r,
+              crossSell: exists
+                ? (r.crossSell ?? []).map((c) =>
+                    c.productId === item.productId
+                      ? { ...c, qty: c.qty + item.qty }
+                      : c
+                  )
+                : [...(r.crossSell ?? []), item],
+            };
+          }),
+        })),
+
+      removeRouteCrossSell: (clientId, productId) =>
+        set((s) => ({
+          routeStops: s.routeStops.map((r) =>
+            r.clientId === clientId
+              ? {
+                  ...r,
+                  crossSell: (r.crossSell ?? []).filter(
+                    (c) => c.productId !== productId
+                  ),
+                }
+              : r
+          ),
         })),
 
       setStopBoxes: (clientId, boxes) =>

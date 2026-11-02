@@ -4,11 +4,14 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { demoMovements, demoOrders, demoPayments } from "@/lib/demo-orders";
+import { useProductsStore } from "@/lib/products-store";
 import {
   PACK_KG,
+  crossSellSum,
   daysSince,
   type InventoryMovement,
   type Order,
+  type OrderItem,
   type Payment,
 } from "@/types/models";
 
@@ -36,6 +39,8 @@ export interface NewOrderInput {
   source?: "manual" | "telegram";
   /** id заявки на сервере — дедуп при синхронизации. */
   externalId?: string;
+  /** Попутные товары (задача 9): масло, соус — к основному заказу. */
+  items?: OrderItem[];
 }
 
 interface OrdersState {
@@ -89,13 +94,15 @@ export const useOrdersStore = create<OrdersState>()(
 
       createOrder: (input) => {
         const num = get().nextOrderNumber;
+        const items = input.items && input.items.length > 0 ? input.items : undefined;
         const order: Order = {
           id: `ord-${num}`,
           clientId: input.clientId,
           clientName: input.clientName,
           boxesCount: input.boxesCount,
           pricePerBox: input.pricePerBox,
-          totalAmount: input.boxesCount * input.pricePerBox,
+          // Итог = картофель + попутные товары (масло, соус…).
+          totalAmount: input.boxesCount * input.pricePerBox + crossSellSum(items),
           deliveryDate: input.deliveryDate,
           isPaid: input.isPaid,
           createdAt: new Date().toISOString(),
@@ -103,6 +110,7 @@ export const useOrdersStore = create<OrdersState>()(
           isDraft: input.isDraft ?? false,
           source: input.source,
           externalId: input.externalId,
+          items,
         };
 
         set((s) => {
@@ -134,6 +142,13 @@ export const useOrdersStore = create<OrdersState>()(
               },
               ...s.payments,
             ];
+          }
+          // Попутные товары списываются со склада каталога сразу
+          // (черновик — только при подтверждении, см. confirmDraft).
+          if (!order.isDraft && items) {
+            useProductsStore
+              .getState()
+              .decrementStock(items.map((i) => ({ productId: i.productId, qty: i.qty })));
           }
           return patch;
         });
@@ -187,6 +202,14 @@ export const useOrdersStore = create<OrdersState>()(
             ...s.movements,
           ],
         }));
+        // Попутные товары черновика списываются в момент подтверждения.
+        if (order.items && order.items.length > 0) {
+          useProductsStore
+            .getState()
+            .decrementStock(
+              order.items.map((i) => ({ productId: i.productId, qty: i.qty }))
+            );
+        }
         return { ...order, isDraft: false };
       },
 
@@ -266,4 +289,21 @@ export function debtDays(order: Order): number {
 /** Сумма по списку заказов, ₽. */
 export function ordersTotal(orders: Order[]): number {
   return orders.reduce((sum, o) => sum + o.totalAmount, 0);
+}
+
+/** Попутные продажи за последние 30 дней: сумма и число заказов. */
+export function crossSellStats(
+  orders: Order[],
+  windowDays = 30
+): { sum: number; ordersWithItems: number } {
+  const since = Date.now() - windowDays * 86_400_000;
+  let sum = 0;
+  let ordersWithItems = 0;
+  for (const o of orders) {
+    if (o.isDraft || !o.items || o.items.length === 0) continue;
+    if (new Date(o.createdAt).getTime() < since) continue;
+    sum += crossSellSum(o.items);
+    ordersWithItems++;
+  }
+  return { sum, ordersWithItems };
 }

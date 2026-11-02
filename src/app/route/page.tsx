@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
 import { ru } from "date-fns/locale";
 import {
   AlertTriangle,
@@ -15,6 +16,7 @@ import {
   Play,
   Plus,
   Route as RouteIcon,
+  ShoppingBasket,
   Square,
   Truck,
   UserX,
@@ -26,13 +28,18 @@ import { ChainBadge } from "@/components/crm/badges";
 import { RingProgress } from "@/components/dashboard/ring-progress";
 import { useToast } from "@/hooks/use-toast";
 import { useCrmStore } from "@/lib/clients-store";
+import { useProductsStore } from "@/lib/products-store";
 import {
   buildYandexRouteUrl,
   minutesToTime,
   planRoute,
   typicalStopFor,
 } from "@/lib/route-algorithm";
-import type { Client } from "@/types/models";
+import {
+  PRODUCT_CATEGORY_LABEL,
+  type Client,
+  type ProductCategory,
+} from "@/types/models";
 import { cn } from "@/lib/utils";
 
 /**
@@ -60,6 +67,11 @@ export default function RoutePage() {
   const clients = useCrmStore((s) => s.clients);
   const routeStops = useCrmStore((s) => s.routeStops);
   const capacity = useCrmStore((s) => s.capacity);
+  const addRouteCrossSell = useCrmStore((s) => s.addRouteCrossSell);
+  const removeRouteCrossSell = useCrmStore((s) => s.removeRouteCrossSell);
+  const products = useProductsStore((s) => s.products);
+  /* Раскрытая панель «попутно» — id клиента. */
+  const [crossPanelId, setCrossPanelId] = useState<string | null>(null);
   const setCapacity = useCrmStore((s) => s.setCapacity);
   const setRouteStops = useCrmStore((s) => s.setRouteStops);
   const setStopBoxes = useCrmStore((s) => s.setStopBoxes);
@@ -298,6 +310,23 @@ export default function RoutePage() {
                     <p className="text-[15px] font-semibold text-ink">
                       {stop.client.name}
                     </p>
+                    {/* Попутно: интересы клиента — предложение «заодно» (задача 9) */}
+                    {stop.client.interests && stop.client.interests.length > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                        style={{
+                          color: "var(--accent)",
+                          background: "color-mix(in srgb, var(--accent) 12%, transparent)",
+                        }}
+                      >
+                        <ShoppingBasket className="size-3" />
+                        Попутно:{" "}
+                        {(stop.client.interests as ProductCategory[])
+                          .slice(0, 2)
+                          .map((c) => PRODUCT_CATEGORY_LABEL[c].toLowerCase())
+                          .join(", ")}
+                      </span>
+                    )}
                     {stop.client.chainName ? (
                       <ChainBadge name={stop.client.chainName} size={stop.client.chainSize} />
                     ) : null}
@@ -365,6 +394,30 @@ export default function RoutePage() {
                   >
                     <Plus className="size-3.5" />
                   </button>
+                  {stop.client.interests && stop.client.interests.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCrossPanelId(
+                          crossPanelId === stop.client.id ? null : stop.client.id
+                        )
+                      }
+                      aria-pressed={crossPanelId === stop.client.id}
+                      aria-label={`Попутные товары для ${stop.client.name}`}
+                      title="Попутные товары: взять с собой"
+                      className="ml-1 flex size-8 items-center justify-center rounded-lg border text-accent transition-colors hover:bg-accent/10"
+                      style={{
+                        borderColor: crossPanelId === stop.client.id
+                          ? "var(--accent)"
+                          : "color-mix(in srgb, var(--accent) 40%, transparent)",
+                        background: crossPanelId === stop.client.id
+                          ? "color-mix(in srgb, var(--accent) 12%, transparent)"
+                          : undefined,
+                      }}
+                    >
+                      <Plus className="size-3.5" />
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeRouteStop(stop.client.id)}
@@ -374,6 +427,95 @@ export default function RoutePage() {
                     <X className="size-4" />
                   </button>
                 </div>
+
+                {/* ── Панель «попутно» (задача 9): что взять к точке ── */}
+                {crossPanelId === stop.client.id && (
+                  <div className="w-full rounded-xl border border-accent/30 bg-accent/5 p-3">
+                    <p className="text-[12px] font-semibold uppercase tracking-wide text-ink-soft">
+                      Взять попутно · {stop.client.name}
+                    </p>
+                    <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                      {products
+                        .filter(
+                          (prod) =>
+                            (stop.client.interests ?? []).includes(prod.category) &&
+                            prod.stock > 0
+                        )
+                        .map((prod) => {
+                          const taken =
+                            stop.crossSell?.find((c) => c.productId === prod.id);
+                          return (
+                            <div
+                              key={prod.id}
+                              className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-[13px] font-medium text-ink">
+                                  {prod.name}
+                                </p>
+                                <p className="font-mono text-[11px] text-ink-soft tabular-nums">
+                                  {prod.price.toLocaleString("ru-RU")} ₽ · ост. {prod.stock}
+                                </p>
+                              </div>
+                              <motion.button
+                                type="button"
+                                whileTap={{ scale: 0.94 }}
+                                onClick={() =>
+                                  addRouteCrossSell(stop.client.id, {
+                                    productId: prod.id,
+                                    name: prod.name,
+                                    qty: 1,
+                                    price: prod.price,
+                                  })
+                                }
+                                className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg bg-accent px-2.5 text-[12px] font-semibold text-[#1C1A17] transition-colors hover:bg-accent/90"
+                              >
+                                <Plus className="size-3" />
+                                {taken ? `ещё (${taken.qty})` : "Взять"}
+                              </motion.button>
+                            </div>
+                          );
+                        })}
+                      {products.filter(
+                        (prod) =>
+                          (stop.client.interests ?? []).includes(prod.category) &&
+                          prod.stock > 0
+                      ).length === 0 && (
+                        <p className="text-[12.5px] text-ink-soft">
+                          Товаров из интересов нет в наличии — загляните в «Каталог».
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Чипы взятого: «масло ×1 · 1200 ₽» */}
+                {stop.crossSell && stop.crossSell.length > 0 && (
+                  <div className="flex w-full flex-wrap items-center gap-1.5">
+                    {stop.crossSell.map((c) => (
+                      <span
+                        key={c.productId}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-accent/12 px-2.5 py-1 text-[11.5px] font-medium text-accent"
+                      >
+                        <ShoppingBasket className="size-3" />
+                        {c.name} ×{c.qty} ·{" "}
+                        <span className="font-mono tabular-nums">
+                          {(c.qty * c.price).toLocaleString("ru-RU")} ₽
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeRouteCrossSell(stop.client.id, c.productId)
+                          }
+                          aria-label={`Убрать ${c.name}`}
+                          className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-accent/20"
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </li>
             );
           })}
