@@ -88,13 +88,8 @@ export function AgeBadge({ days, className }: { days: number; className?: string
 }
 
 /* ── Действия ───────────────────────────────────────────── */
-
-export function invoiceStub(onToast: (title: string, description: string) => void) {
-  onToast(
-    "Счёт (PDF)",
-    "Автогенерация счёта появится в следующей версии — пока считаем вручную.",
-  );
-}
+/* Счёт-PDF: кнопки на экранах заказов, долгов и финансов вызывают
+ * useInvoiceAction() из lib/use-invoice — генерация в lib/pdf-invoice. */
 
 function waHref(order: Order, phone: string | undefined): string {
   const text = encodeURIComponent(orderReceiptText(order));

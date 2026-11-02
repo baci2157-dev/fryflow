@@ -60,6 +60,9 @@ interface CrmState {
 
   /** Отметка «доставлено»: обновляет историю заказов и Health Score. */
   markDelivered: (clientId: string, boxes: number) => void;
+
+  /** Сброс к демо-базе (Настройки → «Демо-данные»). */
+  resetDemo: () => void;
 }
 
 const newId = () =>
@@ -193,6 +196,14 @@ export const useCrmStore = create<CrmState>()(
                 }
               : c
           ),
+        })),
+
+      resetDemo: () =>
+        set((s) => ({
+          ...seedState(),
+          routeStops: [],
+          capacity: s.capacity,
+          hydrated: true,
         })),
     }),
     {

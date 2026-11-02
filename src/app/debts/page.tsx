@@ -13,7 +13,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { AgeBadge, invoiceStub, money } from "@/components/orders/order-views";
+import { AgeBadge, money } from "@/components/orders/order-views";
 import { useToast } from "@/hooks/use-toast";
 import { useCrmStore } from "@/lib/clients-store";
 import { csvDateSuffix, downloadCsv } from "@/lib/csv";
@@ -25,6 +25,7 @@ import {
   useOrdersStore,
 } from "@/lib/orders-store";
 import { debtReminderText, waLink } from "@/lib/whatsapp";
+import { useInvoiceAction } from "@/lib/use-invoice";
 import { DEBT_DANGER_DAYS, type Order } from "@/types/models";
 
 /**
@@ -38,6 +39,7 @@ export default function DebtsPage() {
   const markOrderPaid = useOrdersStore((s) => s.markOrderPaid);
   const clients = useCrmStore((s) => s.clients);
   const { toast } = useToast();
+  const handleInvoice = useInvoiceAction();
 
   /** Сортировка по возрасту долга — старые сверху. */
   const debts = useMemo(() => debtOrders(orders), [orders]);
@@ -276,11 +278,7 @@ export default function DebtsPage() {
                     </motion.button>
                     <button
                       type="button"
-                      onClick={() =>
-                        invoiceStub((title, description) =>
-                          toast({ title, description, duration: 3200 })
-                        )
-                      }
+                      onClick={() => handleInvoice(order)}
                       title="Сформировать счёт (PDF)"
                       className="inline-flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border border-border bg-surface text-[10.5px] font-medium text-ink-soft transition-colors hover:border-accent/40 hover:bg-accent/10 hover:text-ink"
                     >

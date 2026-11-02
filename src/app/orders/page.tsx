@@ -9,7 +9,6 @@ import {
   DraftCard,
   OrderCard,
   OrderRow,
-  invoiceStub,
 } from "@/components/orders/order-views";
 import { useToast } from "@/hooks/use-toast";
 import { useCrmStore } from "@/lib/clients-store";
@@ -19,6 +18,7 @@ import {
   type NewOrderInput,
 } from "@/lib/orders-store";
 import { csvDateSuffix, downloadCsv } from "@/lib/csv";
+import { useInvoiceAction } from "@/lib/use-invoice";
 import type { Order } from "@/types/models";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +47,7 @@ export default function OrdersPage() {
   const rejectDraft = useOrdersStore((s) => s.rejectDraft);
   const clients = useCrmStore((s) => s.clients);
   const { toast } = useToast();
+  const handleInvoice = useInvoiceAction();
 
   const [tab, setTab] = useState<TabId>("all");
   const [createOpen, setCreateOpen] = useState(false);
@@ -254,11 +255,7 @@ export default function OrdersPage() {
                     order={order}
                     phone={phoneByClient.get(order.clientId)}
                     onPaid={handlePaid}
-                    onInvoice={() =>
-                      invoiceStub((title, description) =>
-                        toast({ title, description, duration: 3200 })
-                      )
-                    }
+                    onInvoice={() => handleInvoice(order)}
                   />
                 ))}
               </tbody>
@@ -274,11 +271,7 @@ export default function OrdersPage() {
                   order={order}
                   phone={phoneByClient.get(order.clientId)}
                   onPaid={handlePaid}
-                  onInvoice={() =>
-                    invoiceStub((title, description) =>
-                      toast({ title, description, duration: 3200 })
-                    )
-                  }
+                  onInvoice={() => handleInvoice(order)}
                 />
               ))}
             </AnimatePresence>

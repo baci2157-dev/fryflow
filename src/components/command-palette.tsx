@@ -204,6 +204,17 @@ export function CommandPalette() {
                   Переключить тему
                 </CommandItem>
                 <CommandItem
+                  value="Спросить ИИ-Директора чат ассистент долги склад"
+                  onSelect={() => {
+                    close();
+                    router.push("/ai-assistant");
+                  }}
+                >
+                  <Sparkles className="size-4" />
+                  Спросить ИИ-Директора
+                  <span className="ml-auto pl-3 font-mono text-[10px] text-accent">чат</span>
+                </CommandItem>
+                <CommandItem
                   value="Обновить совет ИИ искра подсказка"
                   onSelect={() => {
                     close();
@@ -214,10 +225,11 @@ export function CommandPalette() {
                   Обновить совет ИИ
                 </CommandItem>
                 <CommandItem
-                  value="Позвонить должнику звонок просрочка"
-                  onSelect={() =>
-                    notify("Звонок должнику", "Набор номера — в разделе «Долги».")
-                  }
+                  value="Позвонить должнику звонок просрочка долги дебиторка"
+                  onSelect={() => {
+                    close();
+                    router.push("/debts");
+                  }}
                 >
                   <PhoneCall className="size-4" />
                   Позвонить должнику

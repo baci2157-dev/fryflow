@@ -5,8 +5,10 @@ import { useEffect } from "react";
 import { CommandPalette } from "@/components/command-palette";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { useAiChatStore } from "@/lib/ai-chat-store";
 import { useCrmStore } from "@/lib/clients-store";
 import { useOrdersStore } from "@/lib/orders-store";
+import { useSettingsStore } from "@/lib/settings-store";
 import { useUiStore } from "@/lib/ui-store";
 
 /**
@@ -31,6 +33,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void useCrmStore.persist.rehydrate();
     void useOrdersStore.persist.rehydrate();
+    void useSettingsStore.persist.rehydrate();
+    void useAiChatStore.persist.rehydrate();
   }, []);
 
   return (

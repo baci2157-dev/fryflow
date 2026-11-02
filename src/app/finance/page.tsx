@@ -13,11 +13,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-import {
-  AgeBadge,
-  invoiceStub,
-  money,
-} from "@/components/orders/order-views";
+import { AgeBadge, money } from "@/components/orders/order-views";
 import { useToast } from "@/hooks/use-toast";
 import { useCrmStore } from "@/lib/clients-store";
 import {
@@ -28,6 +24,7 @@ import {
   useOrdersStore,
 } from "@/lib/orders-store";
 import { debtReminderText, waLink } from "@/lib/whatsapp";
+import { useInvoiceAction } from "@/lib/use-invoice";
 import { DEBT_DANGER_DAYS, type Order } from "@/types/models";
 
 /**
@@ -40,6 +37,7 @@ export default function FinancePage() {
   const orders = useOrdersStore((s) => s.orders);
   const clients = useCrmStore((s) => s.clients);
   const { toast } = useToast();
+  const handleInvoice = useInvoiceAction();
 
   const [paidFilter, setPaidFilter] = useState(false);
 
@@ -233,11 +231,7 @@ export default function FinancePage() {
                           </button>
                           <button
                             type="button"
-                            onClick={() =>
-                              invoiceStub((title, description) =>
-                                toast({ title, description, duration: 3200 })
-                              )
-                            }
+                            onClick={() => handleInvoice(order)}
                             title="Сформировать счёт"
                             className="flex h-9 items-center justify-center rounded-lg border border-border px-2.5 text-[12px] font-medium text-ink-soft transition-colors hover:border-accent/40 hover:text-accent"
                           >
