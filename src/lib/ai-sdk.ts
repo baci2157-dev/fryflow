@@ -5,8 +5,10 @@
  *   POST https://api.z.ai/api/paas/v4/chat/completions
  *   • модель по умолчанию glm-4.7-flash — бесплатная;
  *   • thinking отключён: отвечает сразу, без «размышлений»;
- *   • ретраи с нарастающей паузой: бесплатная модель бывает
- *     перегружена (ошибка 1305 «temporarily overloaded»).
+ *   • жёсткий бюджет ~42 с на ВСЕ попытки и таймаут 20 с на каждую:
+ *     бесплатная модель бывает перегружена (1305) или лимитирована
+ *     (1302/429), но запрос не висит минутами — после бюджета
+ *     роут подставит офлайн-мозг.
  *
  * РЕЖИМ ПЕСОЧНИЦЫ (ключа нет) — локальная разработка:
  *   • z-ai-web-dev-sdk с каскадом моделей (lib/ai-model.ts);
@@ -68,10 +70,19 @@ interface PublicApiError {
   error?: { code?: string | number; message?: string };
 }
 
-/** Паузы между ретраями перегруженной бесплатной модели. Пяти попыток
- *  (до ~47 сек) обычно хватает, чтобы вечерний пик 1305 разгрузился —
- *  иначе офлайн-мозг ответит на тех же цифрах, чат не «умирает». */
-const RETRY_DELAYS_MS = [2000, 6000, 14000, 25000];
+/** Жёсткий бюджет публичного запроса (включая паузы между
+ *  попытками). Платформенные прокси рвут соединения примерно через
+ *  60 с, а владелец ждёт ответа в чате — после бюджета отвечает
+ *  офлайн-мозг на тех же цифрах, чат никогда не «умирает». */
+const TOTAL_BUDGET_MS = 42_000;
+
+/** Таймаут одной попытки: «зависший» fetch не тянется бесконечно
+ *  (замерено вживую: ответ мог не приходить минутами). */
+const ATTEMPT_TIMEOUT_MS = 20_000;
+
+/** Паузы между попытками: ждать разгрузки вечернего пика 1305,
+ *  но не сжигать бюджет и лимиты 1302 зря. Сумма ≈ 14,5 с. */
+const RETRY_DELAYS_MS = [1500, 4000, 9000];
 
 /** Повторяемая ошибка? (1305 — перегрузка, 429 — лимит, 5xx — сервер) */
 function isRetryable(httpStatus: number, errCode: string | undefined): boolean {
@@ -90,12 +101,19 @@ async function publicChat(opts: AiSdkOptions): Promise<AiSdkResult> {
     ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
   };
 
+  const deadline = Date.now() + TOTAL_BUDGET_MS;
   let lastError = "неизвестная ошибка";
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    const remaining = deadline - Date.now();
+    /* Бюджета меньше 0,7 с — даже быстрая попытка не успеет. */
+    if (remaining < 700) break;
+
     if (attempt > 0) {
-      await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt - 1]));
+      const delay = Math.min(RETRY_DELAYS_MS[attempt - 1], remaining - 700);
+      if (delay > 0) await new Promise((r) => setTimeout(r, delay));
     }
+
     try {
       const res = await fetch(PUBLIC_API_URL, {
         method: "POST",
@@ -105,6 +123,8 @@ async function publicChat(opts: AiSdkOptions): Promise<AiSdkResult> {
           Authorization: `Bearer ${process.env.ZAI_API_KEY}`,
         },
         body: JSON.stringify(body),
+        /* Таймаут попытки — не дольше остатка бюджета. */
+        signal: AbortSignal.timeout(Math.max(700, Math.min(ATTEMPT_TIMEOUT_MS, deadline - Date.now()))),
       });
 
       const data = (await res.json().catch(() => null)) as
@@ -130,8 +150,13 @@ async function publicChat(opts: AiSdkOptions): Promise<AiSdkResult> {
       if (reply) return { reply, mode: "public", model };
       lastError = "пустой ответ модели";
     } catch (err) {
-      /* Сетевая ошибка — тоже кандидат на ретрай. */
-      lastError = err instanceof Error ? err.message : String(err);
+      /* Сетевая ошибка и таймаут попытки — кандидаты на ретрай. */
+      lastError =
+        err instanceof Error
+          ? err.name === "TimeoutError" || err.name === "AbortError"
+            ? `таймаут попытки ${ATTEMPT_TIMEOUT_MS / 1000} с`
+            : err.message
+          : String(err);
     }
   }
 
