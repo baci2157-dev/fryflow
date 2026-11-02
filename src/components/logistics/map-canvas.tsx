@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import L from "leaflet";
 import { CheckCircle2, MapPin, Phone, Plus } from "lucide-react";
 import {
@@ -46,6 +46,40 @@ interface MapCanvasProps {
 
 const CITY_CENTER: L.LatLngExpression = [47.2225, 39.7188];
 
+/** Радиус растаскивания слипшихся точек, градусы (~30–35 м). */
+const SPREAD_RADIUS = 0.00032;
+
+/** Разрешённые координаты маркера: точки с идентичными координатами
+ *  (сеть в одном ТЦ, адреса без геокодинга — центр города) сдвигаем
+ *  по кругу вокруг общего центра, детерминированно. Данные клиента
+ *  в сторе не трогаем — сдвиг только визуальный, чтобы маркеры
+ *  не сливались в одну точку. */
+function spreadPositions(clients: Client[]): Map<string, [number, number]> {
+  const groups = new Map<string, Client[]>();
+  for (const c of clients) {
+    const k = `${c.coordinates.lat.toFixed(6)},${c.coordinates.lng.toFixed(6)}`;
+    const arr = groups.get(k);
+    if (arr) arr.push(c);
+    else groups.set(k, [c]);
+  }
+  const pos = new Map<string, [number, number]>();
+  for (const arr of groups.values()) {
+    if (arr.length === 1) {
+      pos.set(arr[0].id, [arr[0].coordinates.lat, arr[0].coordinates.lng]);
+      continue;
+    }
+    const { lat, lng } = arr[0].coordinates;
+    arr.forEach((c, i) => {
+      const angle = (i / arr.length) * Math.PI * 2 - Math.PI / 2;
+      pos.set(c.id, [
+        lat + SPREAD_RADIUS * Math.sin(angle),
+        lng + SPREAD_RADIUS * Math.cos(angle),
+      ]);
+    });
+  }
+  return pos;
+}
+
 export default function MapCanvas({
   clients,
   mode,
@@ -53,6 +87,8 @@ export default function MapCanvas({
   onToggleRoute,
   flyTarget,
 }: MapCanvasProps) {
+  /* Маркеры не слипаются: дубликаты координат растаскиваются по кругу. */
+  const positions = useMemo(() => spreadPositions(clients), [clients]);
   return (
     <MapContainer
       center={CITY_CENTER}
@@ -71,7 +107,12 @@ export default function MapCanvas({
       {clients.map((client) => (
         <Marker
           key={client.id}
-          position={[client.coordinates.lat, client.coordinates.lng]}
+          position={
+            positions.get(client.id) ?? [
+              client.coordinates.lat,
+              client.coordinates.lng,
+            ]
+          }
           icon={markerIcon(client, mode)}
         >
           <Popup>
@@ -88,6 +129,15 @@ export default function MapCanvas({
                 <MapPin className="size-3" />
                 {client.address} · {client.district}
               </p>
+              {client.needsGeocode ? (
+                <p
+                  className="mt-0.5 flex items-center gap-1 text-[11.5px]"
+                  style={{ color: "var(--tier-yellow)" }}
+                >
+                  <MapPin className="size-3" />
+                  Координаты примерные — точка у центра города, уточните адрес
+                </p>
+              ) : null}
               <p className="mt-0.5 text-[11.5px] text-ink-soft">
                 {CLIENT_TYPE_LABEL[client.type]} ·{" "}
                 <span
@@ -191,13 +241,28 @@ function markerIcon(client: Client, mode: MapMode): L.DivIcon {
     ? `<span style="position:absolute;top:-7px;right:-12px;min-width:19px;height:19px;padding:0 4px;border-radius:999px;background:#FFFFFF;color:#1C1A17;font-family:var(--font-jetbrains-mono),ui-monospace,monospace;font-size:10.5px;font-weight:700;line-height:19px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.35);border:1px solid rgba(0,0,0,.08)">${client.chainSize ?? "•"}</span>`
     : "";
 
+  /* Точка без точных координат (геокодер не нашёл адрес): пунктирная
+   *  обводка вместо заливки — сразу видно, что позиция примерная. */
+  const pinStyle = client.needsGeocode
+    ? `background:transparent;border:2.5px dashed ${color}`
+    : `background:${color};border:2.5px solid #FFFFFF`;
+
   return L.divIcon({
     className: "fryflow-pin",
-    html: `<div style="position:relative;width:100%;height:100%;opacity:${dimmed ? 0.35 : 1}">
-      <div style="width:100%;height:100%;border-radius:999px;background:${color};border:2.5px solid #FFFFFF;box-shadow:0 2px 6px rgba(0,0,0,.35)"></div>${badge}
+    html: `<div title="${escapeHtml(client.name)}" style="position:relative;width:100%;height:100%;opacity:${dimmed ? 0.35 : 1}">
+      <div style="width:100%;height:100%;border-radius:999px;${pinStyle};box-shadow:0 2px 6px rgba(0,0,0,.35)"></div>${badge}
     </div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     popupAnchor: [0, -(size / 2 + 4)],
   });
+}
+
+/** Имя клиента в title-атрибут иконки — экранируем от HTML-инъекции. */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }

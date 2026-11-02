@@ -18,9 +18,12 @@ import {
  * ── Вместимость: 50 коробок по умолчанию (настраивается). Точки,
  *    которые не влезли, уходят в «не вместилось» — на вторую ходку.
  *
- * ── Временные окна: типовые часы работы сегмента. Считаем ETA
- *    (средняя городская скорость 26 км/ч + 12 минут на точку),
- *    и подсвечиваем точки, куда приедем к закрытию.
+ * ── Временные окна: типовые часы работы сегмента. Едем со склада в 9:00
+ *    (средняя городская скорость 26 км/ч + 12 минут на точку). Приехали
+ *    раньше открытия — водитель ждёт у двери (ETA сдвигается на открытие).
+ *    Приехали бы после закрытия — точка не посещается и уходит «на вторую
+ *    ходку» с пометкой «закрыто к приезду» (столовые, закрывающиеся в 16:00,
+ *    не сжигают слот в конце дня).
  */
 
 /** Склад-отправитель. */
@@ -35,11 +38,15 @@ export const ROUTE_START = {
 export const DEFAULT_CAPACITY = 50;
 
 /** Средняя скорость по городу, км/ч. */
-const AVG_SPEED_KMH = 26;
+export const AVG_SPEED_KMH = 26;
 /** Время на точке (разгрузка, документы), минут. */
-const SERVICE_MINUTES = 12;
+export const SERVICE_MINUTES = 12;
 /** Начало дня маршрута. */
-const DAY_START_HOUR = 9;
+export const DAY_START_HOUR = 9;
+/** Допустимое ожидание открытия у двери, минут. Дольше — точку
+ *  откладываем на потом: не паркуем машину на полдня у кальянной,
+ *  которая открывается в 14:00, пока рядом стоят открытые точки. */
+export const MAX_WAIT_MINUTES = 20;
 
 export interface Point {
   lat: number;
@@ -71,24 +78,37 @@ export interface PlannedStop {
   distanceFromPrevKm: number;
   /** Накопительный пробег от склада, км. */
   cumulativeKm: number;
-  /** Накопительное время от начала дня, минут. */
+  /** Накопительное время от начала дня, минут (момент, когда стоим
+   *   на точке — после ожидания открытия). */
   etaMinutes: number;
+  /** Ждали открытия, минут (0 — приехали в рабочие часы). */
+  waitedMinutes: number;
   /** Часы работы точки. */
   window: { from: number; to: number };
-  /** Приедем после закрытия. */
+  /** Приедем после закрытия. После фильтра закрытых точек всегда false —
+   *   поле оставлено для совместимости с карточками UI. */
   late: boolean;
   cumulativeBoxes: number;
 }
 
 export interface RoutePlan {
   ordered: PlannedStop[];
-  /** Не вместилось в машину. */
-  skipped: Array<{ client: Client; boxes: number; orderSum: number }>;
+  /** Не вместилось в машину или уже закрыто к приезду — на вторую ходку. */
+  skipped: SkippedStop[];
   totalBoxes: number;
   totalSum: number;
   totalKm: number;
   /** Число минут от выезда со склада до последней точки. */
   totalMinutes: number;
+}
+
+/** Точка, не попавшая в основную ходку. */
+export interface SkippedStop {
+  client: Client;
+  boxes: number;
+  orderSum: number;
+  /** capacity — не влезли в машину; closed — приедем после закрытия. */
+  reason: "capacity" | "closed";
 }
 
 /** Минуты с начала дня → «14:35». */
@@ -127,19 +147,27 @@ export function planRoute(
   let cumulativeBoxes = 0;
 
   while (remaining.length > 0) {
-    // Ближайший сосед: минимальное расстояние от текущей точки.
+    // Ближайший сосед с учётом часов работы: открыта сейчас — едем,
+    // ждать открытия дольше MAX_WAIT_MINUTES — точка уходит в конец
+    // очереди (штраф 1000 км перевешивает любую городскую даль).
     let bestIdx = 0;
-    let bestDist = Infinity;
+    let bestScore = Infinity;
     remaining.forEach((r, i) => {
       const d = haversineKm(current, r.client.coordinates);
-      if (d < bestDist) {
-        bestDist = d;
+      const arrival = cumulativeMinutes + (d / AVG_SPEED_KMH) * 60;
+      const w = WORKING_HOURS[r.client.type];
+      const wait = Math.max(0, w.from * 60 - arrival);
+      const score = d + (wait > MAX_WAIT_MINUTES ? 1000 : 0);
+      if (score < bestScore) {
+        bestScore = score;
         bestIdx = i;
       }
     });
 
     const next = remaining[bestIdx];
     remaining = remaining.filter((_, i) => i !== bestIdx);
+    // Фактический отрезок до выбранной точки (счёт мог учитывать штраф).
+    const bestDist = haversineKm(current, next.client.coordinates);
 
     // Вместимость: если коробки не влезают — точка на вторую ходку.
     if (cumulativeBoxes + next.stop.boxes > capacity) {
@@ -147,17 +175,33 @@ export function planRoute(
         client: next.client,
         boxes: next.stop.boxes,
         orderSum: next.stop.orderSum,
+        reason: "capacity",
+      });
+      continue;
+    }
+
+    const window = WORKING_HOURS[next.client.type];
+    // ETA до точки: перегон на городской скорости.
+    const arrival = cumulativeMinutes + (bestDist / AVG_SPEED_KMH) * 60;
+    // Раньше открытия — стоим и ждём (кальянные открываются к 14:00).
+    const waitedMinutes = Math.max(0, window.from * 60 - arrival);
+    const atPoint = arrival + waitedMinutes;
+
+    // Приехали бы после закрытия — точку не посещаем: на вторую ходку.
+    if (atPoint > window.to * 60) {
+      skipped.push({
+        client: next.client,
+        boxes: next.stop.boxes,
+        orderSum: next.stop.orderSum,
+        reason: "closed",
       });
       continue;
     }
 
     cumulativeKm += bestDist;
-    // Перегон + сервисное время на точке.
-    cumulativeMinutes += (bestDist / AVG_SPEED_KMH) * 60 + SERVICE_MINUTES;
+    // Разгрузка начинаемся с момента, когда стоим на точке.
+    cumulativeMinutes = atPoint + SERVICE_MINUTES;
     cumulativeBoxes += next.stop.boxes;
-
-    const window = WORKING_HOURS[next.client.type];
-    const arrivalHour = cumulativeMinutes / 60;
 
     ordered.push({
       client: next.client,
@@ -167,9 +211,10 @@ export function planRoute(
       index: ordered.length + 1,
       distanceFromPrevKm: bestDist,
       cumulativeKm,
-      etaMinutes: cumulativeMinutes,
+      etaMinutes: atPoint,
+      waitedMinutes,
       window,
-      late: arrivalHour > window.to,
+      late: false,
       cumulativeBoxes,
     });
 

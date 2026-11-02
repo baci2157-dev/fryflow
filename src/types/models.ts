@@ -52,6 +52,9 @@ export interface Client {
   chainSize?: number;
   coordinates: { lat: number; lng: number };
   notes: string;
+  /** Координаты примерные: геокодер не нашёл адрес — точка стоит
+   *  у центра города, маркер на карте обведён пунктиром. */
+  needsGeocode?: boolean;
   /** ISO-дата создания карточки. */
   createdAt: string;
 

@@ -134,11 +134,13 @@ function parseRow(
     return { ok: false, name, reason: "Не указан адрес" };
   }
 
-  const district = typeof row.district === "string" ? row.district.trim() : "";
-  if (!district) {
+  const districtRaw = typeof row.district === "string" ? row.district.trim() : "";
+  if (!districtRaw) {
     return { ok: false, name, reason: "Не указан район" };
   }
   // Район должен совпадать со справочником Ростова (без учёта регистра).
+  // «Советский район» / «советский» / «Советский» — один и тот же район.
+  const district = districtRaw.replace(/\s*район$/i, "").trim();
   const districtHit = DISTRICTS.find(
     (d) => d.toLowerCase() === district.toLowerCase()
   );
@@ -205,6 +207,9 @@ function parseRow(
       coordinates: hasCoords
         ? { lat: Math.round(lat! * 1e6) / 1e6, lng: Math.round(lng! * 1e6) / 1e6 }
         : { ...ROSTOV_CENTER },
+      /* Точка без координат: попробуем геокодинг ниже (runClientsImport);
+      если и он не поможет — флаг останется, карта обведёт маркер пунктиром. */
+      needsGeocode: !hasCoords || undefined,
       chainName,
       chainSize: chainName ? (chainSize ?? 1) : undefined,
     },
@@ -338,16 +343,17 @@ export async function runClientsImport(
             lat: Math.round(suggestions[0].lat * 1e6) / 1e6,
             lng: Math.round(suggestions[0].lng * 1e6) / 1e6,
           };
+          input.needsGeocode = undefined;
         } else {
           warnings.push({
             name,
-            reason: "Nominatim не нашёл адрес — поставили центр Ростова, поправьте в карточке",
+            reason: "Nominatim не нашёл адрес — точка у центра города, поправьте координаты в карточке",
           });
         }
       } catch {
         warnings.push({
           name,
-          reason: "Nominatim недоступен — поставили центр Ростова, поправьте в карточке",
+          reason: "Nominatim недоступен — точка у центра города, поправьте координаты в карточке",
         });
       }
     }

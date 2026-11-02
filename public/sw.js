@@ -4,20 +4,26 @@
  * Задача: приложение живёт на телефоне как нативное — открывается
  * из подвала склада без сети, интерфейс кэшируется целиком.
  *
- * Стратегии:
- *  • навигация (переход по страницам) — сеть первым, при обрыве
- *    отдаём кэшированную оболочку «/» (offline-first fallback);
- *  • статика Next.js (хэшированные чанки) и иконки — cache-first:
- *    имя файла меняется при изменении содержимого;
- *  • GET API-запросы и прочее — stale-while-revalidate: сразу из
- *    кэша, в фоне обновляем.
+ * ВАЖНО (fix «импорт не сработал»): раньше чанки /_next/static/ кэшировались
+ * по стратегии cache-first — «имена файлов хэшированы, протухнуть не могут».
+ * Это верно для production-сборки, но НЕ верно для dev-сервера (превью
+ * платформы): там имена чанков стабильны, а содержимое меняется после каждой
+ * правки кода. Браузер вечно получал из кэша СТАРУЮ версию приложения
+ * (со старым справочником районов и старой логикой импорта) — сколько бы
+ * мы ни фиксили код. Теперь все same-origin GET — network-first с фолбэком
+ * в кэш: онлайн всегда свежий код, офлайн — последний закэшированный.
+ *
+ * Стратегии (v1.1.0):
+ *  • навигация — сеть, при обрыве кэш оболочки «/»;
+ *  • статика Next.js и иконки — сеть, при обрыве кэш (см. выше);
+ *  • GET API-запросы — сеть, при обрыве кэш.
  *
  * Записи (POST) не перехватываем: их в офлайне забирает
  * IndexedDB-очередь (lib/offline-queue.ts) и отправляет при
  * восстановлении сети.
  */
 
-const VERSION = "v1.0.0";
+const VERSION = "v1.1.0";
 const SHELL_CACHE = `fryflow-shell-${VERSION}`;
 const RUNTIME_CACHE = `fryflow-runtime-${VERSION}`;
 
@@ -48,6 +54,8 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
+            /* Подчищаем кэши прошлых версий — в том числе «залипшую»
+             * v1.0.0 со старыми dev-чанками. */
             .filter((k) => k !== SHELL_CACHE && k !== RUNTIME_CACHE)
             .map((k) => caches.delete(k))
         )
@@ -62,16 +70,29 @@ self.addEventListener("message", (event) => {
 
 /* ── Стратегии кэширования ─────────────────────────────────── */
 
-/** Навигация: сеть → кэш оболочки (страница открывается без сети). */
-async function networkFirstNavigation(request) {
+/** Сеть первым, кэш — фолбэк. Свежие данные всегда, офлайн — из кэша. */
+async function networkFirst(request, cacheName) {
   try {
     const fresh = await fetch(request);
-    const cache = await caches.open(SHELL_CACHE);
-    cache.put("/", fresh.clone());
+    /* Кэшируем только здоровые ответы: 403/502 от прокси-серверов
+     * не должны вытеснять рабочий кэш. */
+    if (fresh && fresh.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, fresh.clone());
+    }
     return fresh;
   } catch {
-    const cached = await caches.match("/");
+    const cached = await caches.match(request);
     if (cached) return cached;
+    throw new Error("offline-no-cache");
+  }
+}
+
+/** Навигация: сеть → кэш оболочки (страница открывается без сети). */
+async function navigationHandler(request) {
+  try {
+    return await networkFirst(request, SHELL_CACHE);
+  } catch {
     return new Response(
       "<!doctype html><meta charset='utf-8'><title>FryFlow — офлайн</title>" +
         "<body style='background:#14120F;color:#F0EDE8;font-family:system-ui;" +
@@ -83,40 +104,16 @@ async function networkFirstNavigation(request) {
   }
 }
 
-/** Статика: кэш первым (имена файлов хэшированы — протухнуть не могут). */
-async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  const fresh = await fetch(request);
-  if (fresh.ok) {
-    const cache = await caches.open(cacheName);
-    cache.put(request, fresh.clone());
+/** API GET: сеть → кэш → честный офлайн-ответ. */
+async function apiHandler(request) {
+  try {
+    return await networkFirst(request, RUNTIME_CACHE);
+  } catch {
+    return new Response(JSON.stringify({ offline: true }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
   }
-  return fresh;
-}
-
-/** stale-while-revalidate: сразу кэш (пусть и вчерашний), в фоне свежий. */
-async function staleWhileRevalidate(request) {
-  const cached = await caches.match(request);
-  const refresh = fetch(request)
-    .then((fresh) => {
-      if (fresh.ok) {
-        caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, fresh.clone()));
-      }
-      return fresh;
-    })
-    .catch(() => null);
-  if (cached) {
-    void refresh; // обновляем молча, клиенту уже ответили из кэша
-    return cached;
-  }
-  const fresh = await refresh;
-  if (fresh) return fresh;
-  /* Ни кэша, ни сети — честный офлайн-ответ для API. */
-  return new Response(JSON.stringify({ offline: true }), {
-    status: 503,
-    headers: { "Content-Type": "application/json" },
-  });
 }
 
 /* ── Перехват запросов ─────────────────────────────────────── */
@@ -128,26 +125,31 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-  /* Чужие домены (тайлы карты, Telegram) — не кэшируем. */
+  /* Чужие домены (тайлы карты, Nominatim, Telegram) — не кэшируем. */
   if (url.origin !== self.location.origin) return;
   /* HMR-канал Next.js (dev-режим) — мимо. */
   if (url.pathname.startsWith("/_next/webpack-hmr")) return;
 
   /* Навигация: без сети приложение всё равно открывается. */
   if (request.mode === "navigate") {
-    event.respondWith(networkFirstNavigation(request));
+    event.respondWith(navigationHandler(request));
     return;
   }
 
-  /* Хэшированная статика и иконки: cache-first. */
+  /* Хэшированная статика и иконки: сеть → кэш (см. шапку файла —
+   * cache-first в dev-режиме кормил браузер протухшим кодом). */
   if (
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/icons/")
   ) {
-    event.respondWith(cacheFirst(request, SHELL_CACHE));
+    event.respondWith(
+      networkFirst(request, SHELL_CACHE).catch(
+        () => new Response("offline", { status: 503 })
+      )
+    );
     return;
   }
 
-  /* Остальной GET (API-роуты, манифест, svg): SWR. */
-  event.respondWith(staleWhileRevalidate(request));
+  /* Остальной GET (API-роуты, манифест, svg): сеть → кэш. */
+  event.respondWith(apiHandler(request));
 });

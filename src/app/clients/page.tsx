@@ -411,15 +411,20 @@ export default function ClientsPage() {
         run={(text, onProgress) => runClientsImport(parseClientsFile(text), onProgress)}
         onDone={(o) =>
           toast({
-            title: `Импорт завершён: +${o.imported} клиентов`,
+            title:
+              o.imported === 0 && o.duplicates > 0 && o.errors.length === 0
+                ? "Новых клиентов нет — все записи уже в базе"
+                : `Импорт завершён: +${o.imported} клиентов`,
             description:
-              [
-                o.duplicates > 0 ? `${o.duplicates} дублей пропущено` : null,
-                o.errors.length > 0 ? `${o.errors.length} с ошибками` : null,
-                o.warnings.length > 0 ? `${o.warnings.length} без точных координат` : null,
-              ]
-                .filter(Boolean)
-                .join(" · ") || "Чистая загрузка — все записи в базе.",
+              o.imported === 0 && o.duplicates > 0 && o.errors.length === 0
+                ? `${o.duplicates} дубликатов пропущено — совпали по названию и адресу.`
+                : [
+                    o.duplicates > 0 ? `${o.duplicates} дублей пропущено` : null,
+                    o.errors.length > 0 ? `${o.errors.length} с ошибками` : null,
+                    o.warnings.length > 0 ? `${o.warnings.length} без точных координат` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "Чистая загрузка — все записи в базе.",
             duration: 5000,
           })
         }

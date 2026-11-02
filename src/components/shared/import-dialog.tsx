@@ -136,6 +136,13 @@ export function ImportDialog({
     outcome === null
       ? 0
       : outcome.imported + outcome.duplicates + outcome.errors.length;
+  /* Весь файл оказался дублями — это не ошибка, но пользователь должен
+   * понять, почему «точки не добавились»: они и так уже в базе. */
+  const nothingNew =
+    outcome !== null &&
+    outcome.imported === 0 &&
+    outcome.duplicates > 0 &&
+    outcome.errors.length === 0;
 
   return (
     <SpringSheet open={open} onClose={close} variant="dialog" title={title}>
@@ -244,22 +251,39 @@ export function ImportDialog({
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 340, damping: 30 }}
           >
-            <div className="flex items-start gap-3 rounded-2xl border border-tier-green/30 bg-tier-green/8 p-4">
-              <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-tier-green" />
-              <div className="min-w-0">
-                <p className="text-[15px] font-semibold text-ink">
-                  Импортировано {outcome.imported} из {totalRecords}{" "}
-                  {what}
-                </p>
-                <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">
-                  {outcome.duplicates > 0 &&
-                    `${outcome.duplicates} дублей пропущено (такие уже есть). `}
-                  {outcome.errors.length > 0
-                    ? `${outcome.errors.length} записей с ошибками — список ниже.`
-                    : "Ошибок нет — чистая загрузка."}
-                </p>
+            {nothingNew ? (
+              <div className="flex items-start gap-3 rounded-2xl border border-tier-yellow/40 bg-tier-yellow/10 p-4">
+                <AlertTriangle className="mt-0.5 size-5 shrink-0 text-tier-yellow" />
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold text-ink">
+                    Новых записей нет — все уже в базе
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">
+                    Все {outcome.duplicates} записей файла совпали по названию
+                    и адресу с существующими клиентами (дубликаты пропущены).
+                    Добавьте в файл новые точки и загрузите снова — старые
+                    не задвоятся.
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-start gap-3 rounded-2xl border border-tier-green/30 bg-tier-green/8 p-4">
+                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-tier-green" />
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold text-ink">
+                    Импортировано {outcome.imported} из {totalRecords}{" "}
+                    {what}
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">
+                    {outcome.duplicates > 0 &&
+                      `${outcome.duplicates} дублей пропущено (такие уже есть). `}
+                    {outcome.errors.length > 0
+                      ? `${outcome.errors.length} записей с ошибками — список ниже.`
+                      : "Ошибок нет — чистая загрузка."}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Ошибки построчно */}
             {outcome.errors.length > 0 && (

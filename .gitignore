@@ -36,6 +36,8 @@ yarn-error.log*
 
 # vercel
 .vercel
+# токен Vercel для деплоя из песочницы — никогда в репозиторий
+.vercel-token
 
 
 # typescript

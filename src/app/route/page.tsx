@@ -357,6 +357,15 @@ export default function RoutePage() {
                       {minutesToTime(stop.window.to * 60)}
                     </span>
                     <span className="font-mono text-ink">≈ {minutesToTime(stop.etaMinutes)}</span>
+                    {stop.waitedMinutes > 0 ? (
+                      <span
+                        className="flex items-center gap-1 font-medium"
+                        style={{ color: "var(--tier-yellow)" }}
+                      >
+                        <Clock className="size-3" />
+                        ждём открытия {Math.round(stop.waitedMinutes)} мин
+                      </span>
+                    ) : null}
                     {stop.late ? (
                       <span className="flex items-center gap-1 font-medium" style={{ color: "var(--tier-red)" }}>
                         <AlertTriangle className="size-3" />
@@ -521,11 +530,11 @@ export default function RoutePage() {
           })}
         </ol>
 
-        {/* Не вместилось */}
+        {/* На вторую ходку: не вместилось в машину или закрыто к приезду */}
         {plan.skipped.length > 0 ? (
           <div className="mt-4">
             <h3 className="text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
-              Не вместилось — на вторую ходку
+              На вторую ходку · {plan.skipped.length}
             </h3>
             <ul className="mt-2 space-y-2">
               {plan.skipped.map((s) => (
@@ -537,7 +546,30 @@ export default function RoutePage() {
                   <span className="min-w-0 flex-1 truncate text-[13.5px] text-ink">
                     {s.client.name}
                   </span>
-                  <span className="font-mono text-[12.5px] tabular-nums text-ink-soft">
+                  {s.reason === "closed" ? (
+                    <span
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                      style={{
+                        color: "var(--tier-red)",
+                        background:
+                          "color-mix(in srgb, var(--tier-red) 12%, transparent)",
+                      }}
+                    >
+                      закрыто к приезду
+                    </span>
+                  ) : (
+                    <span
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                      style={{
+                        color: "var(--tier-yellow)",
+                        background:
+                          "color-mix(in srgb, var(--tier-yellow) 14%, transparent)",
+                      }}
+                    >
+                      не вместилось
+                    </span>
+                  )}
+                  <span className="shrink-0 font-mono text-[12.5px] tabular-nums text-ink-soft">
                     {s.boxes} кор.
                   </span>
                 </li>
