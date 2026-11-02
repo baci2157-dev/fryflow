@@ -1,0 +1,64 @@
+{
+  "name": "FryFlow — CRM оптовых продаж картофеля фри",
+  "short_name": "FryFlow",
+  "description": "Рабочее место оптовика: клиенты, звонки, заказы, склад, долги, регионы и ИИ-Директор. Картофель фри 2,5 кг — 300 ₽/уп от 10 коробок, с доставкой по югу.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "ru",
+  "dir": "ltr",
+  "background_color": "#F7F4EF",
+  "theme_color": "#E5A83B",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Новый заказ",
+      "short_name": "Заказ",
+      "description": "Создать заказ — три касания",
+      "url": "/orders",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Звонки",
+      "short_name": "Звонки",
+      "description": "Воронка холодных продаж на сегодня",
+      "url": "/calls",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "ИИ-Директор",
+      "short_name": "ИИ",
+      "description": "Совет по бизнесу на живых цифрах",
+      "url": "/ai-assistant",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
