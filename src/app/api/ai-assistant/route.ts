@@ -21,6 +21,9 @@ import { chatCompletion } from "@/lib/ai-sdk";
  */
 
 export const runtime = "nodejs";
+/* Vercel: бюджет ИИ-ответа до ~42с — просим максимум для Hobby-плана (60с).
+ * На других платформах (self-hosted, платформа) экспорт безвреден. */
+export const maxDuration = 60;
 
 interface ChatMessage {
   role: "user" | "assistant";
