@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 /**
- * Настройки FryFlow: реквизиты для PDF-счетов, устав ИИ-Директора
+ * Настройки FryFlow: реквизиты для PDF-счетов, устав Мозга
  * и интервалы проактивных советов (заглушка до следующей задачи).
  *
  * Живут в localStorage (fryflow-settings-v1). Реквизиты предзаполнены
@@ -53,7 +53,7 @@ export const DEFAULT_REQUISITES: InvoiceRequisites = {
   signatoryTitle: "Индивидуальный предприниматель",
 };
 
-/* ── ИИ-Директор ──────────────────────────────────────────── */
+/* ── Мозг ──────────────────────────────────────────── */
 
 export interface AiSettings {
   /** Проактивные советы (интервалы) — заглушка до следующей задачи. */

@@ -204,14 +204,14 @@ export function CommandPalette() {
                   Переключить тему
                 </CommandItem>
                 <CommandItem
-                  value="Спросить ИИ-Директора чат ассистент долги склад"
+                  value="Спросить Мозга чат ассистент долги склад"
                   onSelect={() => {
                     close();
                     router.push("/ai-assistant");
                   }}
                 >
                   <Sparkles className="size-4" />
-                  Спросить ИИ-Директора
+                  Спросить Мозга
                   <span className="ml-auto pl-3 font-mono text-[10px] text-accent">чат</span>
                 </CommandItem>
                 <CommandItem

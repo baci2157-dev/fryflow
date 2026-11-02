@@ -32,7 +32,7 @@ export interface NavItem {
  * Единый реестр разделов FryFlow.
  * Реализованы: Дашборд, Клиенты, Карта (логистика), Маршрут на день,
  * Звонки (воронка холодных продаж), Заказы, Склад, Финансы, Долги
- * (полный цикл сделки — задача 5), ИИ-Директор, PDF-счета и Настройки
+ * (полный цикл сделки — задача 5), Мозг, PDF-счета и Настройки
  * (задача 6), Регионы и Telegram-интеграция (задача 7), Маркетинг
  * с календарём автопостинга, PWA и офлайн-очередь (задача 8),
  * массовый импорт клиентов и каталог попутных товаров (задача 9),
@@ -48,7 +48,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "orders", title: "Заказы", href: "/orders", icon: ShoppingCart, primary: false, ready: true },
   { id: "catalog", title: "Каталог", href: "/catalog", icon: ShoppingBasket, primary: false, ready: true },
   { id: "regions", title: "Регионы", href: "/regions", icon: MapPin, primary: false, ready: true },
-  { id: "ai", title: "ИИ-Директор", href: "/ai-assistant", icon: Sparkles, primary: true, ready: true },
+  { id: "ai", title: "Мозг", href: "/ai-assistant", icon: Sparkles, primary: true, ready: true },
   { id: "finance", title: "Финансы", href: "/finance", icon: Landmark, primary: false, ready: true },
   { id: "debts", title: "Долги", href: "/debts", icon: Wallet, primary: false, ready: true },
   { id: "warehouse", title: "Склад", href: "/warehouse", icon: Warehouse, primary: false, ready: true },

@@ -79,7 +79,7 @@ function GuardedShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     /* CRM первым: после его восстановления решаем, нужен ли
      * авто-сид базы (пустой localStorage / чистые демо-карточки →
-     * грузим 173 точки владельца из public/seed/clients.json). */
+     * грузим 223 точки владельца из public/seed/clients.json). */
     void (async () => {
       await useCrmStore.persist.rehydrate();
       await ensureBaseSeeded();

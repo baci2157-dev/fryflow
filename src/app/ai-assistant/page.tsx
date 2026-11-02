@@ -29,7 +29,7 @@ import { useSettingsStore } from "@/lib/settings-store";
 import { cn } from "@/lib/utils";
 
 /**
- * ИИ-Директор — премиальный чат, который видит ваши цифры.
+ * Мозг — премиальный чат, который видит ваши цифры.
  *
  * Первое сообщение (приветствие) — самое важное: оно пересобирается
  * из живых данных стора при каждом запуске. Пузыри пользователя —
@@ -261,7 +261,7 @@ export default function AiAssistantPage() {
         <SparkAvatar size={44} />
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
-            ИИ-Директор
+            Мозг
           </h1>
           <p className="mt-0.5 truncate text-[13px] text-ink-soft">
             Видит ваши цифры: склад, долги, выручку и лиды
@@ -383,8 +383,8 @@ export default function AiAssistantPage() {
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Спросите ИИ-Директора…"
-                aria-label="Вопрос ИИ-Директору"
+                placeholder="Спросите Мозга…"
+                aria-label="Вопрос Мозгу"
                 autoComplete="off"
                 className="h-12 min-w-0 flex-1 rounded-xl bg-transparent px-3 text-[15px] text-ink outline-none placeholder:text-ink-soft/60"
               />

@@ -1,7 +1,7 @@
 import { fmtKg, fmtRub, ZONE_LABEL, type AiContext, type AiDebtor } from "@/lib/ai-context";
 
 /**
- * Офлайн-мозг ИИ-Директора.
+ * Офлайн-режим «Мозга».
  *
  * Работает без ключа ZAI и при сетевых сбоях: строит короткие,
  * предметные ответы на живых цифрах контекста (склад, долги, лиды,
@@ -391,10 +391,10 @@ export function offlineAnswer(question: string, context: AiContext): string {
   return defaultAnswer(c);
 }
 
-/** Приветствие ИИ-Директора: первое сообщение — самое важное. */
+/** Приветствие Мозга: первое сообщение — самое важное. */
 export function greetingMessage(c: AiContext): string {
   const lines = [
-    "Добрый день! Я — ваш ИИ-Директор и коммерческий директор: вижу историю заказов, паттерны клиентов и сезон.",
+    "Добрый день! Я — Мозг FryFlow, ваш коммерческий директор: вижу историю заказов, паттерны клиентов и сезон.",
     "",
     `Сводка на сегодня:`,
     `• Склад: ${fmtKg(c.stock.kg)} (${new Intl.NumberFormat("ru-RU").format(c.stock.packs)} уп.)${c.stock.isLow ? " — ниже порога!" : ""}`,

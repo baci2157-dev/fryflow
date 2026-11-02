@@ -57,7 +57,7 @@ import { cn } from "@/lib/utils";
 /**
  * Настройки FryFlow (задача 7):
  *
- *  • ИИ-Ассистент — устав, проактивные советы (вкл/выкл) и интервал
+ *  • Мозг — устав, проактивные советы (вкл/выкл) и интервал
  *    2/3/4 ч: пока вы в приложении — советы на Дашборде, ушли —
  *    критичные алерты прилетают в Telegram;
  *  • Telegram — токен бота и Chat ID (токен хранится ТОЛЬКО на
@@ -971,7 +971,7 @@ export default function SettingsPage() {
   /* Сброс демо-данных — двухшаговое подтверждение (случайный тап не обнулит базу). */
   const [confirmReset, setConfirmReset] = useState(false);
   const [confirmPurge, setConfirmPurge] = useState(false);
-  /* Восстановление базы 173 точек из сида (public/seed/clients.json). */
+  /* Восстановление базы из 223 точек сида (public/seed/clients.json). */
   const [confirmRestore, setConfirmRestore] = useState(false);
   const [restoring, setRestoring] = useState(false);
   useEffect(() => {
@@ -1025,10 +1025,10 @@ export default function SettingsPage() {
         {/* ── Безопасность (задача 10) ── */}
         <SecuritySection />
 
-        {/* ── ИИ-Директор ── */}
+        {/* ── Мозг ── */}
         <Section
           icon={<Sparkles className="size-5" />}
-          title="ИИ-Ассистент"
+          title="Мозг"
           hint="Устав и проактивные советы: ИИ работает в фоне, пока вы звоните"
         >
           {/* Устав */}
@@ -1143,7 +1143,7 @@ export default function SettingsPage() {
             )}
 
             {/* Веб-поиск временно отключён (задача 13, Go-Live): тумблер
-                убран — ИИ-Директор работает на внутреннем контексте базы.
+                убран — Мозг работает на внутреннем контексте базы.
                 Поиск вернётся вместе с «Разведчиком» в следующем обновлении. */}
 
             <Link
@@ -1151,7 +1151,7 @@ export default function SettingsPage() {
               className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground transition-all hover:bg-accent/90 active:scale-[0.98]"
             >
               <Sparkles className="size-4" />
-              Открыть чат с ИИ-Директором
+              Открыть чат с Мозгом
             </Link>
           </div>
         </Section>
@@ -1341,7 +1341,7 @@ export default function SettingsPage() {
               Скачать резервную копию (JSON)
             </button>
 
-            {/* Восстановление базы владельца: 173 точки из сида.
+            {/* Восстановление базы владельца: 223 точки из сида.
              * Дедуп сам вернёт только недостающее — ручные правки
              * и добавленные клиенты не трогаются. */}
             <button
@@ -1373,7 +1373,7 @@ export default function SettingsPage() {
                           ]
                             .filter(Boolean)
                             .join(" · ") || "Все записи на месте."
-                        : "Все 173 точки уже в базе — дубликаты не создаём.",
+                        : "Все 223 точки уже в базе — дубликаты не создаём.",
                     duration: 5200,
                   });
                 } catch {
@@ -1399,7 +1399,7 @@ export default function SettingsPage() {
                 ? "Загружаем базу…"
                 : confirmRestore
                   ? "Точно? Нажмите ещё раз для загрузки"
-                  : "Восстановить базу (173 точки)"}
+                  : "Восстановить базу (223 точки)"}
             </button>
 
             {/* Удаление демо-карточек — перед импортом реальной базы:
@@ -1455,12 +1455,12 @@ export default function SettingsPage() {
                 resetAdvice();
                 clearChat();
                 /* База владельца возвращается автоматически: стор пуст →
-                 * авто-сид грузит 173 точки из public/seed/clients.json. */
+                 * авто-сид грузит 223 точки из public/seed/clients.json. */
                 void ensureBaseSeeded();
                 toast({
                   title: "Всё сброшено к первому запуску",
                   description:
-                    "Клиентская база (173 точки) загружается заново из сида, звонки и заказы — пустые, регионы и каталог — по умолчанию. Настройки, реквизиты и устав ИИ не тронуты.",
+                    "Клиентская база (223 точки) загружается заново из сида, звонки и заказы — пустые, регионы и каталог — по умолчанию. Настройки, реквизиты и устав ИИ не тронуты.",
                   duration: 4200,
                 });
               }}

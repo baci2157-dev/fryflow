@@ -2454,5 +2454,705 @@
       "lng": 39.725564
     },
     "notes": ""
+  },
+  {
+    "name": "Шаурма на Измайловском",
+    "address": "бул. Измайловский, 14",
+    "district": "Октябрьский",
+    "phone": "+7 959 106-93-79",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.312888,
+      "lng": 39.677885
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль-Пойнт Суворовский",
+    "address": "ул. Уланская, 23",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.314215,
+      "lng": 39.677503
+    },
+    "notes": ""
+  },
+  {
+    "name": "Уста-Кебаб 2",
+    "address": "ул. Драгунская, 22",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.313091,
+      "lng": 39.67578
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дымный Кебаб 3",
+    "address": "ул. Сосновая, 8",
+    "district": "Октябрьский",
+    "phone": "+7 950 663-74-73",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.314423,
+      "lng": 39.677371
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма «Лазоревая»",
+    "address": "2-й Лазоревый пер., 25",
+    "district": "Октябрьский",
+    "phone": "+7 963 865-37-29",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.32615,
+      "lng": 39.674662
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восток Дона 2",
+    "address": "5-й Лазоревый пер., 35",
+    "district": "Октябрьский",
+    "phone": "+7 975 459-73-58",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.325358,
+      "lng": 39.677834
+    },
+    "notes": ""
+  },
+  {
+    "name": "Король Кебаба 2",
+    "address": "ул. Платона Кляты, 34",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.317491,
+      "lng": 39.679335
+    },
+    "notes": ""
+  },
+  {
+    "name": "Халяль-Сити 2",
+    "address": "ул. Петренко, 28",
+    "district": "Октябрьский",
+    "phone": "+7 965 243-78-10",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.31983,
+      "lng": 39.679791
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Мастер 2",
+    "address": "ул. Висаитова, 12",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.324011,
+      "lng": 39.684505
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Восход 2",
+    "address": "пер. Белоусова, 14",
+    "district": "Октябрьский",
+    "phone": "+7 947 800-38-90",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.323539,
+      "lng": 39.683877
+    },
+    "notes": ""
+  },
+  {
+    "name": "Уличный Гриль 22",
+    "address": "пер. Андреева, 19",
+    "district": "Октябрьский",
+    "phone": "+7 922 676-90-81",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.32214,
+      "lng": 39.688488
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кебаб Хаус 2",
+    "address": "ул. 1-я Процветания, 4",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.320333,
+      "lng": 39.679169
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургерная «Плот» 2",
+    "address": "ул. 3-я Процветания, 10",
+    "district": "Октябрьский",
+    "phone": "+7 969 669-76-14",
+    "type": "burger",
+    "status": "no_answer",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.322745,
+      "lng": 39.676897
+    },
+    "notes": ""
+  },
+  {
+    "name": "МясЦех 2",
+    "address": "ул. 5-я Процветания, 6",
+    "district": "Октябрьский",
+    "phone": "+7 932 222-60-47",
+    "type": "burger",
+    "status": "callback",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.325001,
+      "lng": 39.678716
+    },
+    "notes": ""
+  },
+  {
+    "name": "Смэш-Пойнт 2",
+    "address": "ул. 2-я Сувенирная, 5",
+    "district": "Октябрьский",
+    "phone": "+7 967 576-43-70",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.320351,
+      "lng": 39.693854
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургер-Лаб 2",
+    "address": "ул. 4-я Сувенирная, 13",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "burger",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.322119,
+      "lng": 39.69447
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая «Суворовская»",
+    "address": "ул. Северная, 22",
+    "district": "Октябрьский",
+    "phone": "+7 943 807-68-54",
+    "type": "canteen",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.322189,
+      "lng": 39.665328
+    },
+    "notes": ""
+  },
+  {
+    "name": "Трапезная «Домашняя» 2",
+    "address": "ул. Соборная, 15",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "canteen",
+    "status": "trial",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.307747,
+      "lng": 39.666331
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гараж-Бар 2",
+    "address": "ул. Благодатная, 4",
+    "district": "Октябрьский",
+    "phone": "+7 936 174-71-31",
+    "type": "bar",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.323105,
+      "lng": 39.66681
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шиша-Лаунж 2",
+    "address": "ул. Культурная, 14",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "hookah",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.322709,
+      "lng": 39.667185
+    },
+    "notes": ""
+  },
+  {
+    "name": "Сити-Фуд 2",
+    "address": "ул. Тихая, 3",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "foodcourt",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.325951,
+      "lng": 39.670504
+    },
+    "notes": ""
+  },
+  {
+    "name": "Стрит-Фуд Пойнт 2",
+    "address": "пр. Торговый, 1",
+    "district": "Октябрьский",
+    "phone": "+7 942 965-50-91",
+    "type": "foodcourt",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.314989,
+      "lng": 39.661526
+    },
+    "notes": ""
+  },
+  {
+    "name": "Фудкорт «Торговый»",
+    "address": "ул. Свободы, 26",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "foodcourt",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.321531,
+      "lng": 39.662701
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дарк-Китчен «Бокс» 2",
+    "address": "ул. Веры, 6",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.32431,
+      "lng": 39.667075
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кухня-Призрак 2",
+    "address": "ул. Надежды, 22",
+    "district": "Октябрьский",
+    "phone": "+7 969 766-16-88",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.319245,
+      "lng": 39.662911
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дарк-Флоу 8",
+    "address": "ул. Семейная, 1",
+    "district": "Октябрьский",
+    "phone": "+7 969 956-15-91",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.320088,
+      "lng": 39.666966
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма «Каменка»",
+    "address": "ул. Тульская, 32",
+    "district": "Октябрьский",
+    "phone": "+7 966 507-70-14",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.266874,
+      "lng": 39.674295
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кебаб на Таганрогской",
+    "address": "ул. Таганрогская, 115",
+    "district": "Октябрьский",
+    "phone": "+7 923 995-31-24",
+    "type": "shawarma",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.26281,
+      "lng": 39.674521
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Ташкентской",
+    "address": "ул. Ташкентская, 8",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.265208,
+      "lng": 39.671676
+    },
+    "notes": ""
+  },
+  {
+    "name": "Светлана-Гриль 2",
+    "address": "ул. Тюменская, 20",
+    "district": "Октябрьский",
+    "phone": "+7 926 387-69-75",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.266556,
+      "lng": 39.676686
+    },
+    "notes": ""
+  },
+  {
+    "name": "Планета Шаурмы 2",
+    "address": "ул. Севастопольская, 75",
+    "district": "Октябрьский",
+    "phone": "+7 922 191-19-71",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.265906,
+      "lng": 39.67688
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бараний Рог 2",
+    "address": "ул. Рахманинова, 57",
+    "district": "Октябрьский",
+    "phone": "+7 946 506-90-30",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.268824,
+      "lng": 39.674336
+    },
+    "notes": ""
+  },
+  {
+    "name": "Сырный Двор 2",
+    "address": "ул. Тарновского-Терлецкого, 45",
+    "district": "Октябрьский",
+    "phone": "+7 978 967-87-30",
+    "type": "burger",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.267607,
+      "lng": 39.678296
+    },
+    "notes": ""
+  },
+  {
+    "name": "Мидл-Байт 2",
+    "address": "ул. Борисоглебская, 16",
+    "district": "Октябрьский",
+    "phone": "+7 942 901-90-43",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.266017,
+      "lng": 39.687978
+    },
+    "notes": ""
+  },
+  {
+    "name": "Обед-Экспресс 2",
+    "address": "ул. Иловайская, 14",
+    "district": "Октябрьский",
+    "phone": "+7 918 235-71-75",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.265934,
+      "lng": 39.688113
+    },
+    "notes": ""
+  },
+  {
+    "name": "Комплекс-Обед 2",
+    "address": "ул. Куликовская, 6",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "canteen",
+    "status": "no_answer",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.265067,
+      "lng": 39.689135
+    },
+    "notes": ""
+  },
+  {
+    "name": "Лофт-Бар 2",
+    "address": "ул. Тракторная, 14",
+    "district": "Октябрьский",
+    "phone": "+7 955 789-51-83",
+    "type": "bar",
+    "status": "no_answer",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.263342,
+      "lng": 39.691841
+    },
+    "notes": ""
+  },
+  {
+    "name": "Мята-Лаундж 2",
+    "address": "ул. 2-й Пятилетки, 14",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "hookah",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.2609,
+      "lng": 39.69307
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гастро-Ряд 2",
+    "address": "ул. Монтажная, 2",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "foodcourt",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.270544,
+      "lng": 39.686922
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гост-Китчен 2",
+    "address": "Чалтырский пер., 12",
+    "district": "Октябрьский",
+    "phone": "+7 943 374-35-12",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.269385,
+      "lng": 39.672334
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль у Ландшафтной",
+    "address": "ул. Ландшафтная, 12",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.271722,
+      "lng": 39.674165
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Военвед",
+    "address": "ул. Тимошко, 29",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.265791,
+      "lng": 39.656256
+    },
+    "notes": ""
+  },
+  {
+    "name": "Мясной Двор 2",
+    "address": "ул. Таганрогская, 164",
+    "district": "Октябрьский",
+    "phone": "+7 950 589-29-34",
+    "type": "shawarma",
+    "status": "callback",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.262016,
+      "lng": 39.662325
+    },
+    "notes": ""
+  },
+  {
+    "name": "Крафт Бургер 12",
+    "address": "ул. Гагринская, 14",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.262346,
+      "lng": 39.651448
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургер Хаус 7",
+    "address": "ул. Дебальцевская, 27",
+    "district": "Октябрьский",
+    "phone": "+7 984 579-67-21",
+    "type": "burger",
+    "status": "no_answer",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.262897,
+      "lng": 39.64916
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая Строитель 2",
+    "address": "ул. Соловьиная, 21",
+    "district": "Октябрьский",
+    "phone": "+7 956 584-86-65",
+    "type": "canteen",
+    "status": "trial",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.262089,
+      "lng": 39.665844
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая «Военведская»",
+    "address": "ул. Витебская, 39",
+    "district": "Октябрьский",
+    "phone": "+7 981 574-38-65",
+    "type": "canteen",
+    "status": "callback",
+    "priority_tier": "red",
+    "coordinates": {
+      "lat": 47.269739,
+      "lng": 39.674509
+    },
+    "notes": ""
+  },
+  {
+    "name": "Паб «Донской» 2",
+    "address": "ул. Самаркандская, 26",
+    "district": "Октябрьский",
+    "phone": "+7 925 300-75-10",
+    "type": "bar",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.267943,
+      "lng": 39.669802
+    },
+    "notes": ""
+  },
+  {
+    "name": "Хаус-оф-Шиша 2",
+    "address": "Железногорский пер., 1",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "hookah",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.270012,
+      "lng": 39.669773
+    },
+    "notes": ""
+  },
+  {
+    "name": "Ночной Цех 2",
+    "address": "ул. Мыльникова, 9",
+    "district": "Октябрьский",
+    "phone": "+7 930 470-84-25",
+    "type": "darkkitchen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.261547,
+      "lng": 39.649292
+    },
+    "notes": ""
   }
 ]

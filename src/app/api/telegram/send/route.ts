@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { readConfig, sendTelegramMessage } from "@/lib/telegram-server";
 
 /**
- * POST /api/telegram/send — критичный алерт ИИ-Директора.
+ * POST /api/telegram/send — критичный алерт Мозга.
  *
  * Вызывается движком триггеров (lib/ai-triggers.ts), когда
  * пользователь неактивен, а совет содержит «просрочку» /

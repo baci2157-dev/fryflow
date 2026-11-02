@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 /**
- * История чата с ИИ-Директором. Живёт в localStorage
+ * История чата с Мозгом. Живёт в localStorage
  * (fryflow-ai-chat-v1): владелец закрывает вкладку, открывает завтра —
  * разговор на месте. Приветствие не хранится: оно пересобирается
  * из живых цифр при каждом запуске и всегда актуально.

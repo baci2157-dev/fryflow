@@ -14,7 +14,7 @@ import { useRegionsStore } from "@/lib/regions-store";
 import { useSettingsStore } from "@/lib/settings-store";
 
 /**
- * Проактивный ИИ-Директор (задача 7).
+ * Проактивный Мозг (задача 7).
  *
  * Двигатель умных триггеров:
  *  • следит за активностью: document.visibilityState + бездействие
