@@ -8,6 +8,7 @@ import { offlineAnswer } from "@/lib/ai-offline";
 import { useAdviceStore, type AdviceRecord } from "@/lib/advice-store";
 import { useCrmStore } from "@/lib/clients-store";
 import { useOrdersStore } from "@/lib/orders-store";
+import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
 import { useSettingsStore } from "@/lib/settings-store";
 
@@ -59,12 +60,14 @@ export function currentAiContext() {
   const crm = useCrmStore.getState();
   const deals = useOrdersStore.getState();
   const regions = useRegionsStore.getState().partners;
+  const products = useProductsStore.getState().products;
   return buildAiContext({
     clients: crm.clients,
     orders: deals.orders,
     movements: deals.movements,
     payments: deals.payments,
     regions,
+    products,
   });
 }
 

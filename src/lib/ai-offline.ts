@@ -24,6 +24,18 @@ const genDistrict = (d: string) => d.replace(/ский$/, "ского");
 const debtorLine = (d: AiDebtor) =>
   `• ${d.name} — ${fmtRub(d.amountRub)}, ${d.days} ${plural(d.days, "день", "дня", "дней")} (${ZONE_LABEL[d.zone]}), заказ №${d.order}`;
 
+/** Чистка ответа модели: без markdown-звёздочек и решёток —
+ *  чат и виджеты FryFlow печатают текст как есть. */
+export function cleanMarkdown(raw: string): string {
+  return raw
+    .replace(/\*\*/g, "")
+    .replace(/^#{1,4}\s*/gm, "")
+    .replace(/(^|\s)#{1,4}(?=\s)/g, "$1")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function debtAnswer(c: AiContext): string {
   const { debtors, totalRub } = c.receivables;
   if (!debtors.length) {
@@ -200,6 +212,73 @@ function clientsAnswer(c: AiContext): string {
   ].join("\n");
 }
 
+/* Кросс-сейл и сезонность (задача 10): каталог + «только фри» + сезон. */
+function crossSellAnswer(c: AiContext): string {
+  const cs = c.crossSell;
+  const onlyFries = c.clientPatterns.filter((p) => p.onlyFries).slice(0, 5);
+  const lines: string[] = [];
+
+  if (cs.products.length === 0) {
+    lines.push("Каталог попутных товаров пуст — добавьте масло или соус в «Каталоге», и я начну советовать кросс-сейл к каждому заказу.");
+  } else {
+    lines.push(
+      `Каталог попутных: ${cs.products
+        .map((p) => `${p.name} — ${fmtRub(p.priceRub)}, маржа ${fmtRub(p.marginRub)} (${p.marginPct}%)`)
+        .join("; ")}.`
+    );
+    lines.push(
+      `За 30 дней попутных продано на ${fmtRub(cs.last30Rub)} в ${cs.last30Orders} ${plural(cs.last30Orders, "заказе", "заказах", "заказах")}.`
+    );
+  }
+
+  lines.push(
+    "",
+    `Сезон — ${c.seasonality.season} (${c.seasonality.month}). ${c.seasonality.hint}`
+  );
+
+  if (onlyFries.length) {
+    lines.push(
+      "",
+      "Берут только фри — кросс-сейл ещё не прижился:",
+      ...onlyFries.map(
+        (p) =>
+          `• ${p.name} (${p.segment}, ${p.ordersCount} ${plural(p.ordersCount, "заказ", "заказа", "заказов")}, с последнего прошло ${p.daysSinceLastOrder} ${plural(p.daysSinceLastOrder, "день", "дня", "дней")})`
+      ),
+      "",
+      `Действие: при следующем звонке предложите «${onlyFries[0].name}» соус или масло к фри — та же машина, доставка бесплатная, маржа чистая.`
+    );
+  } else {
+    lines.push(
+      "",
+      "Действие: клиенты с историей уже берут попутные товары — двигайте сезонные позиции и следите за остатками в «Каталоге»."
+    );
+  }
+  return lines.join("\n");
+}
+
+/* Клиенты «назрели»: без заказа дольше своего интервала — пора с акцией. */
+function overdueAnswer(c: AiContext): string {
+  const overdue = c.clientPatterns.filter((p) => p.overdue).slice(0, 6);
+  if (!overdue.length) {
+    return [
+      "Назревших клиентов нет — все заказывают в своём ритме.",
+      "",
+      "Действие: займитесь попутными товарами — у половины клиентов в истории только фри, это бесплатная маржа.",
+    ].join("\n");
+  }
+  const lines = [
+    `Назрели — без заказа дольше своего обычного интервала: ${overdue.length} ${plural(overdue.length, "клиент", "клиента", "клиентов")}:`,
+    "",
+    ...overdue.map(
+      (p) =>
+        `• ${p.name} (${p.segment}, ${p.tier}) — обычно раз в ${p.avgIntervalDays} ${plural(Math.round(p.avgIntervalDays ?? 0), "день", "дня", "дней")}, прошло ${p.daysSinceLastOrder} ${plural(p.daysSinceLastOrder, "день", "дня", "дней")}, средний чек ${fmtRub(p.avgCheckRub)}`
+    ),
+    "",
+    `Действие: начните с «${overdue[0].name}» — предложите акцию: «+1 упаковка в подарок к заказу от 10 уп» или скидку на попутный товар. Один звонок возвращает средний чек ${fmtRub(overdue[0].avgCheckRub)}.`,
+  ];
+  return lines.join("\n");
+}
+
 function planAnswer(c: AiContext): string {
   const danger = c.receivables.debtors.filter((d) => d.zone === "danger");
   const actions: string[] = [];
@@ -243,6 +322,9 @@ const RULES: Rule[] = [
   { keys: /цен|скидк|дорог|дешев|опт/i, answer: priceAnswer },
   { keys: /оптовик|фур(?:а|ы|ам)?|регион|краснодар|волгоград|ставропол|юг[аеи]/i, answer: regionsPartnersAnswer },
   { keys: /район|город|карт/i, answer: regionAnswer },
+  /* Задача 10: кросс-сейл и «назревшие» клиенты — до общих вопросов о клиентах. */
+  { keys: /соус|масл|солень|зелен|попутн|кросс|сезон|каталог|товар добавить|что добавить|что предложить к заказу|чесноч|сырн/i, answer: crossSellAnswer },
+  { keys: /давно не заказ|акцию|акци\b|назрел|вернуть клиент|не заказывал/i, answer: overdueAnswer },
   { keys: /клиент|база|шаурм|бургер|паб|столов|сеть|green|зелён/i, answer: clientsAnswer },
   { keys: /план|приоритет|с чего нач|утро|день нач|фокус|задач/i, answer: planAnswer },
 ];
@@ -258,13 +340,14 @@ export function offlineAnswer(question: string, context: AiContext): string {
 /** Приветствие ИИ-Директора: первое сообщение — самое важное. */
 export function greetingMessage(c: AiContext): string {
   const lines = [
-    "Добрый день! Я — ваш ИИ-Директор. Вижу ваши цифры, поэтому разговор будет предметным.",
+    "Добрый день! Я — ваш ИИ-Директор и коммерческий директор: вижу историю заказов, паттерны клиентов и сезон.",
     "",
     `Сводка на сегодня:`,
     `• Склад: ${fmtKg(c.stock.kg)} (${new Intl.NumberFormat("ru-RU").format(c.stock.packs)} уп.)${c.stock.isLow ? " — ниже порога!" : ""}`,
     `• Дебиторка: ${fmtRub(c.receivables.totalRub)} — ${c.receivables.debtors.length} ${plural(c.receivables.debtors.length, "должник", "должника", "должников")}`,
     `• За 30 дней: ${fmtRub(c.orders.last30.revenueRub)} выручки, маржа ${fmtRub(c.orders.last30.marginRub)}`,
     `• На прозвон: ${c.leads.total} ${plural(c.leads.total, "лид", "лида", "лидов")}`,
+    `• Попутные товары: ${fmtRub(c.crossSell.last30Rub)} за 30 дней — сезон: ${c.seasonality.season}`,
   ];
   const danger = c.receivables.debtors.filter((d) => d.zone === "danger");
   if (danger.length) {
@@ -275,7 +358,7 @@ export function greetingMessage(c: AiContext): string {
   }
   lines.push(
     "",
-    "Спрашивайте: «Сколько у меня долгов?», «На сколько хватит склада?», «Кому звонить сегодня?»"
+    "Спрашивайте: «Кому предложить соус?», «Кто давно не заказывал?», «Сколько у меня долгов?»"
   );
   return lines.join("\n");
 }

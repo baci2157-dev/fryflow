@@ -17,7 +17,6 @@ import {
 import { RecentOrdersCard } from "@/components/dashboard/recent-orders-card";
 import { TodayPlanCard } from "@/components/dashboard/today-plan-card";
 import { NetworkPill } from "@/components/offline/network-status";
-import { useToast } from "@/hooks/use-toast";
 import { useCrmStore } from "@/lib/clients-store";
 import {
   debtDays,
@@ -25,6 +24,7 @@ import {
   useOrdersStore,
 } from "@/lib/orders-store";
 import type { Task } from "@/lib/mock-data";
+import { useSettingsStore } from "@/lib/settings-store";
 import { DEBT_DANGER_DAYS } from "@/types/models";
 
 /** Имитация загрузки данных, мс. */
@@ -147,7 +147,15 @@ function GreetingBar({ loading }: { loading: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
   const [tgConnected, setTgConnected] = useState<boolean | null>(null);
   const router = useRouter();
-  const { toast } = useToast();
+
+  /** Имя владельца из настроек (задача 10): «Добрый день, Адам». */
+  const ownerName = useSettingsStore((s) => s.owner.name).trim() || "владелец";
+  const initials = ownerName
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   // дата/время — только после монтирования (иначе hydration mismatch);
   // через rAF, чтобы не звать setState синхронно в effect
@@ -189,7 +197,7 @@ function GreetingBar({ loading }: { loading: boolean }) {
           <Sk className="h-7 w-52" />
         ) : (
           <h1 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
-            {greeting}, <span className="text-accent">Иван</span>
+            {greeting}, <span className="text-accent">{ownerName}</span>
           </h1>
         )}
         {loading ? (
@@ -225,13 +233,8 @@ function GreetingBar({ loading }: { loading: boolean }) {
         )}
         <button
           type="button"
-          onClick={() =>
-            toast({
-              title: "Профиль",
-              description: "Настройки профиля — в разделе «Настройки» (скоро).",
-              duration: 3200,
-            })
-          }
+          onClick={() => router.push("/settings")}
+          title={`Профиль · ${ownerName}`}
           aria-label="Профиль пользователя"
           className={
             loading
@@ -239,7 +242,7 @@ function GreetingBar({ loading }: { loading: boolean }) {
               : "flex size-10 shrink-0 items-center justify-center rounded-full bg-tint text-sm font-semibold text-ink transition-colors hover:bg-accent/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           }
         >
-          ИВ
+          {initials}
         </button>
       </div>
     </div>

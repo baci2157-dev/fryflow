@@ -1,30 +1,34 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Carrot,
   Droplet,
   Leaf,
   Package,
+  Pencil,
   Plus,
   ShoppingBasket,
   Snowflake,
   Soup,
+  Trash2,
+  TriangleAlert,
   Upload,
   Download,
-  TriangleAlert,
 } from "lucide-react";
 
 import { SpringSheet } from "@/components/crm/spring-sheet";
 import { ImportDialog } from "@/components/shared/import-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useCrmStore } from "@/lib/clients-store";
 import { csvDateSuffix, downloadCsv } from "@/lib/csv";
 import {
   PRODUCT_IMPORT_SAMPLE,
   parseProductsFile,
   runProductsImport,
 } from "@/lib/import-products";
+import { useOrdersStore } from "@/lib/orders-store";
 import {
   useProductsStore,
   type NewProductInput,
@@ -38,16 +42,19 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * Экран «Каталог» — попутные товары (задача 9, cross-sell).
+ * Экран «Каталог» — попутные товары (cross-sell).
  *
  * Картофель фри везём точкам каждый день; вместе с ним удобно
  * продавать масло, соусы и зелень — та же машина, тот же рейс,
- * а маржа выше. Здесь — карточки товаров, фильтр по категориям,
- * добавление/импорт/экспорт.
+ * а маржа выше. Задача 10 добавила полный CRUD: карточку товара
+ * можно отредактировать (пересчёт маржи на лету) или удалить —
+ * с предупреждением, если товар уже живёт в заказах (историю
+ * не ломаем: заказы хранят снимок названия и цены).
  *
  * Интересы клиента (в его карточке) связываются с категориями
  * отсюда: при создании заказа FryFlow подсказывает «этот обычно
- * берёт масло», в маршруте дня — бейдж «Попутно».
+ * берёт масло», в маршруте дня — бейдж «Попутно». Удалённый
+ * товар из подсказок исчезает сразу.
  */
 
 const money = (n: number) => new Intl.NumberFormat("ru-RU").format(n);
@@ -71,6 +78,10 @@ export default function CatalogPage() {
   const [cat, setCat] = useState<ProductCategory | "all">("all");
   const [formOpen, setFormOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+
+  /* ── Задача 10: CRUD — редактируемый и удаляемый товар ── */
+  const [editing, setEditing] = useState<Product | null>(null);
+  const [deleting, setDeleting] = useState<Product | null>(null);
 
   /* ── Счётчики по категориям ── */
   const counts = useMemo(() => {
@@ -140,7 +151,10 @@ export default function CatalogPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setFormOpen(true)}
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
             className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-semibold text-[#1C1A17] transition-colors hover:bg-accent/90"
           >
             <Plus className="size-4" />
@@ -211,14 +225,35 @@ export default function CatalogPage() {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <AnimatePresence initial={false}>
             {filtered.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard
+                key={p.id}
+                product={p}
+                onEdit={() => {
+                  setEditing(p);
+                  setFormOpen(true);
+                }}
+                onDelete={() => setDeleting(p)}
+              />
             ))}
           </AnimatePresence>
         </div>
       )}
 
-      {/* ── Форма товара ── */}
-      <ProductFormDialog open={formOpen} onClose={() => setFormOpen(false)} />
+      {/* ── Форма товара: создание (задача 9) и редактирование (задача 10) ── */}
+      <ProductFormDialog
+        open={formOpen}
+        editing={editing}
+        onClose={() => {
+          setFormOpen(false);
+          setEditing(null);
+        }}
+      />
+
+      {/* ── Подтверждение удаления (задача 10) ── */}
+      <DeleteProductDialog
+        product={deleting}
+        onClose={() => setDeleting(null)}
+      />
 
       {/* ── Импорт JSON ── */}
       <ImportDialog
@@ -293,9 +328,17 @@ function CategoryChip({
   );
 }
 
-/* ── Карточка товара: воздушная, иконка категории, цена моно ── */
+/* ── Карточка товара: иконка, цена моно, действия ✎/🗑 ────── */
 
-function ProductCard({ product: p }: { product: Product }) {
+function ProductCard({
+  product: p,
+  onEdit,
+  onDelete,
+}: {
+  product: Product;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   const Icon = CATEGORY_ICON[p.category];
   const color = PRODUCT_CATEGORY_COLOR[p.category];
   const margin = p.price - p.cost;
@@ -311,8 +354,8 @@ function ProductCard({ product: p }: { product: Product }) {
       transition={{ type: "spring", stiffness: 320, damping: 30 }}
       className="flex flex-col rounded-2xl border border-border bg-surface p-5"
     >
-      {/* Шапка: иконка + бейдж категории */}
-      <div className="flex items-start justify-between gap-3">
+      {/* Шапка: иконка + бейдж категории + действия */}
+      <div className="flex items-start justify-between gap-2">
         <span
           className="flex size-11 shrink-0 items-center justify-center rounded-2xl"
           style={{
@@ -322,15 +365,38 @@ function ProductCard({ product: p }: { product: Product }) {
         >
           <Icon className="size-5" />
         </span>
-        <span
-          className="rounded-full px-2.5 py-0.5 text-[11.5px] font-medium"
-          style={{
-            color,
-            background: `color-mix(in srgb, ${color} 12%, transparent)`,
-          }}
-        >
-          {PRODUCT_CATEGORY_LABEL[p.category]}
-        </span>
+
+        <div className="flex items-center gap-1">
+          <span
+            className="mr-1 rounded-full px-2.5 py-0.5 text-[11.5px] font-medium"
+            style={{
+              color,
+              background: `color-mix(in srgb, ${color} 12%, transparent)`,
+            }}
+          >
+            {PRODUCT_CATEGORY_LABEL[p.category]}
+          </span>
+          {/* Редактировать */}
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label={`Редактировать «${p.name}»`}
+            title="Редактировать"
+            className="flex size-8 items-center justify-center rounded-lg text-ink-soft transition-colors hover:bg-tint hover:text-ink"
+          >
+            <Pencil className="size-4" />
+          </button>
+          {/* Удалить */}
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label={`Удалить «${p.name}»`}
+            title="Удалить"
+            className="flex size-8 items-center justify-center rounded-lg text-ink-soft transition-colors hover:bg-tier-red/10 hover:text-tier-red"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        </div>
       </div>
 
       {/* Название + описание */}
@@ -373,72 +439,110 @@ function ProductCard({ product: p }: { product: Product }) {
   );
 }
 
-/* ── Форма «Добавить товар» ────────────────────────────────── */
+/* ── Форма товара: создать / отредактировать ───────────────── */
 
+const BLANK_FORM: NewProductInput = {
+  name: "",
+  category: "oil",
+  unit: "кг",
+  price: 0,
+  cost: 0,
+  stock: 0,
+  description: "",
+};
 function ProductFormDialog({
   open,
+  editing,
   onClose,
 }: {
   open: boolean;
+  /** null — создание нового товара, объект — редактирование. */
+  editing: Product | null;
+  onClose: () => void;
+}) {
+  return (
+    <SpringSheet
+      open={open}
+      onClose={onClose}
+      variant="dialog"
+      title={editing ? "Редактировать товар" : "Новый товар"}
+    >
+      {/* Поля монтируются заново на каждый открытие — свежая форма
+          без setState-в-effect: создание — пустая, правка — с текущими
+          значениями товара. */}
+      {open && <ProductFormFields editing={editing} onClose={onClose} />}
+    </SpringSheet>
+  );
+}
+
+function ProductFormFields({
+  editing,
+  onClose,
+}: {
+  editing: Product | null;
   onClose: () => void;
 }) {
   const addProduct = useProductsStore((s) => s.addProduct);
+  const updateProduct = useProductsStore((s) => s.updateProduct);
   const { toast } = useToast();
 
-  const [form, setForm] = useState<NewProductInput>({
-    name: "",
-    category: "oil",
-    unit: "кг",
-    price: 0,
-    cost: 0,
-    stock: 0,
-    description: "",
-  });
+  const [form, setForm] = useState<NewProductInput>(
+    editing
+      ? {
+          name: editing.name,
+          category: editing.category,
+          unit: editing.unit,
+          price: editing.price,
+          cost: editing.cost,
+          stock: editing.stock,
+          description: editing.description,
+        }
+      : BLANK_FORM
+  );
   const [touched, setTouched] = useState(false);
 
   const nameOk = form.name.trim().length >= 2;
   const priceOk = form.price > 0;
   const valid = nameOk && priceOk;
 
+  /* Маржа пересчитывается на лету — владелец видит её до сохранения. */
+  const margin = form.price - form.cost;
+  const marginPct = form.price > 0 ? Math.round((margin / form.price) * 100) : 0;
+
   const submit = () => {
     setTouched(true);
     if (!valid) return;
-    addProduct({
+    const clean: NewProductInput = {
       ...form,
       name: form.name.trim(),
       cost: Math.max(0, Math.round(form.cost)),
       price: Math.round(form.price),
       stock: Math.max(0, Math.round(form.stock)),
       description: form.description.trim(),
-    });
-    toast({
-      title: "Товар добавлен",
-      description: `«${form.name.trim()}» уже в каталоге — виден в подсказках к заказам.`,
-      duration: 3200,
-    });
-    setForm({
-      name: "",
-      category: "oil",
-      unit: "кг",
-      price: 0,
-      cost: 0,
-      stock: 0,
-      description: "",
-    });
-    setTouched(false);
+    };
+
+    if (editing) {
+      updateProduct(editing.id, clean);
+      toast({
+        title: "Товар обновлён",
+        description: `«${clean.name}»: цена ${money(clean.price)} ₽, маржа ${money(clean.price - clean.cost)} ₽ (${clean.price > 0 ? Math.round(((clean.price - clean.cost) / clean.price) * 100) : 0}%).`,
+        duration: 3400,
+      });
+    } else {
+      addProduct(clean);
+      toast({
+        title: "Товар добавлен",
+        description: `«${clean.name}» уже в каталоге — виден в подсказках к заказам.`,
+        duration: 3200,
+      });
+    }
     onClose();
   };
 
   const num = (v: string) => Math.max(0, Number(v.replace(",", ".")) || 0);
 
   return (
-    <SpringSheet
-      open={open}
-      onClose={onClose}
-      variant="dialog"
-      title="Новый товар"
-    >
-      <div className="mt-4 space-y-4 pb-2">
+    <div className="mt-4 space-y-4 pb-2">
         {/* Название */}
         <div>
           <Label>Название *</Label>
@@ -453,9 +557,10 @@ function ProductFormDialog({
           )}
         </div>
 
-        {/* Категория — цветные кнопки */}
+        {/* Категория — цветные чипы. Она же связывает товар с интересами
+            клиентов: категория «Масло» → клиенты с интересом «масло». */}
         <div>
-          <Label>Категория *</Label>
+          <Label>Категория * (по ней товар попадает в интересы клиентов)</Label>
           <div className="flex flex-wrap gap-1.5">
             {CATEGORY_KEYS.map((key) => {
               const active = form.category === key;
@@ -548,6 +653,32 @@ function ProductFormDialog({
             />
           </div>
         </div>
+
+        {/* Маржа на лету (задача 10): пересчитывается при каждой правке */}
+        {form.price > 0 && (
+          <div
+            className={cn(
+              "flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-[12.5px]",
+              margin >= 0
+                ? "border-tier-green/30 bg-tier-green/5"
+                : "border-tier-red/30 bg-tier-red/5"
+            )}
+          >
+            <span className="text-ink-soft">
+              Маржа за единицу
+              {editing ? " — обновится при сохранении" : ""}
+            </span>
+            <span
+              className={cn(
+                "font-mono font-semibold tabular-nums",
+                margin >= 0 ? "text-tier-green" : "text-tier-red"
+              )}
+            >
+              {margin >= 0 ? "+" : "−"}
+              {money(Math.abs(margin))} ₽ · {marginPct}%
+            </span>
+          </div>
+        )}
         {touched && !priceOk && (
           <p className="-mt-1 text-[12px] text-tier-red">Цена должна быть больше нуля</p>
         )}
@@ -589,10 +720,112 @@ function ProductFormDialog({
                 : "cursor-not-allowed bg-tint text-ink-soft/60"
             )}
           >
-            Добавить товар
+            {editing ? "Сохранить" : "Добавить товар"}
           </motion.button>
         </div>
-      </div>
+    </div>
+  );
+}
+
+/* ── Подтверждение удаления: история не ломается ───────────── */
+
+function DeleteProductDialog({
+  product,
+  onClose,
+}: {
+  product: Product | null;
+  onClose: () => void;
+}) {
+  const deleteProduct = useProductsStore((s) => s.deleteProduct);
+  const orders = useOrdersStore((s) => s.orders);
+  const routeStops = useCrmStore((s) => s.routeStops);
+  const { toast } = useToast();
+
+  /* Где товар ещё живёт: история заказов и точки маршрута дня. */
+  const usedInOrders = useMemo(
+    () =>
+      product
+        ? orders.filter((o) => o.items?.some((i) => i.productId === product.id))
+            .length
+        : 0,
+    [product, orders]
+  );
+  const usedInRoute = useMemo(
+    () =>
+      product
+        ? routeStops.filter((s) =>
+            s.crossSell?.some((c) => c.productId === product.id)
+          ).length
+        : 0,
+    [product, routeStops]
+  );
+
+  const confirmDelete = () => {
+    if (!product) return;
+    deleteProduct(product.id);
+    toast({
+      title: "Товар удалён",
+      description: usedInOrders
+        ? `«${product.name}» исчез из подсказок. ${usedInOrders} исторических заказ(ов) сохранили его название и цену.`
+        : `«${product.name}» удалён из каталога и подсказок.`,
+      duration: 4200,
+    });
+    onClose();
+  };
+
+  return (
+    <SpringSheet
+      open={product !== null}
+      onClose={onClose}
+      variant="dialog"
+      title={product ? `Удалить «${product.name}»?` : "Удалить товар?"}
+    >
+      {product && (
+        <div className="mt-4 space-y-3.5 pb-2">
+          <p className="text-[13.5px] leading-relaxed text-ink-soft">
+            Товар исчезнет из каталога, подсказок «этот клиент обычно берёт»
+            в заказах и панели «Попутно» в маршруте дня.
+          </p>
+
+          {/* Предупреждение: товар уже в истории — удалять можно,
+              но пусть владелец знает, что именно останется. */}
+          {(usedInOrders > 0 || usedInRoute > 0) && (
+            <div className="rounded-xl border border-tier-yellow/40 bg-tier-yellow/10 p-3.5">
+              <p className="flex items-start gap-2 text-[12.5px] font-medium leading-snug text-tier-yellow">
+                <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+                Товар используется:
+                {usedInOrders > 0 && ` ${usedInOrders} заказ(ах)`}
+                {usedInOrders > 0 && usedInRoute > 0 && " и"}
+                {usedInRoute > 0 && ` ${usedInRoute} точк(ах) маршрута`}
+              </p>
+              <p className="mt-1.5 pl-6 text-[12px] leading-snug text-ink-soft">
+                Удаление разрешено: исторические заказы не сломаются — в них
+                навсегда останутся название и цена на момент продажи
+                (снимок строки заказа).
+              </p>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-11 flex-1 rounded-xl border border-border bg-surface text-[14px] font-semibold text-ink transition-colors hover:bg-tint"
+            >
+              Оставить
+            </button>
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.98 }}
+              onClick={confirmDelete}
+              className="inline-flex h-11 flex-[2] items-center justify-center gap-2 rounded-xl bg-tier-red/90 text-[14px] font-semibold text-white transition-colors hover:bg-tier-red"
+            >
+              <Trash2 className="size-4" />
+              Удалить товар
+            </motion.button>
+          </div>
+        </div>
+      )}
     </SpringSheet>
   );
 }

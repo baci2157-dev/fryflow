@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { CommandPalette } from "@/components/command-palette";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
@@ -10,6 +11,7 @@ import { useAdviceStore } from "@/lib/advice-store";
 import { useAiChatStore } from "@/lib/ai-chat-store";
 import { useAiTriggers } from "@/lib/ai-triggers";
 import { useCrmStore } from "@/lib/clients-store";
+import { isLoggedIn } from "@/lib/auth";
 import { initOfflineQueue } from "@/lib/offline-queue";
 import { useMarketingStore } from "@/lib/marketing-store";
 import { useOrdersStore } from "@/lib/orders-store";
@@ -26,8 +28,39 @@ import { useUiStore } from "@/lib/ui-store";
  * чтобы не было расхождения SSR ↔ клиент) и движок проактивного
  * ИИ (lib/ai-triggers.ts): активность пользователя, интервалы
  * советов, критичные алерты в Telegram и пинг автопостинга.
+ *
+ * Задача 10: экран /login живёт без каркаса (ни сайдбара, ни guard),
+ * остальные экраны — за локальной авторизацией (fryflow-auth):
+ * нет активной сессии → редирект на вход, контент не мигает —
+ * пока проверяем, висит нейтральный сплэш.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  /* Логин — отдельный мир: форма по центру, без навигации и триггеров. */
+  if (pathname === "/login") {
+    return <div className="min-h-dvh bg-bg">{children}</div>;
+  }
+
+  return <GuardedShell>{children}</GuardedShell>;
+}
+
+/** Обёртка всех рабочих экранов: guard + вся глобальная механика. */
+function GuardedShell({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const [allowed, setAllowed] = useState(false);
+
+  /* Авторизация: сессии нет — на /login, не показывая данные.
+   *  setState через rAF — как на Дашборде (без каскада рендеров). */
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      router.replace("/login");
+      return;
+    }
+    const id = requestAnimationFrame(() => setAllowed(true));
+    return () => cancelAnimationFrame(id);
+  }, [router]);
+
   useAiTriggers();
 
   useEffect(() => {
@@ -53,6 +86,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     /* Офлайн-очередь: следим за сетью, при возврате — автосинхронизация. */
     initOfflineQueue();
   }, []);
+
+  /* Проверяем сессию (мгновенно, из localStorage) — до ответа не мигаем. */
+  if (!allowed) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-bg">
+        <div className="size-3 animate-pulse rounded-full bg-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh bg-bg">

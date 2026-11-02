@@ -9,6 +9,7 @@ import {
   MapPin,
   Megaphone,
   Phone,
+  ShoppingBasket,
   Sparkles,
   Trash2,
   Wallet,
@@ -21,6 +22,7 @@ import { useAiChatStore, type ChatMessage } from "@/lib/ai-chat-store";
 import { greetingMessage, offlineAnswer } from "@/lib/ai-offline";
 import { useCrmStore } from "@/lib/clients-store";
 import { useOrdersStore } from "@/lib/orders-store";
+import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
 import { useSettingsStore } from "@/lib/settings-store";
 import { cn } from "@/lib/utils";
@@ -73,6 +75,16 @@ const PROMPT_BANK: PromptCategory[] = [
     label: "Регионы",
     icon: MapPin,
     prompts: ["Какой район обзванивать первым?", "Где больше всего точек?"],
+  },
+  {
+    id: "crosssell",
+    label: "Кросс-сейл",
+    icon: ShoppingBasket,
+    prompts: [
+      "Кому предложить соус или масло — кто берёт только фри?",
+      "Какой товар добавить к заказу Шаурмы на Зорге?",
+      "Кому предложить соленья в этом сезоне?",
+    ],
   },
 ];
 
@@ -175,7 +187,10 @@ export default function AiAssistantPage() {
   const movements = useOrdersStore((s) => s.movements);
   const payments = useOrdersStore((s) => s.payments);
   const regions = useRegionsStore((s) => s.partners);
+  const products = useProductsStore((s) => s.products);
   const charter = useSettingsStore((s) => s.ai.charter);
+  /** Тумблер «Поиск в интернете» (задача 10): тренды и конкуренты. */
+  const webSearch = useSettingsStore((s) => s.ai.webSearch);
 
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
@@ -184,8 +199,8 @@ export default function AiAssistantPage() {
 
   /* Живой контекст бизнеса — пересобирается при каждом изменении стора. */
   const context = useMemo(
-    () => buildAiContext({ clients, orders, movements, payments, regions }),
-    [clients, orders, movements, payments, regions]
+    () => buildAiContext({ clients, orders, movements, payments, regions, products }),
+    [clients, orders, movements, payments, regions, products]
   );
   const greeting = useMemo(() => greetingMessage(context), [context]);
 
@@ -215,7 +230,7 @@ export default function AiAssistantPage() {
       const res = await fetch("/api/ai-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ context, history, charter }),
+        body: JSON.stringify({ context, history, charter, webSearch }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { reply: string; source: "zai" | "offline" };

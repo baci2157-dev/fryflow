@@ -61,6 +61,9 @@ export interface AiSettings {
   intervalHours: 2 | 3 | 4;
   /** Устав ИИ — добавляется в системный промпт каждого запроса. */
   charter: string;
+  /** Поиск в интернете: ИИ сверяется со свежими данными, когда вопрос
+   *  о трендах рынка или конкурентах (задача 10, functions.invoke). */
+  webSearch: boolean;
 }
 
 export const CHARTER_MAX = 600;
@@ -84,17 +87,34 @@ export const DEFAULT_AI: AiSettings = {
   proactive: true,
   intervalHours: 3,
   charter: DEFAULT_CHARTER,
+  webSearch: false,
 };
+
+/* ── Владелец (задача 10) ─────────────────────────────────── */
+
+export interface OwnerSettings {
+  /** Имя для приветствия на Дашборде («Добрый день, Адам»). */
+  name: string;
+}
+
+export const DEFAULT_OWNER_NAME = "Адам";
+
+/** Быстрый выбор в настройках: владелец — Адам или Карина. */
+export const OWNER_NAME_CHIPS = ["Адам", "Карина"] as const;
+
+export const DEFAULT_OWNER: OwnerSettings = { name: DEFAULT_OWNER_NAME };
 
 /* ── Стор ─────────────────────────────────────────────────── */
 
 interface SettingsState {
   invoice: InvoiceRequisites;
   ai: AiSettings;
+  owner: OwnerSettings;
   hydrated: boolean;
 
   setInvoice: (patch: Partial<InvoiceRequisites>) => void;
   setAi: (patch: Partial<AiSettings>) => void;
+  setOwner: (patch: Partial<OwnerSettings>) => void;
   resetRequisites: () => void;
   resetCharter: () => void;
 }
@@ -104,12 +124,16 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       invoice: DEFAULT_REQUISITES,
       ai: DEFAULT_AI,
+      owner: DEFAULT_OWNER,
       hydrated: false,
 
       setInvoice: (patch) =>
         set((s) => ({ invoice: { ...s.invoice, ...patch } })),
 
       setAi: (patch) => set((s) => ({ ai: { ...s.ai, ...patch } })),
+
+      setOwner: (patch) =>
+        set((s) => ({ owner: { ...s.owner, ...patch } })),
 
       resetRequisites: () => set({ invoice: DEFAULT_REQUISITES }),
       resetCharter: () => set((s) => ({ ai: { ...s.ai, charter: DEFAULT_CHARTER } })),
@@ -119,7 +143,7 @@ export const useSettingsStore = create<SettingsState>()(
       version: 1,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
-      partialize: (s) => ({ invoice: s.invoice, ai: s.ai }),
+      partialize: (s) => ({ invoice: s.invoice, ai: s.ai, owner: s.owner }),
       onRehydrateStorage: () => () => {
         useSettingsStore.setState({ hydrated: true });
       },

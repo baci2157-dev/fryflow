@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   BadgeCheck,
@@ -10,11 +11,16 @@ import {
   Database,
   Download,
   FileText,
+  Globe,
+  KeyRound,
+  LogOut,
   Megaphone,
   RotateCcw,
   Send,
+  ShieldCheck,
   Sparkles,
   Timer,
+  UserRound,
   Zap,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -23,6 +29,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useAdviceStore } from "@/lib/advice-store";
 import { useAiChatStore } from "@/lib/ai-chat-store";
 import { backupCounts, downloadBackup } from "@/lib/backup";
+import {
+  changePin,
+  currentLoginName,
+  DEFAULT_LOGIN_NAME,
+  logout,
+  resetPin,
+} from "@/lib/auth";
 import { useCrmStore } from "@/lib/clients-store";
 import { queueFetch } from "@/lib/offline-queue";
 import { useOrdersStore } from "@/lib/orders-store";
@@ -32,6 +45,7 @@ import {
   CHARTER_EXAMPLES,
   CHARTER_MAX,
   DEFAULT_REQUISITES,
+  OWNER_NAME_CHIPS,
   useSettingsStore,
 } from "@/lib/settings-store";
 import { cn } from "@/lib/utils";
@@ -152,6 +166,295 @@ function InlineResult({
       )}
       <span>{children}</span>
     </motion.p>
+  );
+}
+
+/* ── Блок «Владелец»: имя для приветствия (задача 10) ────── */
+
+function OwnerSection() {
+  const owner = useSettingsStore((s) => s.owner);
+  const setOwner = useSettingsStore((s) => s.setOwner);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const isPreset = (OWNER_NAME_CHIPS as readonly string[]).includes(owner.name);
+
+  return (
+    <Section
+      icon={<UserRound className="size-5" />}
+      title="Владелец"
+      hint="Имя в приветствии на Дашборде — с утра приятнее видеть своё"
+    >
+      <div className="grid gap-2.5 sm:grid-cols-2">
+        <label className="block">
+          <span className="text-[12px] font-medium text-ink-soft">
+            Имя владельца
+          </span>
+          <input
+            ref={nameRef}
+            value={owner.name}
+            onChange={(e) => setOwner({ name: e.target.value.slice(0, 24) })}
+            placeholder="Адам"
+            autoComplete="off"
+            className="mt-1.5 h-11 w-full rounded-xl border border-border bg-bg px-3.5 text-[14px] text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-accent/60 focus:bg-surface"
+          />
+        </label>
+        <div>
+          <span className="text-[12px] font-medium text-ink-soft">
+            Быстрый выбор
+          </span>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {OWNER_NAME_CHIPS.map((n) => (
+              <button
+                key={n}
+                type="button"
+                aria-pressed={owner.name === n}
+                onClick={() => setOwner({ name: n })}
+                className={cn(
+                  "h-11 rounded-xl border px-4 text-[13px] font-medium transition-all active:scale-[0.97]",
+                  owner.name === n
+                    ? "border-accent bg-accent/15 text-ink"
+                    : "border-border bg-bg text-ink-soft hover:border-accent/40 hover:text-ink"
+                )}
+              >
+                {n}
+              </button>
+            ))}
+            <button
+              type="button"
+              aria-pressed={!isPreset && owner.name.trim().length > 0}
+              onClick={() => {
+                setOwner({ name: "" });
+                nameRef.current?.focus();
+              }}
+              className={cn(
+                "h-11 rounded-xl border px-4 text-[13px] font-medium transition-all active:scale-[0.97]",
+                !isPreset && owner.name.trim().length > 0
+                  ? "border-accent bg-accent/15 text-ink"
+                  : "border-border bg-bg text-ink-soft hover:border-accent/40 hover:text-ink"
+              )}
+            >
+              Другое
+            </button>
+          </div>
+        </div>
+      </div>
+      <p className="mt-3 text-[12px] text-ink-soft">
+        Дашборд поприветствует:{" "}
+        <span className="font-medium text-ink">
+          «Добрый день, {owner.name.trim() || "…"}»
+        </span>
+      </p>
+    </Section>
+  );
+}
+
+/* ── Блок «Безопасность»: PIN, выход, сброс (задача 10) ──── */
+
+const pinDigits = (v: string) => v.replace(/\D/g, "").slice(0, 4);
+
+function PinInput({
+  label,
+  value,
+  onChange,
+  autoFocus,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  autoFocus?: boolean;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[12px] font-medium text-ink-soft">{label}</span>
+      <input
+        type="password"
+        inputMode="numeric"
+        autoFocus={autoFocus}
+        value={value}
+        onChange={(e) => onChange(pinDigits(e.target.value))}
+        placeholder="••••"
+        autoComplete="new-password"
+        className={cn(
+          "mt-1.5 h-11 w-full rounded-xl border bg-bg px-3.5 text-center font-mono text-[17px] tracking-[0.4em] text-ink outline-none transition-colors placeholder:tracking-[0.4em] placeholder:text-ink-soft/40 focus:bg-surface",
+          value.length === 4
+            ? "border-tier-green/50 focus:border-tier-green/60"
+            : "border-border focus:border-accent/60"
+        )}
+      />
+    </label>
+  );
+}
+
+function SecuritySection() {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const [oldPin, setOldPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [pinOk, setPinOk] = useState(false);
+
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetName, setResetName] = useState("");
+  const [resetError, setResetError] = useState<string | null>(null);
+
+  const loginName = useMemo(() => currentLoginName(), []);
+
+  const submitChangePin = () => {
+    setPinOk(false);
+    if (oldPin.length !== 4 || newPin.length !== 4 || confirmPin.length !== 4) {
+      setPinError("Все три поля — по 4 цифры");
+      return;
+    }
+    if (newPin === oldPin) {
+      setPinError("Новый PIN совпадает со старым");
+      return;
+    }
+    if (newPin !== confirmPin) {
+      setPinError("Новый PIN и подтверждение не совпадают");
+      return;
+    }
+    if (changePin(oldPin, newPin)) {
+      setPinError(null);
+      setPinOk(true);
+      setOldPin("");
+      setNewPin("");
+      setConfirmPin("");
+      toast({
+        title: "PIN обновлён",
+        description: "Новый PIN действует со следующего входа и переживёт выход.",
+        duration: 3200,
+      });
+    } else {
+      setPinError("Старый PIN указан неверно");
+    }
+  };
+
+  const submitResetPin = () => {
+    if (resetPin(resetName)) {
+      setResetError(null);
+      setResetName("");
+      setResetOpen(false);
+      toast({
+        title: "PIN сброшен на 1234",
+        description: "Войдите с PIN 1234 и сразу поменяйте его на свой.",
+        duration: 4200,
+      });
+    } else {
+      setResetError("Имя не совпало — сброс доступен только владельцу (Taleh)");
+    }
+  };
+
+  return (
+    <Section
+      icon={<ShieldCheck className="size-5" />}
+      title="Безопасность"
+      hint="Локальный вход по PIN: телефон в кармане — база под замком"
+    >
+      <p className="flex items-center gap-1.5 text-[12.5px] text-ink-soft">
+        <BadgeCheck className="size-4 shrink-0 text-tier-green" />
+        Вы вошли как{" "}
+        <span className="font-semibold text-ink">{loginName}</span>
+      </p>
+
+      {/* Смена PIN */}
+      <div className="mt-4 border-t border-border pt-4">
+        <p className="flex items-center gap-1.5 text-[13.5px] font-medium text-ink">
+          <KeyRound className="size-4 text-accent" />
+          Смена PIN-кода
+        </p>
+        <div className="mt-3 grid grid-cols-3 gap-2.5">
+          <PinInput label="Старый" value={oldPin} onChange={(v) => { setOldPin(v); setPinError(null); setPinOk(false); }} autoFocus />
+          <PinInput label="Новый" value={newPin} onChange={(v) => { setNewPin(v); setPinError(null); setPinOk(false); }} />
+          <PinInput label="Ещё раз" value={confirmPin} onChange={(v) => { setConfirmPin(v); setPinError(null); setPinOk(false); }} />
+        </div>
+        {pinError && <InlineResult ok={false}>{pinError}</InlineResult>}
+        {pinOk && (
+          <InlineResult ok>
+            PIN обновлён — при следующем входе используйте новый
+          </InlineResult>
+        )}
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.98 }}
+          onClick={submitChangePin}
+          className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+        >
+          <KeyRound className="size-4" />
+          Сменить PIN
+        </motion.button>
+      </div>
+
+      {/* Сброс забытого PIN */}
+      <div className="mt-4 border-t border-border pt-4">
+        <button
+          type="button"
+          onClick={() => {
+            setResetOpen((v) => !v);
+            setResetError(null);
+          }}
+          className="text-[12.5px] font-medium text-ink-soft transition-colors hover:text-ink"
+        >
+          Забыли PIN? Сбросить на 1234 {resetOpen ? "▲" : "▼"}
+        </button>
+        {resetOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ type: "spring", stiffness: 380, damping: 34 }}
+            className="overflow-hidden"
+          >
+            <p className="mt-2 text-[11.5px] leading-snug text-ink-soft">
+              Сброс доступен только владельцу: введите имя пользователя
+              (по умолчанию — {DEFAULT_LOGIN_NAME}).
+            </p>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+              <input
+                value={resetName}
+                onChange={(e) => {
+                  setResetName(e.target.value);
+                  setResetError(null);
+                }}
+                placeholder="Имя владельца"
+                autoComplete="off"
+                className="h-11 flex-1 rounded-xl border border-border bg-bg px-3.5 text-[14px] text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-accent/60 focus:bg-surface"
+              />
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.98 }}
+                onClick={submitResetPin}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/10"
+              >
+                <RotateCcw className="size-4" />
+                Сбросить PIN
+              </motion.button>
+            </div>
+            {resetError && <InlineResult ok={false}>{resetError}</InlineResult>}
+          </motion.div>
+        )}
+      </div>
+
+      {/* Выход */}
+      <div className="mt-4 border-t border-border pt-4">
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.98 }}
+          onClick={() => {
+            logout();
+            router.replace("/login");
+          }}
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-tier-red/40 bg-tier-red/5 px-4 text-sm font-semibold text-tier-red transition-colors hover:bg-tier-red/10"
+        >
+          <LogOut className="size-4" />
+          Выйти из аккаунта
+        </motion.button>
+        <p className="mt-2 text-[11.5px] leading-snug text-ink-soft">
+          Сессия закроется — PIN и имя останутся, при следующем входе
+          всё вернётся на место.
+        </p>
+      </div>
+    </Section>
   );
 }
 
@@ -646,6 +949,12 @@ export default function SettingsPage() {
       </header>
 
       <div className="flex flex-col gap-5">
+        {/* ── Владелец (задача 10) ── */}
+        <OwnerSection />
+
+        {/* ── Безопасность (задача 10) ── */}
+        <SecuritySection />
+
         {/* ── ИИ-Директор ── */}
         <Section
           icon={<Sparkles className="size-5" />}
@@ -762,6 +1071,28 @@ export default function SettingsPage() {
                 </p>
               </motion.div>
             )}
+
+            {/* Поиск в интернете: для вопросов о трендах и конкурентах */}
+            <div className="mt-4 border-t border-border pt-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1.5 text-[13.5px] font-medium text-ink">
+                    <Globe className="size-4 text-accent" />
+                    Поиск в интернете
+                  </p>
+                  <p className="mt-0.5 text-[12px] leading-snug text-ink-soft">
+                    Включите, когда спрашиваете ИИ о трендах рынка или
+                    конкурентах: перед ответом он сверится со свежими
+                    публикациями и приложит источники.
+                  </p>
+                </div>
+                <Switch
+                  checked={ai.webSearch}
+                  onCheckedChange={(v) => setAi({ webSearch: v })}
+                  aria-label="Поиск в интернете"
+                />
+              </div>
+            </div>
 
             <Link
               href="/ai-assistant"

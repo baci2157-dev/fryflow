@@ -1,4 +1,5 @@
 import {
+  CLIENT_TYPE_LABEL,
   COST_PER_KG,
   DEBT_DANGER_DAYS,
   DEBT_WARN_DAYS,
@@ -6,12 +7,16 @@ import {
   MIN_WHOLESALE_BOXES,
   PACK_KG,
   PRICE_PER_PACK,
+  PRODUCT_CATEGORY_LABEL,
   SMALL_WHOLESALE_PRICE_PER_PACK,
   TRIAL_PRICE,
+  crossSellSum,
   type Client,
   type InventoryMovement,
   type Order,
   type Payment,
+  type Product,
+  type ProductCategory,
   type RegionalPartner,
 } from "@/types/models";
 
@@ -22,6 +27,12 @@ import {
  * дебиторку с возрастом, холодные лиды по районам, выручку и маржу
  * за 30 дней. ИИ видит ровно то же, что видит владелец, — поэтому
  * отвечает делом, а не общими словами.
+ *
+ * Задача 10 расширила контекст до «коммерческого директора»:
+ *   • recentOrders — последние 10 заказов с попутными позициями;
+ *   • clientPatterns — средний интервал, средний чек, «берёт только фри»;
+ *   • seasonality — месяц, сезон и подсказка, что сейчас в тему;
+ *   • crossSell — живой каталог попутных товаров с маржой.
  */
 
 export interface AiStock {
@@ -57,6 +68,65 @@ export interface AiRegions {
   top: Array<{ company: string; city: string; volumeTons: number; status: string }>;
 }
 
+/* ── Задача 10: контекст «коммерческого директора» ─────────── */
+
+/** Последний заказ — живая история с попутными позициями. */
+export interface AiRecentOrder {
+  client: string;
+  date: string;
+  sumRub: number;
+  boxes: number;
+  /** Попутные позиции текстом: «Соус чесночный ×2». */
+  items: string[];
+  crossSellRub: number;
+}
+
+/** Паттерн клиента: как часто и на сколько берёт, чем докупает. */
+export interface AiClientPattern {
+  name: string;
+  tier: "green" | "yellow" | "red";
+  segment: string;
+  ordersCount: number;
+  /** Средний интервал между заказами, дней (null — один заказ). */
+  avgIntervalDays: number | null;
+  /** Дней с последнего заказа — главный триггер «пора звонить». */
+  daysSinceLastOrder: number;
+  avgCheckRub: number;
+  /** Интересы русскими словами: «масло», «соус». */
+  interests: string[];
+  /** true — за всю историю ни одного попутного товара: только фри. */
+  onlyFries: boolean;
+  /** Клиент «назрел»: без заказа дольше своего среднего интерввала. */
+  overdue: boolean;
+}
+
+/** Сезонность: что сейчас в тему у шаурмичных и пабов. */
+export interface AiSeasonality {
+  month: string;
+  season: "зима" | "весна" | "лето" | "осень";
+  /** Бизнес-подсказка: на что смотреть в этом сезоне. */
+  hint: string;
+}
+
+/** Каталог попутных товаров глазами ИИ. */
+export interface AiCrossSell {
+  products: Array<{
+    name: string;
+    category: string;
+    priceRub: number;
+    costRub: number;
+    /** Маржа за единицу — ₽ и %, чтобы ИИ советовал выгодное. */
+    marginRub: number;
+    marginPct: number;
+    stock: number;
+    unit: string;
+  }>;
+  /** Попутные продажи за 30 дней, ₽ (маржа фри не растёт — эта растёт). */
+  last30Rub: number;
+  /** Заказов с попутными позициями за 30 дней. */
+  last30Orders: number;
+}
+
 export interface AiContext {
   today: string;
   stock: AiStock;
@@ -84,6 +154,15 @@ export interface AiContext {
   };
   /** Региональные оптовики юга (задача 7). */
   regions?: AiRegions;
+  /* ── Задача 10: история, паттерны, сезонность, каталог ── */
+  /** Последние 10 заказов с попутными позициями. */
+  recentOrders: AiRecentOrder[];
+  /** Как заказывают клиенты: интервал, чек, «только фри». */
+  clientPatterns: AiClientPattern[];
+  /** Текущий месяц, сезон и что сейчас продавать. */
+  seasonality: AiSeasonality;
+  /** Каталог попутных товаров + продажи за 30 дней. */
+  crossSell: AiCrossSell;
   pricing: {
     wholesalePerBox: number;
     wholesalePerKg: number;
@@ -104,6 +183,9 @@ export interface AiContextDeps {
   payments: Payment[];
   /** Региональные оптовики (необязательно — для старых вызовов). */
   regions?: RegionalPartner[];
+  /** Каталог попутных товаров (задача 10 — необязательно, старые
+   *  вызовы получают пустой каталог и паттерны без интересов). */
+  products?: Product[];
 }
 
 const rub = (n: number) => Math.round(n);
@@ -111,12 +193,34 @@ const num = (order: Order) => Number(order.id.replace(/\D/g, "")) || 0;
 const zoneOf = (days: number): AiDebtor["zone"] =>
   days >= DEBT_DANGER_DAYS ? "danger" : days >= DEBT_WARN_DAYS ? "warn" : "fresh";
 
+/* ── Сезонность: месяц → сезон → что предлагать ──────────── */
+
+const RU_MONTHS = [
+  "январь", "февраль", "март", "апрель", "май", "июнь",
+  "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь",
+];
+
+function seasonOf(monthIndex: number): AiSeasonality["season"] {
+  if (monthIndex === 11 || monthIndex <= 1) return "зима";
+  if (monthIndex <= 4) return "весна";
+  if (monthIndex <= 7) return "лето";
+  return "осень";
+}
+
+const SEASON_HINT: Record<AiSeasonality["season"], string> = {
+  зима: "Спрос на соленья и заготовки, горячее меню растёт — предлагай соленья и сырные соусы к фри; масло для фритюра меняют чаще (жарка интенсивнее).",
+  весна: "Сезон шаурмы разгоняется — свежая зелень и овощи в тему; хорошее время подсадить клиентов на соусы к летнему пику.",
+  лето: "Пик зелени, овощей и лёгких соусов; туристический трафик — фри берут больше, следи за остатками попутных позиций.",
+  осень: "Возврат к горячему меню: сырные и чесночные соусы растут, напомни клиентам про заготовку солений к зиме.",
+};
+
 /** Собирает снимок бизнеса для системного промпта ИИ. */
 export function buildAiContext({
   clients,
   orders,
   movements,
   regions,
+  products = [],
 }: AiContextDeps): AiContext {
   const now = Date.now();
 
@@ -190,6 +294,116 @@ export function buildAiContext({
       }
     : undefined;
 
+  /* ── Задача 10: последние 10 заказов с попутными позициями ── */
+  const shippedAll = orders.filter((o) => !o.isDraft);
+  const recentOrders: AiRecentOrder[] = [...shippedAll]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+    .slice(0, 10)
+    .map((o) => ({
+      client: o.clientName,
+      date: o.createdAt.slice(0, 10),
+      sumRub: o.totalAmount + crossSellSum(o.items),
+      boxes: o.boxesCount,
+      items: (o.items ?? []).map((i) => `${i.name} ×${i.qty}`),
+      crossSellRub: crossSellSum(o.items),
+    }));
+
+  /* ── Задача 10: паттерны клиентов — интервал, чек, только фри ── */
+  const byClient = new Map<string, Order[]>();
+  for (const o of shippedAll) {
+    const list = byClient.get(o.clientId) ?? [];
+    list.push(o);
+    byClient.set(o.clientId, list);
+  }
+
+  const clientPatterns: AiClientPattern[] = clients
+    .map((c) => {
+      const mine = (byClient.get(c.id) ?? []).sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+      if (mine.length === 0) return null;
+
+      /* Интервалы между заказами → среднее, дней. */
+      const times = mine.map((o) => new Date(o.createdAt).getTime());
+      const gaps: number[] = [];
+      for (let i = 1; i < times.length; i++) {
+        gaps.push((times[i] - times[i - 1]) / 86_400_000);
+      }
+      const avgIntervalDays =
+        gaps.length > 0
+          ? Math.round((gaps.reduce((s, g) => s + g, 0) / gaps.length) * 10) / 10
+          : null;
+
+      const last = times[times.length - 1];
+      const daysSinceLastOrder = Math.max(
+        0,
+        Math.floor((now - last) / 86_400_000)
+      );
+      const avgCheckRub =
+        Math.round(
+          mine.reduce(
+            (s, o) => s + o.totalAmount + crossSellSum(o.items),
+            0
+          ) / mine.length
+        );
+
+      return {
+        name: c.name,
+        tier: c.priorityTier,
+        segment: CLIENT_TYPE_LABEL[c.type],
+        ordersCount: mine.length,
+        avgIntervalDays,
+        daysSinceLastOrder,
+        avgCheckRub,
+        interests: (c.interests ?? []).map(
+          (cat: ProductCategory) =>
+            PRODUCT_CATEGORY_LABEL[cat].toLowerCase()
+        ),
+        onlyFries: mine.every((o) => (o.items ?? []).length === 0),
+        overdue:
+          avgIntervalDays !== null && daysSinceLastOrder > avgIntervalDays,
+      } satisfies AiClientPattern;
+    })
+    .filter((p): p is AiClientPattern => p !== null)
+    /* «Назревшие» сверху — их ИИ зовёт в первую очередь. */
+    .sort(
+      (a, b) =>
+        Number(b.overdue) - Number(a.overdue) ||
+        b.daysSinceLastOrder - a.daysSinceLastOrder
+    );
+
+  /* ── Задача 10: сезонность ── */
+  const today = new Date();
+  const season = seasonOf(today.getMonth());
+  const seasonality: AiSeasonality = {
+    month: RU_MONTHS[today.getMonth()],
+    season,
+    hint: SEASON_HINT[season],
+  };
+
+  /* ── Задача 10: каталог попутных + продажи за 30 дней ── */
+  const crossSellLast30 = shippedAll.filter(
+    (o) => new Date(o.createdAt).getTime() >= from30d && (o.items ?? []).length > 0
+  );
+  const crossSell: AiCrossSell = {
+    products: products.map((p) => ({
+      name: p.name,
+      category: PRODUCT_CATEGORY_LABEL[p.category].toLowerCase(),
+      priceRub: p.price,
+      costRub: p.cost,
+      marginRub: p.price - p.cost,
+      marginPct: p.price > 0 ? Math.round(((p.price - p.cost) / p.price) * 100) : 0,
+      stock: p.stock,
+      unit: p.unit,
+    })),
+    last30Rub: rub(crossSellLast30.reduce((s, o) => s + crossSellSum(o.items), 0)),
+    last30Orders: crossSellLast30.length,
+  };
+
   return {
     today: new Date().toISOString().slice(0, 10),
     stock: {
@@ -230,6 +444,10 @@ export function buildAiContext({
       chains: [...new Set(clients.filter((c) => c.chainName).map((c) => c.chainName as string))],
     },
     regions: regionsBlock,
+    recentOrders,
+    clientPatterns,
+    seasonality,
+    crossSell,
     pricing: {
       wholesalePerBox: PRICE_PER_PACK,
       wholesalePerKg: Math.round((PRICE_PER_PACK / PACK_KG) * 10) / 10,
