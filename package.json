@@ -4,7 +4,7 @@
   "private": true,
   "description": "FryFlow — тёплая точность для быстрых интерфейсов: Next.js + TypeScript + Tailwind CSS",
   "scripts": {
-    "dev": "next dev -p 3000 2>&1 | tee dev.log",
+    "dev": "next dev -p 3000 -H 0.0.0.0 2>&1 | tee dev.log",
     "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node -e \"const fs=require('fs'),p='.next/standalone/server.js';try{const s=fs.readFileSync(p,'utf8');fs.writeFileSync(p,s.replace(\\\"process.env.HOSTNAME || '0.0.0.0'\\\",\\\"'0.0.0.0'\\\"))}catch(e){}\"",
     "start": "NODE_ENV=production HOSTNAME=0.0.0.0 bun .next/standalone/server.js",
     "lint": "eslint .",
