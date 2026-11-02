@@ -329,12 +329,66 @@ const RULES: Rule[] = [
   { keys: /план|приоритет|с чего нач|утро|день нач|фокус|задач/i, answer: planAnswer },
 ];
 
+/* ── Нормализация частичного контекста ─────────────────────
+ *
+ * Офлайн-мозг — последний рубеж роута: он вызывается, когда живая
+ * модель недоступна (прод без ключа и SDK). Прийти может что угодно
+ * (урезанный/чужой payload, старый клиент) — нормализуем недостающие
+ * секции нулями и пустыми списками, чтобы ответ был всегда, а не 500-я.
+ */
+function normalizeContext(raw: Partial<AiContext> | null | undefined): AiContext {
+  const c = (raw ?? {}) as Partial<AiContext>;
+  const month = new Date().getMonth();
+  const season =
+    month === 11 || month <= 1 ? "зима" : month <= 4 ? "весна" : month <= 7 ? "лето" : "осень";
+  return {
+    today: c.today ?? new Date().toISOString().slice(0, 10),
+    stock: {
+      kg: 0, packs: 0, lowStockKg: 500, isLow: false,
+      outflowKgPerDay: 0, daysLeft: null,
+      ...c.stock,
+    },
+    receivables: { totalRub: 0, debtors: [], ...c.receivables },
+    orders: {
+      last30: { count: 0, revenueRub: 0, boxes: 0, marginRub: 0, ...c.orders?.last30 },
+      drafts: c.orders?.drafts ?? 0,
+    },
+    leads: {
+      cold: 0, noAnswer: 0, total: 0, byDistrict: [], withPhone: 0,
+      ...c.leads,
+    },
+    clients: { total: 0, green: 0, yellow: 0, red: 0, chains: [], ...c.clients },
+    regions: c.regions ?? { partners: 0, tons: 0, trucks: 0, tests: 0, byCity: [], top: [] },
+    recentOrders: c.recentOrders ?? [],
+    clientPatterns: c.clientPatterns ?? [],
+    seasonality: {
+      month: ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"][month],
+      season,
+      hint: "",
+      ...c.seasonality,
+    },
+    crossSell: { products: [], last30Rub: 0, last30Orders: 0, ...c.crossSell },
+    discovery: {
+      pendingLeads: 0, approvedLeads: 0, newPoints7d: 0, uncalledNewPoints: [],
+      ...c.discovery,
+    },
+    pricing: c.pricing ?? {
+      wholesalePerBox: 300, wholesalePerKg: 120,
+      smallWholesalePerBox: 350, smallWholesalePerKg: 140,
+      costPerKg: 100, minWholesaleBoxes: 10,
+      trialPrice: 350, packKg: 2.5,
+    },
+    thresholds: { debtWarnDays: 8, debtDangerDays: 15, ...c.thresholds },
+  };
+}
+
 /** Ответ офлайн-ИИ на вопрос пользователя по контексту бизнеса. */
 export function offlineAnswer(question: string, context: AiContext): string {
+  const c = normalizeContext(context);
   for (const rule of RULES) {
-    if (rule.keys.test(question)) return rule.answer(context);
+    if (rule.keys.test(question)) return rule.answer(c);
   }
-  return defaultAnswer(context);
+  return defaultAnswer(c);
 }
 
 /** Приветствие ИИ-Директора: первое сообщение — самое важное. */
