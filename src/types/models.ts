@@ -308,6 +308,7 @@ export const DISTRICTS = [
   "Первомайский",
   "Пролетарский",
   "Советский",
+  "Железнодорожный",
 ] as const;
 
 export const CLIENT_TYPE_LABEL: Record<ClientType, string> = {

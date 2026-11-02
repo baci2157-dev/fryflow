@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Sparkles,
   Timer,
+  Trash2,
   UserRound,
   Zap,
 } from "lucide-react";
@@ -38,6 +39,7 @@ import {
 } from "@/lib/auth";
 import { useCrmStore } from "@/lib/clients-store";
 import { queueFetch } from "@/lib/offline-queue";
+import { purgeDemoData } from "@/lib/purge-demo";
 import { useOrdersStore } from "@/lib/orders-store";
 import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
@@ -916,11 +918,18 @@ export default function SettingsPage() {
 
   /* Сброс демо-данных — двухшаговое подтверждение (случайный тап не обнулит базу). */
   const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmPurge, setConfirmPurge] = useState(false);
   useEffect(() => {
     if (!confirmReset) return;
     const t = setTimeout(() => setConfirmReset(false), 5000);
     return () => clearTimeout(t);
   }, [confirmReset]);
+
+  useEffect(() => {
+    if (!confirmPurge) return;
+    const t = setTimeout(() => setConfirmPurge(false), 5000);
+    return () => clearTimeout(t);
+  }, [confirmPurge]);
 
   const charterLen = ai.charter.length;
   const overLimit = charterLen > CHARTER_MAX;
@@ -1287,6 +1296,43 @@ export default function SettingsPage() {
             >
               <Download className="size-4" />
               Скачать резервную копию (JSON)
+            </button>
+
+            {/* Удаление демо-карточек — перед импортом реальной базы:
+                сносит только демо-записи (клиенты cl-, заказы ord-1042…1047),
+                реальные клиенты и заказы остаются */}
+            <button
+              type="button"
+              onClick={() => {
+                if (!confirmPurge) {
+                  setConfirmPurge(true);
+                  return;
+                }
+                setConfirmPurge(false);
+                const res = purgeDemoData();
+                toast({
+                  title:
+                    res.clients > 0
+                      ? "Демо-данные удалены"
+                      : "Демо-карточек не нашлось",
+                  description:
+                    res.clients > 0
+                      ? `Убрано ${res.clients} демо-клиентов, ${res.orders} демо-заказов и ${res.calls} демо-звонков. Реальные записи не тронуты; остаток склада теперь считается только по реальным движениям.`
+                      : "В базе только реальные записи — чистить нечего.",
+                  duration: 5200,
+                });
+              }}
+              className={cn(
+                "inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all active:scale-[0.98]",
+                confirmPurge
+                  ? "border-tier-red/50 bg-tier-red/10 text-tier-red"
+                  : "border-border bg-surface text-ink hover:border-accent/40 hover:bg-accent/10"
+              )}
+            >
+              <Trash2 className="size-4" />
+              {confirmPurge
+                ? "Точно? Нажмите ещё раз для удаления"
+                : "Удалить демо-карточки"}
             </button>
 
             {/* Сброс — двухшаговое подтверждение: первый тап «взводит», второй обнуляет */}

@@ -41,6 +41,11 @@ export interface ClientImportRow {
   coordinates?: unknown;
   notes?: unknown;
   status?: unknown;
+  /* Задача «база владельца»: сети — Kikchak ×9, Штефан Бургер ×5… */
+  chain_name?: unknown;
+  chainName?: unknown;
+  chain_size?: unknown;
+  chainSize?: unknown;
 }
 
 /** Причина отбраковки строки. */
@@ -173,6 +178,18 @@ function parseRow(
   }
   const hasCoords = lat !== undefined && lng !== undefined;
 
+  // Сеть: цепочка точек под одним брендом («один звонок в Kikchak = 10 клиентов»).
+  const chainRaw = row.chain_name ?? row.chainName;
+  const chainName =
+    typeof chainRaw === "string" && chainRaw.trim().length >= 2
+      ? chainRaw.trim()
+      : undefined;
+  const chainSizeNum = Number(row.chain_size ?? row.chainSize);
+  const chainSize =
+    Number.isFinite(chainSizeNum) && chainSizeNum >= 1 && chainSizeNum <= 500
+      ? Math.round(chainSizeNum)
+      : undefined;
+
   return {
     ok: true,
     hasCoords,
@@ -188,6 +205,8 @@ function parseRow(
       coordinates: hasCoords
         ? { lat: Math.round(lat! * 1e6) / 1e6, lng: Math.round(lng! * 1e6) / 1e6 }
         : { ...ROSTOV_CENTER },
+      chainName,
+      chainSize: chainName ? (chainSize ?? 1) : undefined,
     },
   };
 }
@@ -244,8 +263,33 @@ export function parseClientsFile(text: string): ParsedClientsFile {
 
 /* ── Прогон импорта: дедуп + геокодинг + запись в стор ────── */
 
-const key = (name: string, address: string) =>
-  `${name.toLowerCase()}|${address.toLowerCase()}`;
+/* Слова-«шум» в адресе: «ул.», «просп.», «пл.»… — чтобы «пр. Стачки, 220»
+ * и «просп. Стачки, 220» считались одним и тем же адресом. */
+const STREET_WORDS = new Set([
+  "ул", "улица", "просп", "проспект", "пр", "пр-т", "пр-кт",
+  "пл", "площадь", "пер", "переулок", "б-р", "бульвар",
+  "ш", "шоссе", "наб", "набережная", "проезд", "пр-д",
+]);
+
+/** Нормализация строки: регистр, ё→е, кавычки, двойные пробелы. */
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[«»"']/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/** Ключ дедупликации: нормализованные name + address (без «ул.»,
+ *  без пунктуации, без примечаний в скобках) — устойчив к разнобою
+ *  написания улицы («Ворошиловский просп., 105А» = «Ворошиловский, 105А»). */
+function key(name: string, address: string): string {
+  const a = norm(address).replace(/\([^)]*\)/g, " ");
+  const tokens = a
+    .split(/[\s,.\-]+/)
+    .filter((t) => t && !STREET_WORDS.has(t));
+  return `${norm(name)}|${tokens.join("")}`;
+}
 
 /** Пауза для Nominatim: политика — максимум 1 запрос в секунду. */
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -340,6 +384,16 @@ export const CLIENT_IMPORT_SAMPLE = JSON.stringify(
       type: "burger",
       priority_tier: "yellow",
       notes: "Координаты подставит геокодинг Nominatim",
+    },
+    {
+      name: "Kikchak (новая точка)",
+      address: "пр. Ленина, 85",
+      district: "Октябрьский",
+      type: "shawarma",
+      priority_tier: "green",
+      chain_name: "Kikchak",
+      chain_size: 10,
+      notes: "Сеть: одна точка из десяти",
     },
   ],
   null,
