@@ -5,7 +5,7 @@
   "description": "FryFlow — тёплая точность для быстрых интерфейсов: Next.js + TypeScript + Tailwind CSS",
   "scripts": {
     "dev": "next dev -p 3000 -H 0.0.0.0 2>&1 | tee dev.log",
-    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node -e \"const fs=require('fs'),p='.next/standalone/server.js';try{const s=fs.readFileSync(p,'utf8');fs.writeFileSync(p,s.replace(\\\"process.env.HOSTNAME || '0.0.0.0'\\\",\\\"'0.0.0.0'\\\"))}catch(e){}\"",
+    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node -e \"const fs=require('fs'),p='.next/standalone/server.js';const s=fs.readFileSync(p,'utf8');const r=s.replace(\\\"process.env.HOSTNAME || '0.0.0.0'\\\",\\\"'0.0.0.0'\\\");if(!r.includes(\\\"const hostname = '0.0.0.0'\\\")){console.error('PATCH FAILED: HOSTNAME pattern not found in standalone server.js');process.exit(1)}fs.writeFileSync(p,r);console.log('PATCH OK: server.js bind 0.0.0.0')\"",
     "start": "NODE_ENV=production HOSTNAME=0.0.0.0 bun .next/standalone/server.js",
     "lint": "eslint .",
     "db:push": "prisma db push --accept-data-loss",

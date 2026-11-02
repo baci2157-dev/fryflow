@@ -2,7 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  /* config options here */
+  /* Пин корня Turbopack (fix деплоя): без него при сборке из вложенного
+     каталога (окружение сборки видит чужой lockfile уровнем выше — как на
+     платформе) Next неверно определяет workspace root и вкладывает
+     standalone-выход в .next/standalone/<dirname>/ — server.js не на
+     месте, старт деплоя падает. Корень = каталог запуска next (проект). */
+  turbopack: {
+    root: process.cwd(),
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
