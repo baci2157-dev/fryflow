@@ -103,6 +103,7 @@ export function demoOrders(): Order[] {
       createdAt: iso(0, 9),
       comment: "Заявка из Telegram: «привезите завтра как в прошлый раз».",
       isDraft: true,
+      source: "telegram",
     },
   ];
 }

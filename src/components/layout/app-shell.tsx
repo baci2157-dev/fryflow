@@ -5,20 +5,27 @@ import { useEffect } from "react";
 import { CommandPalette } from "@/components/command-palette";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { useAdviceStore } from "@/lib/advice-store";
 import { useAiChatStore } from "@/lib/ai-chat-store";
+import { useAiTriggers } from "@/lib/ai-triggers";
 import { useCrmStore } from "@/lib/clients-store";
 import { useOrdersStore } from "@/lib/orders-store";
+import { useRegionsStore } from "@/lib/regions-store";
 import { useSettingsStore } from "@/lib/settings-store";
 import { useUiStore } from "@/lib/ui-store";
 
 /**
  * Каркас приложения FryFlow.
  * Desktop (≥1024px): сворачиваемый сайдбар. Mobile: BottomNav + Sheet «Ещё».
- * Здесь же — глобальный хоткей командной палитры (Ctrl+K / Cmd+K)
- * и восстановление CRM-стора из localStorage (после гидратации React,
- * чтобы не было расхождения SSR ↔ клиент).
+ * Здесь же — глобальный хоткей командной палитры (Ctrl+K / Cmd+K),
+ * восстановление сторов из localStorage (после гидратации React,
+ * чтобы не было расхождения SSR ↔ клиент) и движок проактивного
+ * ИИ (lib/ai-triggers.ts): активность пользователя, интервалы
+ * советов, критичные алерты в Telegram и пинг автопостинга.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
+  useAiTriggers();
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -35,6 +42,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     void useOrdersStore.persist.rehydrate();
     void useSettingsStore.persist.rehydrate();
     void useAiChatStore.persist.rehydrate();
+    void useRegionsStore.persist.rehydrate();
+    void useAdviceStore.persist.rehydrate();
   }, []);
 
   return (

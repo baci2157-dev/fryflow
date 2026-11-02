@@ -64,3 +64,6 @@ server.log
 /mini-services/
 /tests/
 /Caddyfiletool-results/
+
+# FryFlow: серверные данные Telegram (токены — не в репозиторий)
+/.data/

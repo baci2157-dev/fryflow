@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
+import { Send } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { AiAdviceCard } from "@/components/dashboard/ai-advice";
 import { Sk } from "@/components/dashboard/bento-card";
@@ -140,6 +142,8 @@ export default function DashboardPage() {
 
 function GreetingBar({ loading }: { loading: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
+  const [tgConnected, setTgConnected] = useState<boolean | null>(null);
+  const router = useRouter();
   const { toast } = useToast();
 
   // дата/время — только после монтирования (иначе hydration mismatch);
@@ -147,6 +151,23 @@ function GreetingBar({ loading }: { loading: boolean }) {
   useEffect(() => {
     const id = requestAnimationFrame(() => setNow(new Date()));
     return () => cancelAnimationFrame(id);
+  }, []);
+
+  // Telegram-бейдж живой: спрашиваем серверный конфиг (токен
+  // остаётся на сервере, клиент получает только connected).
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/telegram/config")
+      .then((r) => r.json())
+      .then((d: { connected?: boolean }) => {
+        if (!cancelled) setTgConnected(Boolean(d.connected));
+      })
+      .catch(() => {
+        if (!cancelled) setTgConnected(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const hour = now?.getHours() ?? 14;
@@ -178,14 +199,24 @@ function GreetingBar({ loading }: { loading: boolean }) {
       <div className="flex items-center gap-3">
         {loading ? (
           <Sk className="h-8 w-36 rounded-full" />
-        ) : (
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-ink">
+        ) : tgConnected ? (
+          <span className="inline-flex items-center gap-2 rounded-full border border-tier-green/30 bg-tier-green/10 px-3 py-1.5 text-xs font-medium text-tier-green">
             <span className="relative flex size-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
             </span>
             Telegram подключён
           </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => router.push("/settings")}
+            title="Подключить Telegram: алерты и заявки клиентов"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent/40 hover:text-ink"
+          >
+            <Send className="size-3.5" />
+            Telegram не подключён
+          </button>
         )}
         <button
           type="button"

@@ -235,13 +235,17 @@ export function CommandPalette() {
                   Позвонить должнику
                 </CommandItem>
                 <CommandItem
-                  value="Открыть Telegram телеграм уведомления"
-                  onSelect={() =>
-                    notify("Telegram подключён", "Уведомления приходят в чат-бот.")
-                  }
+                  value="Открыть Telegram телеграм уведомления заявки черновики"
+                  onSelect={() => {
+                    close();
+                    router.push("/settings");
+                  }}
                 >
                   <Send className="size-4" />
-                  Открыть Telegram
+                  Telegram: заявки и алерты
+                  <span className="ml-auto pl-3 font-mono text-[10px] text-accent">
+                    настройки
+                  </span>
                 </CommandItem>
               </CommandGroup>
             </CommandList>

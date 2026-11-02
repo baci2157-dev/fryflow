@@ -12,6 +12,7 @@ import {
   type InventoryMovement,
   type Order,
   type Payment,
+  type RegionalPartner,
 } from "@/types/models";
 
 /**
@@ -42,6 +43,20 @@ export interface AiDebtor {
   zone: "fresh" | "warn" | "danger";
 }
 
+export interface AiRegions {
+  /** Всего оптовиков в базе регионов. */
+  partners: number;
+  /** Суммарный объём, тонн. */
+  tons: number;
+  /** Работают фурами. */
+  trucks: number;
+  /** В статусе «Тест». */
+  tests: number;
+  byCity: Array<{ city: string; partners: number; tons: number }>;
+  /** Топ оптовиков по объёму — с кого начинать день. */
+  top: Array<{ company: string; city: string; volumeTons: number; status: string }>;
+}
+
 export interface AiContext {
   today: string;
   stock: AiStock;
@@ -67,6 +82,8 @@ export interface AiContext {
     red: number;
     chains: string[];
   };
+  /** Региональные оптовики юга (задача 7). */
+  regions?: AiRegions;
   pricing: {
     wholesalePerBox: number;
     wholesalePerKg: number;
@@ -85,6 +102,8 @@ export interface AiContextDeps {
   orders: Order[];
   movements: InventoryMovement[];
   payments: Payment[];
+  /** Региональные оптовики (необязательно — для старых вызовов). */
+  regions?: RegionalPartner[];
 }
 
 const rub = (n: number) => Math.round(n);
@@ -97,6 +116,7 @@ export function buildAiContext({
   clients,
   orders,
   movements,
+  regions,
 }: AiContextDeps): AiContext {
   const now = Date.now();
 
@@ -140,6 +160,36 @@ export function buildAiContext({
     byDistrict.set(c.district, (byDistrict.get(c.district) ?? 0) + 1);
   }
 
+  /* Регионы: оптовики юга фурами (если стор передан). */
+  const regionsBlock: AiRegions | undefined = regions
+    ? {
+        partners: regions.length,
+        tons: Math.round(regions.reduce((s, p) => s + p.volumeTons, 0) * 10) / 10,
+        trucks: regions.filter((p) => p.status === "truck").length,
+        tests: regions.filter((p) => p.status === "test").length,
+        byCity: (() => {
+          const byCity = new Map<string, { city: string; partners: number; tons: number }>();
+          for (const p of regions) {
+            const city = byCity.get(p.city) ?? { city: p.city, partners: 0, tons: 0 };
+            city.partners++;
+            city.tons = Math.round((city.tons + p.volumeTons) * 10) / 10;
+            byCity.set(p.city, city);
+          }
+          return [...byCity.values()].sort((a, b) => b.tons - a.tons);
+        })(),
+        top: [...regions]
+          .sort((a, b) => b.volumeTons - a.volumeTons)
+          .slice(0, 5)
+          .map((p) => ({
+            company: p.company,
+            city: p.city,
+            volumeTons: p.volumeTons,
+            status:
+              p.status === "truck" ? "Фура" : p.status === "test" ? "Тест" : "Первый контакт",
+          })),
+      }
+    : undefined;
+
   return {
     today: new Date().toISOString().slice(0, 10),
     stock: {
@@ -179,6 +229,7 @@ export function buildAiContext({
       red: clients.filter((c) => c.priorityTier === "red").length,
       chains: [...new Set(clients.filter((c) => c.chainName).map((c) => c.chainName as string))],
     },
+    regions: regionsBlock,
     pricing: {
       wholesalePerBox: PRICE_PER_PACK,
       wholesalePerKg: Math.round((PRICE_PER_PACK / PACK_KG) * 10) / 10,

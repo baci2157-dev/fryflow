@@ -21,6 +21,7 @@ import { useAiChatStore, type ChatMessage } from "@/lib/ai-chat-store";
 import { greetingMessage, offlineAnswer } from "@/lib/ai-offline";
 import { useCrmStore } from "@/lib/clients-store";
 import { useOrdersStore } from "@/lib/orders-store";
+import { useRegionsStore } from "@/lib/regions-store";
 import { useSettingsStore } from "@/lib/settings-store";
 import { cn } from "@/lib/utils";
 
@@ -173,6 +174,7 @@ export default function AiAssistantPage() {
   const orders = useOrdersStore((s) => s.orders);
   const movements = useOrdersStore((s) => s.movements);
   const payments = useOrdersStore((s) => s.payments);
+  const regions = useRegionsStore((s) => s.partners);
   const charter = useSettingsStore((s) => s.ai.charter);
 
   const [input, setInput] = useState("");
@@ -182,8 +184,8 @@ export default function AiAssistantPage() {
 
   /* Живой контекст бизнеса — пересобирается при каждом изменении стора. */
   const context = useMemo(
-    () => buildAiContext({ clients, orders, movements, payments }),
-    [clients, orders, movements, payments]
+    () => buildAiContext({ clients, orders, movements, payments, regions }),
+    [clients, orders, movements, payments, regions]
   );
   const greeting = useMemo(() => greetingMessage(context), [context]);
 

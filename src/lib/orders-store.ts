@@ -32,6 +32,10 @@ export interface NewOrderInput {
   isPaid: boolean;
   comment?: string;
   isDraft?: boolean;
+  /** Заявка из Telegram-бота — для бейджа в карточке черновика. */
+  source?: "manual" | "telegram";
+  /** id заявки на сервере — дедуп при синхронизации. */
+  externalId?: string;
 }
 
 interface OrdersState {
@@ -97,6 +101,8 @@ export const useOrdersStore = create<OrdersState>()(
           createdAt: new Date().toISOString(),
           comment: input.comment?.trim() || undefined,
           isDraft: input.isDraft ?? false,
+          source: input.source,
+          externalId: input.externalId,
         };
 
         set((s) => {

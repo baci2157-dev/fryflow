@@ -107,8 +107,12 @@ export interface Order {
   /** ISO-дата фактической доставки. */
   deliveredAt?: string;
   comment?: string;
-  /** true — заявка-черновик (будущие заявки из Telegram), склад не списывается. */
+  /** true — заявка-черновик (из Telegram), склад не списывается. */
   isDraft: boolean;
+  /** Откуда пришёл заказ: руками или заявкой из Telegram-бота. */
+  source?: "manual" | "telegram";
+  /** id заявки на сервере Telegram-роута (дедуп при синхронизации). */
+  externalId?: string;
 }
 
 /** Тип движения по складу. */
@@ -133,6 +137,40 @@ export interface Payment {
   amount: number;
   createdAt: string;
 }
+
+/* ── Регионы: оптовики юга (задача 7) ────────────────────── */
+
+/** Воронка регионального оптовика: Первый контакт → Тест → Фура. */
+export type RegionalStatus = "first" | "test" | "truck";
+
+export interface RegionalPartner {
+  id: string;
+  /** Компания / база оптовика. */
+  company: string;
+  /** Город: Краснодар, Волгоград, Ставрополь… */
+  city: string;
+  contactPerson: string;
+  phone: string;
+  /** Месячный объём, тонн (фура ≈ 20 т). */
+  volumeTons: number;
+  status: RegionalStatus;
+  notes: string;
+  /** ISO-дата создания карточки. */
+  createdAt: string;
+}
+
+export const REGIONAL_STATUS_LABEL: Record<RegionalStatus, string> = {
+  first: "Первый контакт",
+  test: "Тест",
+  truck: "Фура",
+};
+
+/** Подсказка «что значит статус» — редактируем прямо в списке. */
+export const REGIONAL_STATUS_HINT: Record<RegionalStatus, string> = {
+  first: "Переговоры: прайс отправлен, ждём решение",
+  test: "Пробная отгрузка 2–10 т — присматриваемся друг к другу",
+  truck: "Работаем фурами (~20 т) — золото регионального канала",
+};
 
 /* ── Справочники: заказы и склад ──────────────────────────── */
 

@@ -163,6 +163,28 @@ function regionAnswer(c: AiContext): string {
   ].join("\n");
 }
 
+/* Региональные оптовики юга (фурами). */
+function regionsPartnersAnswer(c: AiContext): string {
+  const r = c.regions;
+  if (!r || r.partners === 0) {
+    return "В базе «Регионы» пока пусто — добавьте оптовика после первого созвона, и я начну советовать, кого добивать до фуры.";
+  }
+  const cities = r.byCity
+    .map((x) => `• ${x.city} — ${x.partners} ${plural(x.partners, "оптовик", "оптовика", "оптовиков")}, ${x.tons} т/мес`)
+    .join("\n");
+  const lines = [
+    `Региональный канал: ${r.partners} ${plural(r.partners, "оптовик", "оптовика", "оптовиков")} на ${r.tons} т/мес: ${r.trucks} ${plural(r.trucks, "фура", "фуры", "фур")} работают, ${r.tests} в тесте.`,
+    "",
+    "По городам:",
+    cities,
+    "",
+    `Вывод: ближе всего к деньгам — ${r.top[0].company} (${r.top[0].city}, ${r.top[0].volumeTons} т/мес, статус «${r.top[0].status}»).`,
+    "",
+    "Действие: правильный вопрос тест-оптовикам — «что мешает перейти на фуру?». Обычно это цена доставки: фура 20 т × 300 ₽/уп — это 240 000 ₽ за рейс, предложите фикс на логистику. Экран «Регионы» — статусы меняются прямо в списке.",
+  ];
+  return lines.join("\n");
+}
+
 function clientsAnswer(c: AiContext): string {
   const cl = c.clients;
   const chains = cl.chains.length
@@ -219,7 +241,8 @@ const RULES: Rule[] = [
   { keys: /лид|звон|холод|обзвон|прозвон/i, answer: leadsAnswer },
   { keys: /выруч|марж|прибыл|финанс|денег|заработал|за 30|оборуд/i, answer: financeAnswer },
   { keys: /цен|скидк|дорог|дешев|опт/i, answer: priceAnswer },
-  { keys: /район|регион|город|карт/i, answer: regionAnswer },
+  { keys: /оптовик|фур(?:а|ы|ам)?|регион|краснодар|волгоград|ставропол|юг[аеи]/i, answer: regionsPartnersAnswer },
+  { keys: /район|город|карт/i, answer: regionAnswer },
   { keys: /клиент|база|шаурм|бургер|паб|столов|сеть|green|зелён/i, answer: clientsAnswer },
   { keys: /план|приоритет|с чего нач|утро|день нач|фокус|задач/i, answer: planAnswer },
 ];

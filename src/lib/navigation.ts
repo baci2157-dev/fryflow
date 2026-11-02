@@ -30,9 +30,9 @@ export interface NavItem {
  * Единый реестр разделов FryFlow.
  * Реализованы: Дашборд, Клиенты, Карта (логистика), Маршрут на день,
  * Звонки (воронка холодных продаж), Заказы, Склад, Финансы, Долги
- * (полный цикл сделки — задача 5), ИИ-Директор и Настройки
- * (PDF-счета и ИИ — задача 6).
- * Остальные — будущие разделы (Регионы, Маркетинг).
+ * (полный цикл сделки — задача 5), ИИ-Директор, PDF-счета и Настройки
+ * (задача 6), Регионы и Telegram-интеграция (задача 7).
+ * Остальные — будущие разделы (Маркетинг).
  */
 export const NAV_ITEMS: NavItem[] = [
   { id: "dashboard", title: "Дашборд", href: "/", icon: LayoutDashboard, primary: true, ready: true },
@@ -41,7 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "logistics", title: "Карта", href: "/logistics", icon: Map, primary: true, ready: true },
   { id: "route", title: "Маршрут", href: "/route", icon: Route, primary: false, ready: true },
   { id: "orders", title: "Заказы", href: "/orders", icon: ShoppingCart, primary: false, ready: true },
-  { id: "regions", title: "Регионы", href: "/regions", icon: MapPin, primary: false, ready: false },
+  { id: "regions", title: "Регионы", href: "/regions", icon: MapPin, primary: false, ready: true },
   { id: "ai", title: "ИИ-Директор", href: "/ai-assistant", icon: Sparkles, primary: true, ready: true },
   { id: "finance", title: "Финансы", href: "/finance", icon: Landmark, primary: false, ready: true },
   { id: "debts", title: "Долги", href: "/debts", icon: Wallet, primary: false, ready: true },

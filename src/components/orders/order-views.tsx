@@ -9,6 +9,7 @@ import {
   FileText,
   MessageCircle,
   PackageCheck,
+  Send,
   X,
 } from "lucide-react";
 
@@ -298,9 +299,17 @@ export function DraftCard({
         <span className="font-mono text-[11.5px] text-ink-soft tabular-nums">
           #{orderNumber(order)}
         </span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-accent/12 px-2.5 py-0.5 text-[11px] font-semibold text-accent">
-          Заявка · черновик
-        </span>
+        <div className="flex items-center gap-1.5">
+          {order.source === "telegram" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#229ED9]/12 px-2 py-0.5 text-[11px] font-semibold text-[#229ED9]">
+              <Send className="size-3" />
+              Telegram
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1 rounded-full bg-accent/12 px-2.5 py-0.5 text-[11px] font-semibold text-accent">
+            Заявка · черновик
+          </span>
+        </div>
       </div>
 
       <h3 className="mt-1.5 text-[17px] font-semibold leading-tight text-ink">

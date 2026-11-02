@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Inbox, Plus, ShoppingCart, Download } from "lucide-react";
+import { Plus, ShoppingCart, Download, Send } from "lucide-react";
 
 import { CreateOrderDialog } from "@/components/orders/create-order-dialog";
 import {
@@ -19,7 +19,7 @@ import {
 } from "@/lib/orders-store";
 import { csvDateSuffix, downloadCsv } from "@/lib/csv";
 import { useInvoiceAction } from "@/lib/use-invoice";
-import type { Order } from "@/types/models";
+import { MIN_WHOLESALE_BOXES, SMALL_WHOLESALE_PRICE_PER_PACK, PRICE_PER_PACK, type Order } from "@/types/models";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,11 +27,23 @@ import { cn } from "@/lib/utils";
  * Табы с живыми счётчиками: Все / Неоплаченные / Оплаченные / Черновики.
  * Десктоп — таблица, мобильные — карточки с кнопками 48px.
  *
- * Черновики — заявки из Telegram (будущая интеграция): «Подтвердить»
+ * Черновики — заявки из Telegram: вебхук кладёт их на сервер,
+ * экран забирает при открытии (дедуп по externalId). «Подтвердить»
  * превращает заявку в заказ и списывает склад, «Отклонить» — удаляет.
  */
 
 type TabId = "all" | "unpaid" | "paid" | "drafts";
+
+/** Заявка из Telegram-сервера (см. /api/telegram/webhook). */
+interface ServerDraft {
+  id: string;
+  clientName: string;
+  boxes: number;
+  deliveryDate: string;
+  message: string;
+  fromName: string;
+  receivedAt: string;
+}
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "all", label: "Все" },
@@ -42,6 +54,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
 
 export default function OrdersPage() {
   const orders = useOrdersStore((s) => s.orders);
+  const createOrder = useOrdersStore((s) => s.createOrder);
   const markOrderPaid = useOrdersStore((s) => s.markOrderPaid);
   const confirmDraft = useOrdersStore((s) => s.confirmDraft);
   const rejectDraft = useOrdersStore((s) => s.rejectDraft);
@@ -51,6 +64,69 @@ export default function OrdersPage() {
 
   const [tab, setTab] = useState<TabId>("all");
   const [createOpen, setCreateOpen] = useState(false);
+
+  /* Синхронизация заявок из Telegram: сервер — истина по новым заявкам,
+   * дедуп — по externalId. Забираем при открытии экрана и при
+   * переключении на вкладку «Черновики». */
+  const syncTelegramDrafts = useCallback(async () => {
+    try {
+      const res = await fetch("/api/telegram/drafts");
+      if (!res.ok) return;
+      const { drafts } = (await res.json()) as { drafts: ServerDraft[] };
+      const known = new Set(
+        useOrdersStore
+          .getState()
+          .orders.filter((o) => o.externalId)
+          .map((o) => o.externalId as string)
+      );
+      const fresh = drafts.filter((d) => !known.has(d.id));
+      for (const d of fresh) {
+        const input: NewOrderInput = {
+          clientId: `tg-${d.id}`,
+          clientName: d.clientName,
+          boxesCount: d.boxes,
+          pricePerBox:
+            d.boxes >= MIN_WHOLESALE_BOXES
+              ? PRICE_PER_PACK
+              : SMALL_WHOLESALE_PRICE_PER_PACK,
+          deliveryDate: d.deliveryDate,
+          isPaid: false,
+          comment: `${d.message} — ${d.fromName}, Telegram`,
+          isDraft: true,
+          source: "telegram",
+          externalId: d.id,
+        };
+        createOrder(input);
+      }
+      if (fresh.length > 0) {
+        toast({
+          title: `Из Telegram: ${fresh.length} ${fresh.length === 1 ? "заявка" : "заявки"}`,
+          description: "Клиенты написали боту — подтвердите во вкладке «Черновики».",
+          duration: 4600,
+        });
+      }
+    } catch {
+      /* сервер недоступен — показываем локальные черновики */
+    }
+  }, [createOrder, toast]);
+
+  useEffect(() => {
+    void syncTelegramDrafts();
+  }, [syncTelegramDrafts]);
+
+  useEffect(() => {
+    if (tab === "drafts") void syncTelegramDrafts();
+  }, [tab, syncTelegramDrafts]);
+
+  /* Убираем обработанную заявку с сервера — чтобы не приезжала снова. */
+  const resolveServerDraft = (order: Order, action: "confirmed" | "rejected") => {
+    if (!order.externalId) return;
+    void fetch("/api/telegram/drafts/resolve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: order.externalId, action }),
+    }).catch(() => undefined);
+  };
 
   /* Телефон клиента для WhatsApp-чека (клиента могли удалить — тогда undefined). */
   const phoneByClient = useMemo(() => {
@@ -92,6 +168,7 @@ export default function OrdersPage() {
 
   const handleConfirmDraft = (order: Order) => {
     confirmDraft(order.id);
+    resolveServerDraft(order, "confirmed");
     toast({
       title: `Заявка #${orderNumber(order)} подтверждена`,
       description: `${order.clientName}: заказ создан, ${order.boxesCount} уп. списаны со склада.`,
@@ -101,6 +178,7 @@ export default function OrdersPage() {
 
   const handleRejectDraft = (order: Order) => {
     rejectDraft(order.id);
+    resolveServerDraft(order, "rejected");
     toast({
       title: `Заявка #${orderNumber(order)} отклонена`,
       description: "Черновик удалён, склад не менялся.",
@@ -208,9 +286,9 @@ export default function OrdersPage() {
         /* Черновики: заявки из Telegram */
         visible.length === 0 ? (
           <EmptyState
-            icon={<Inbox className="size-8 text-ink-soft/50" />}
+            icon={<Send className="size-8 text-ink-soft/50" />}
             title="Заявок из Telegram пока нет"
-            hint="Когда подключим Telegram-бота, заявки клиентов будут падать сюда — вам останется нажать «Подтвердить»."
+            hint="Клиент пишет боту — ИИ разбирает заявку (коробки, дата) и она падает сюда. Проверить прямо сейчас: Настройки → Telegram → «Смоделировать заявку клиента»."
           />
         ) : (
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
