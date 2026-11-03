@@ -15,7 +15,6 @@ import { useCrmStore } from "@/lib/clients-store";
 import {
   orderNumber,
   useOrdersStore,
-  type NewOrderInput,
 } from "@/lib/orders-store";
 import {
   confirmDraft as confirmDraftQ,
@@ -40,7 +39,9 @@ import { cn } from "@/lib/utils";
 
 type TabId = "all" | "unpaid" | "paid" | "drafts";
 
-/** Заявка из Telegram-сервера (см. /api/telegram/webhook). */
+/** Заявка из Telegram-сервера (см. /api/telegram/webhook).
+ *  status (задача 25): pending — создать черновик, confirmed/rejected —
+ *  решение принято кнопкой в Telegram, применяем в CRM. */
 interface ServerDraft {
   id: string;
   clientName: string;
@@ -49,6 +50,15 @@ interface ServerDraft {
   message: string;
   fromName: string;
   receivedAt: string;
+  status?: "pending" | "confirmed" | "rejected" | "resolved";
+}
+
+/** Заказ, отмеченный «✅ Оплачено» кнопкой в Telegram (задача 25). */
+interface ServerPaidOrder {
+  alertId: string;
+  orderId: string;
+  clientName: string;
+  amount: number;
 }
 
 const TABS: Array<{ id: TabId; label: string }> = [
@@ -69,53 +79,165 @@ export default function OrdersPage() {
   const { toast } = useToast();
   const handleInvoice = useInvoiceAction();
 
-  const [tab, setTab] = useState<TabId>("all");
+  /* Глубокая ссылка из Telegram (кнопка «👁 Открыть черновик»):
+   * /orders?tab=drafts — открываем вкладку «Черновики» сразу. */
+  const [tab, setTab] = useState<TabId>(() => {
+    if (typeof window === "undefined") return "all";
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return t === "drafts" || t === "all" || t === "unpaid" || t === "paid"
+      ? (t as TabId)
+      : "all";
+  });
   const [createOpen, setCreateOpen] = useState(false);
 
   /* Синхронизация заявок из Telegram: сервер — истина по новым заявкам,
    * дедуп — по externalId. Забираем при открытии экрана и при
-   * переключении на вкладку «Черновики». */
+   * переключении на вкладку «Черновики».
+   *
+   * Задача 25: статусы заявок + оплаченные-через-Telegram заказы.
+   *  • pending (новая) — создаём локальный черновик (как раньше);
+   *  • confirmed — подтверждаем локальный черновик кнопкой из Telegram
+   *    (или создаём заказ сразу, если заявку ещё не видели);
+   *  • rejected — отклоняем локальный черновик;
+   *  • paidOrders — помечаем оплаченными (кнопка «✅ Оплачено»),
+   *    подтверждаем серверу (ackPaid), чтобы не применять дважды. */
   const syncTelegramDrafts = useCallback(async () => {
     try {
       const res = await fetch("/api/telegram/drafts");
       if (!res.ok) return;
-      const { drafts } = (await res.json()) as { drafts: ServerDraft[] };
-      const known = new Set(
-        useOrdersStore
-          .getState()
-          .orders.filter((o) => o.externalId)
-          .map((o) => o.externalId as string)
+      const { drafts, paidOrders } = (await res.json()) as {
+        drafts: ServerDraft[];
+        paidOrders?: ServerPaidOrder[];
+      };
+
+      const all = useOrdersStore.getState().orders;
+      const byExternal = new Map(
+        all.filter((o) => o.externalId).map((o) => [o.externalId as string, o] as const)
       );
-      const fresh = drafts.filter((d) => !known.has(d.id));
-      for (const d of fresh) {
-        const input: NewOrderInput = {
-          clientId: `tg-${d.id}`,
-          clientName: d.clientName,
-          boxesCount: d.boxes,
-          pricePerBox:
-            d.boxes >= MIN_WHOLESALE_BOXES
-              ? PRICE_PER_PACK
-              : SMALL_WHOLESALE_PRICE_PER_PACK,
-          deliveryDate: d.deliveryDate,
-          isPaid: false,
-          comment: `${d.message} — ${d.fromName}, Telegram`,
-          isDraft: true,
-          source: "telegram",
-          externalId: d.id,
-        };
-        createOrder(input);
+
+      let confirmedCount = 0;
+      let rejectedCount = 0;
+      let createdCount = 0;
+
+      for (const d of drafts) {
+        const status = d.status ?? "pending";
+        const known = byExternal.get(d.id);
+
+        if (status === "pending") {
+          if (known) continue;
+          createOrder({
+            clientId: `tg-${d.id}`,
+            clientName: d.clientName,
+            boxesCount: d.boxes,
+            pricePerBox:
+              d.boxes >= MIN_WHOLESALE_BOXES
+                ? PRICE_PER_PACK
+                : SMALL_WHOLESALE_PRICE_PER_PACK,
+            deliveryDate: d.deliveryDate,
+            isPaid: false,
+            comment: `${d.message} — ${d.fromName}, Telegram`,
+            isDraft: true,
+            source: "telegram",
+            externalId: d.id,
+          });
+          createdCount++;
+          continue;
+        }
+
+        if (status === "confirmed") {
+          if (known?.isDraft) {
+            confirmDraft(known.id);
+            confirmedCount++;
+          } else if (!known) {
+            /* Приложение заявку ещё не видело — создаём сразу заказом
+             * (склад спишется при создании). */
+            createOrder({
+              clientId: `tg-${d.id}`,
+              clientName: d.clientName,
+              boxesCount: d.boxes,
+              pricePerBox:
+                d.boxes >= MIN_WHOLESALE_BOXES
+                  ? PRICE_PER_PACK
+                  : SMALL_WHOLESALE_PRICE_PER_PACK,
+              deliveryDate: d.deliveryDate,
+              isPaid: false,
+              comment: `${d.message} — ${d.fromName}, Telegram (подтверждено в Telegram)`,
+              isDraft: false,
+              source: "telegram",
+              externalId: d.id,
+            });
+            confirmedCount++;
+          }
+          /* Серверную заявку закрываем — решение применено. */
+          void fetch("/api/telegram/drafts/resolve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: d.id, action: "confirmed" }),
+          }).catch(() => undefined);
+          continue;
+        }
+
+        if (status === "rejected") {
+          if (known?.isDraft) {
+            rejectDraft(known.id);
+            rejectedCount++;
+          }
+          void fetch("/api/telegram/drafts/resolve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: d.id, action: "rejected" }),
+          }).catch(() => undefined);
+        }
       }
-      if (fresh.length > 0) {
+
+      /* Оплаченные кнопкой «✅ Оплачено» в Telegram. */
+      const ackPaid: string[] = [];
+      let paidCount = 0;
+      for (const p of paidOrders ?? []) {
+        const order = useOrdersStore
+          .getState()
+          .orders.find((o) => o.id === p.orderId && !o.isDraft);
+        if (order && !order.isPaid) {
+          markOrderPaid(order.id);
+          paidCount++;
+        }
+        /* Не нашли заказ — всё равно подтверждаем: держать висяком
+         * на сервере смысла нет (кнопка была из старого алерта). */
+        ackPaid.push(p.alertId);
+      }
+      if (ackPaid.length > 0) {
+        void fetch("/api/telegram/drafts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ackPaid }),
+        }).catch(() => undefined);
+      }
+
+      if (createdCount > 0) {
         toast({
-          title: `Из Telegram: ${fresh.length} ${fresh.length === 1 ? "заявка" : "заявки"}`,
+          title: `Из Telegram: ${createdCount} ${createdCount === 1 ? "заявка" : "заявки"}`,
           description: "Клиенты написали боту — подтвердите во вкладке «Черновики».",
+          duration: 4600,
+        });
+      }
+      if (confirmedCount > 0 || rejectedCount > 0) {
+        toast({
+          title: "Решения из Telegram применены",
+          description: `${confirmedCount} подтверждено, ${rejectedCount} отклонено — кнопками в Telegram.`,
+          duration: 4600,
+        });
+      }
+      if (paidCount > 0) {
+        toast({
+          title: `Оплачено в Telegram: ${paidCount}`,
+          description: "Заказ помечен оплаченным кнопкой «✅ Оплачено» в Telegram.",
           duration: 4600,
         });
       }
     } catch {
       /* сервер недоступен — показываем локальные черновики */
     }
-  }, [createOrder, toast]);
+  }, [createOrder, confirmDraft, rejectDraft, markOrderPaid, toast]);
 
   useEffect(() => {
     void syncTelegramDrafts();

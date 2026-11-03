@@ -2,6 +2,11 @@ import { promises as fs } from "fs";
 import path from "path";
 
 import { getSupabase, TABLES } from "@/lib/supabase";
+import {
+  escapeHtml,
+  splitTgMessage,
+  type TgMessage,
+} from "@/lib/telegram-templates";
 
 /**
  * Серверная библиотека Telegram-интеграции (задача 7).
@@ -187,25 +192,32 @@ export async function sendTelegramMessage(
   chatId: string,
   text: string
 ): Promise<{ ok: boolean; error?: string }> {
+  /* Совместимость: произвольный текст уходит как HTML с экранированием
+   * (задача 25 — parse_mode HTML у всех сообщений). */
+  const r = await sendTgMessage(token, chatId, { text: escapeHtml(text) });
+  return { ok: r.ok, ...(r.error ? { error: r.error } : {}) };
+}
+
+/* ── Bot API для inline-кнопок (задача 25) ───────────────── */
+
+/** Голый вызов Bot API: { ok, result?, error? } с человеческой ошибкой. */
+async function tgApi<T>(
+  token: string,
+  method: string,
+  body: Record<string, unknown>
+): Promise<{ ok: boolean; result?: T; error?: string }> {
   try {
-    const res = await fetch(`${API_BASE}/bot${token}/sendMessage`, {
+    const res = await fetch(`${API_BASE}/bot${token}/${method}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        disable_web_page_preview: true,
-      }),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(10_000),
     });
     const data = (await res.json().catch(() => null)) as
-      | { ok: boolean; description?: string }
+      | { ok: boolean; result?: T; description?: string }
       | null;
-    if (data?.ok) return { ok: true };
-    return {
-      ok: false,
-      error: humanError(res.status, data?.description ?? ""),
-    };
+    if (data?.ok) return { ok: true, result: data.result };
+    return { ok: false, error: humanError(res.status, data?.description ?? "") };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (/timeout|abort/i.test(msg))
@@ -215,6 +227,80 @@ export async function sendTelegramMessage(
       error: "Не удалось связаться с Telegram — проверьте подключение к сети.",
     };
   }
+}
+
+/** Итог отправки: id созданных сообщений (для editMessageReplyMarkup). */
+export interface TgSendResult {
+  ok: boolean;
+  error?: string;
+  messageIds: number[];
+}
+
+/**
+ * Отправка сообщения по шаблону (задача 25): parse_mode HTML,
+ * inline-кнопки (reply_markup), кликабельные tel:-ссылки в тексте.
+ * Длинный текст (> ~3900 симв.) автоматически режется на несколько
+ * сообщений — кнопки уезжают на последнее (лимит Telegram 4096).
+ */
+export async function sendTgMessage(
+  token: string,
+  chatId: string,
+  msg: TgMessage
+): Promise<TgSendResult> {
+  const parts = splitTgMessage(msg);
+  const messageIds: number[] = [];
+  for (const part of parts) {
+    const r = await tgApi<{ message_id: number }>(token, "sendMessage", {
+      chat_id: chatId,
+      text: part.text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+      ...(part.reply_markup ? { reply_markup: part.reply_markup } : {}),
+    });
+    if (!r.ok) return { ok: false, error: r.error, messageIds };
+    if (r.result?.message_id) messageIds.push(r.result.message_id);
+  }
+  return { ok: true, messageIds };
+}
+
+/** Ответ на нажатие кнопки: снимает «часики» (вызывать обязательно). */
+export async function answerCallbackQuery(
+  token: string,
+  callbackQueryId: string,
+  opts: { text?: string; showAlert?: boolean; url?: string } = {}
+): Promise<{ ok: boolean; error?: string }> {
+  return tgApi(token, "answerCallbackQuery", {
+    callback_query_id: callbackQueryId,
+    ...(opts.text ? { text: opts.text.slice(0, 200) } : {}),
+    ...(opts.showAlert ? { show_alert: true } : {}),
+    ...(opts.url ? { url: opts.url } : {}),
+  });
+}
+
+/** Убирает/меняет кнопки под сообщением (пустая клавиатура — убрать все). */
+export async function editMessageReplyMarkup(
+  token: string,
+  chatId: string | number,
+  messageId: number,
+  markup: { inline_keyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>> }
+): Promise<{ ok: boolean; error?: string }> {
+  return tgApi(token, "editMessageReplyMarkup", {
+    chat_id: chatId,
+    message_id: messageId,
+    reply_markup: markup,
+  });
+}
+
+/** Кто наш бот: @username для подписей в автопостах и тестовом сообщении. */
+export async function getMe(
+  token: string
+): Promise<{ ok: boolean; username?: string; error?: string }> {
+  const r = await tgApi<{ username?: string }>(token, "getMe", {});
+  return {
+    ok: r.ok,
+    ...(r.result?.username ? { username: r.result.username } : {}),
+    ...(r.error ? { error: r.error } : {}),
+  };
 }
 
 /* ── Черновики заявок (создаются вебхуком) ────────────────── */
@@ -234,6 +320,11 @@ export interface TelegramDraft {
   fromName: string;
   /** ISO-время получения. */
   receivedAt: string;
+  /** Жизненный цикл заявки (задача 25): pending → confirmed/rejected
+   *  (кнопки в Telegram) → resolved (приложение применило). */
+  status?: "pending" | "confirmed" | "rejected" | "resolved";
+  /** Chat ID клиента в Telegram — для напоминаний об оплате. */
+  chatId?: string;
 }
 
 /** Supabase-режим: заявки живут в таблице order_drafts (schema.sql),
@@ -248,7 +339,8 @@ function draftToRow(d: TelegramDraft) {
     message: d.message,
     from_name: d.fromName,
     received_at: d.receivedAt,
-    status: "pending",
+    status: d.status ?? "pending",
+    ...(d.chatId ? { chat_id: d.chatId } : {}),
   };
 }
 
@@ -261,21 +353,29 @@ function rowToDraft(r: Record<string, unknown>): TelegramDraft {
     message: String(r.message ?? ""),
     fromName: String(r.from_name ?? "Telegram"),
     receivedAt: String(r.received_at ?? new Date().toISOString()),
+    ...(r.status ? { status: r.status as TelegramDraft["status"] } : {}),
+    ...(r.chat_id ? { chatId: String(r.chat_id) } : {}),
   };
 }
 
-async function readDrafts(): Promise<TelegramDraft[]> {
+/** Все заявки из хранилища (любого статуса — для поиска по id). */
+async function readAllDrafts(): Promise<TelegramDraft[]> {
   const sb = getSupabase();
   if (sb) {
     const { data } = await sb
       .from(TABLES.drafts)
       .select("*")
-      .eq("status", "pending")
       .order("received_at", { ascending: false });
     return (data ?? []).map(rowToDraft);
   }
   const raw = await readDataJson("telegram-drafts.json");
   return Array.isArray(raw) ? (raw as TelegramDraft[]) : [];
+}
+
+/** Заявка по id (для кнопок «Подтвердить/Отклонить» в Telegram). */
+export async function findDraft(id: string): Promise<TelegramDraft | null> {
+  const all = await readAllDrafts();
+  return all.find((d) => d.id === id) ?? null;
 }
 
 export async function addDraft(draft: TelegramDraft): Promise<void> {
@@ -284,30 +384,47 @@ export async function addDraft(draft: TelegramDraft): Promise<void> {
     await sb.from(TABLES.drafts).insert(draftToRow(draft));
     return;
   }
-  const list = await readDrafts();
+  const list = await readAllDrafts();
   list.unshift(draft);
   await writeDataJson("telegram-drafts.json", list);
 }
 
-export async function removeDraft(id: string): Promise<boolean> {
+/** Меняет статус заявки (кнопки Telegram: confirmed / rejected). */
+export async function setDraftStatus(
+  id: string,
+  status: NonNullable<TelegramDraft["status"]>
+): Promise<boolean> {
   const sb = getSupabase();
   if (sb) {
-    /* Не удаляем, а помечаем — история заявок не теряется. */
     const { error } = await sb
       .from(TABLES.drafts)
-      .update({ status: "resolved" })
+      .update({ status })
       .eq("id", id);
     return !error;
   }
-  const list = await readDrafts();
-  const next = list.filter((d) => d.id !== id);
-  if (next.length === list.length) return false;
+  const list = await readAllDrafts();
+  let found = false;
+  const next = list.map((d) => {
+    if (d.id !== id) return d;
+    found = true;
+    return { ...d, status };
+  });
+  if (!found) return false;
   await writeDataJson("telegram-drafts.json", next);
   return true;
 }
 
+export async function removeDraft(id: string): Promise<boolean> {
+  /* Не удаляем, а помечаем — история заявок не теряется
+   * (и chat_id клиента живёт для напоминаний об оплате). */
+  return setDraftStatus(id, "resolved");
+}
+
+/** Незакрытые заявки для приложения: pending — создать черновик,
+ *  confirmed/rejected — применить решение кнопок Telegram. */
 export async function listDrafts(): Promise<TelegramDraft[]> {
-  return readDrafts();
+  const all = await readAllDrafts();
+  return all.filter((d) => (d.status ?? "pending") !== "resolved");
 }
 
 /* ── Офлайн-парсер заявок клиентов ────────────────────────── */
@@ -390,51 +507,13 @@ export function parseOrderRequest(
   };
 }
 
-/* ── Автопост: анти-спам переписывание шаблона ────────────── */
+/* ── Автопост: анти-спам (задача 25 — шаблон в telegram-templates) ── */
 
-const OPENERS = [
-  "Свежая поставка на складе!",
-  "Внимание, оптовики 📢",
-  "Заправляйте фритюрницы — груз пришёл 🚚",
-  "Хватит переплачивать посредникам.",
-  "Прямая поставка с завода, без лишних звеньев.",
-];
-
-const CLOSERS = [
-  "Пишите в личку — счёт за минуту.",
-  "Бронируйте объём в личке, остатки не резиновые.",
-  "Ответим в чате и привезём завтра.",
-  "Первым десяти — доставка по городу бесплатно.",
-];
-
-/** Подставляем актуальные остатки в {stock}. */
-export function applyStock(
-  template: string,
-  stockKg: number,
-  stockPacks: number
-): string {
-  const stockLine = `На складе сейчас: ${new Intl.NumberFormat("ru-RU").format(
-    stockKg
-  )} кг (${new Intl.NumberFormat("ru-RU").format(stockPacks)} уп. по 2,5 кг).`;
-  return template.replace(/\{stock\}/gi, stockLine.trim());
+/** Шаблон без {stock} — остаток уходит в отдельную строку поста.
+ *  Плейсхолдер вырезаем, чтобы не светился в тексте. */
+export function stripStockPlaceholder(template: string): string {
+  return template.replace(/\s*\{stock\}\s*/gi, " ").replace(/\s{2,}/g, " ").trim();
 }
-
-/** Офлайн-вариация шаблона: новая обёртка, тот же смысл (анти-спам). */
-export function varyTemplate(
-  template: string,
-  stockKg: number,
-  stockPacks: number,
-  seed = Date.now()
-): string {
-  const opener = OPENERS[seed % OPENERS.length];
-  const closer = CLOSERS[Math.floor(seed / OPENERS.length) % CLOSERS.length];
-  const body = applyStock(template, stockKg, stockPacks);
-  return `${opener} ${body} ${closer}`;
-}
-
-/** Ответ бота клиенту после заявки — «человеческое» подтверждение. */
-export const DRAFT_REPLY =
-  "Заявку принял, менеджер подтвердит в течение часа. Если нужно срочно — звоните: +7 (918) 500-40-30.";
 
 /* ── Вебхук: регистрация через setWebhook (задача 24) ────── */
 
@@ -457,7 +536,7 @@ export async function setTelegramWebhook(
       body: JSON.stringify({
         url,
         ...(secret ? { secret_token: secret } : {}),
-        allowed_updates: ["message"],
+        allowed_updates: ["message", "callback_query"],
         drop_pending_updates: false,
       }),
       signal: AbortSignal.timeout(10_000),
@@ -501,6 +580,8 @@ export async function deleteTelegramWebhook(
 export interface SnapshotCallback {
   clientName: string;
   phone: string;
+  /** Адрес клиента (до 80 символов) — для дайджеста. */
+  address: string;
   /** yyyy-MM-dd. */
   date: string;
   overdue: boolean;
@@ -548,68 +629,119 @@ export async function writeSnapshot(snap: TelegramSnapshot): Promise<void> {
   await writeDataJson("telegram-snapshot.json", snap);
 }
 
-/* ── Утренний дайджест перезвонов (задача 24, cron 9:00) ──── */
+/* ── Свежесть снапшота (дайджест/отчёт считаются в шаблонах) ── */
 
-const fmtRub = (n: number) =>
-  `${new Intl.NumberFormat("ru-RU").format(Math.round(n))} ₽`;
-
-/** «Сегодня 12 перезвонов: список с телефонами» — по свежему снапшоту. */
-export function buildCallbacksDigest(
-  snap: TelegramSnapshot | null,
-  today: string
-): { text: string; fresh: boolean } {
-  if (!snap || !snap.syncedAt || Date.now() - Date.parse(snap.syncedAt) > 36 * 3600_000) {
-    return {
-      text:
-        "Доброе утро! Это FryFlow. Список перезвонов на сегодня — в приложении" +
-        " (Дашборд → Перезвоны). Откройте его, и следующий утренний дайджест" +
-        " придёт со списком и телефонами.",
-      fresh: false,
-    };
-  }
-  const todays = snap.callbacks.filter((c) => c.date <= today);
-  const overdue = todays.filter((c) => c.overdue || c.date < today);
-  if (todays.length === 0) {
-    return { text: "Доброе утро! Перезвонов на сегодня нет — спокойный день.", fresh: true };
-  }
-  const lines = todays.slice(0, 20).map(
-    (c) => `• ${c.clientName}${c.phone ? ` — ${c.phone}` : " (телефона нет)"}${c.date < today ? " [просрочено]" : ""}`
-  );
-  const head =
-    `Доброе утро! ${todays.length === 1 ? "1 перезвон" : `${todays.length} перезвонов`} на сегодня` +
-    (overdue.length > 0 ? `, из них ${overdue.length} просрочено` : "") +
-    ":\n" +
-    lines.join("\n");
-  const tail =
-    todays.length > 20 ? `\n…и ещё ${todays.length - 20} — полный список в приложении.` : "";
-  return { text: head + tail, fresh: true };
+/** true — снапшот свежий (моложе 36 часов): по нему можно слать
+ *  дайджест с перезвонами и отчёт с цифрами. */
+export function snapshotFresh(snap: TelegramSnapshot | null): boolean {
+  return Boolean(snap?.syncedAt && Date.now() - Date.parse(snap.syncedAt) <= 36 * 3600_000);
 }
 
-/* ── Отчёт недели владельцу (задача 24, воскресенье 18:00) ─ */
+/* ── Алерты (задача 25: контекст для кнопок критичных сообщений) ── */
 
-export function buildWeeklyReportText(stats: WeeklyStats): string {
-  const top =
-    stats.topDeals.length > 0
-      ? stats.topDeals
-          .map((d, i) => `${i + 1}. ${d.clientName} — ${fmtRub(d.amount)}`)
-          .join("\n")
-      : "—";
-  const problems =
-    stats.problemClients.length > 0
-      ? stats.problemClients.map((p) => `• ${p.clientName} — ${p.reason}`).join("\n")
-      : "—";
-  return [
-    `📊 Отчёт недели FryFlow · ${stats.periodStart} — ${stats.periodEnd}`,
-    ``,
-    `Выручка: ${fmtRub(stats.revenue)}`,
-    `Маржа: ${fmtRub(stats.margin)} (${stats.marginPct.toFixed(0)}%)`,
-    `Заказов: ${stats.ordersCount} · Новых клиентов: ${stats.newClients}`,
-    `Остаток склада: ${stats.stockKg} кг (${stats.stockPacks} уп.)`,
-    ``,
-    `Топ-5 сделок недели:`,
-    top,
-    ``,
-    `Проблемные клиенты:`,
-    problems,
-  ].join("\n");
+/**
+ * Критичный алерт, ушедший владельцу в Telegram. Хранит контекст
+ * для inline-кнопок: «📞 Позвонить» (tel:), «💬 Напомнить» (клиенту
+ * в Telegram, если заказ пришёл оттуда) и «✅ Оплачено» (действие
+ * подхватит приложение при следующей синхронизации).
+ */
+export interface TelegramAlert {
+  id: string;
+  /** id заказа в CRM (ord-1001) — ключ для кнопок remind/paid. */
+  orderId: string;
+  /** id клиента в CRM — для кнопки «Позвонить». */
+  clientId: string;
+  clientName: string;
+  phone: string;
+  /** Сумма долга, ₽. */
+  amount: number;
+  /** Дней просрочки. */
+  days: number;
+  /** Chat ID клиента (если заказ пришёл из Telegram) — куда слать напоминание. */
+  clientChatId?: string;
+  /** Когда владелец отметил «Оплачено» кнопкой (ms). */
+  paidAt?: number;
+  /** Когда приложение применило оплату (ms) — после этого не отдаём в синхронизацию. */
+  appliedAt?: number;
+  /** Когда отправляли напоминание (ms). */
+  remindedAt?: number;
+  createdAt: string;
+}
+
+async function readAlerts(): Promise<TelegramAlert[]> {
+  const raw = await readDataJson("telegram-alerts.json");
+  return Array.isArray(raw) ? (raw as TelegramAlert[]) : [];
+}
+
+async function writeAlerts(list: TelegramAlert[]): Promise<void> {
+  /* Храним 50 свежих — алерты короткоживущие (до применения оплаты). */
+  await writeDataJson("telegram-alerts.json", list.slice(0, 50));
+}
+
+export async function addAlert(alert: Omit<TelegramAlert, "id" | "createdAt">): Promise<void> {
+  const list = await readAlerts();
+  /* Один заказ — один живой алерт: старый перезаписываем. */
+  const next = list.filter(
+    (a) => a.orderId !== alert.orderId || a.appliedAt || a.paidAt
+  );
+  next.unshift({
+    ...alert,
+    id: `alr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    createdAt: new Date().toISOString(),
+  });
+  await writeAlerts(next);
+}
+
+/** Последний алерт по заказу (для кнопок remind/paid). */
+export async function findAlertByOrder(orderId: string): Promise<TelegramAlert | null> {
+  const list = await readAlerts();
+  return list.find((a) => a.orderId === orderId) ?? null;
+}
+
+/** Последний алерт клиента (для кнопки «Позвонить»). */
+export async function findAlertByClient(clientId: string): Promise<TelegramAlert | null> {
+  const list = await readAlerts();
+  return list.find((a) => a.clientId === clientId) ?? null;
+}
+
+export async function markAlertPaid(orderId: string): Promise<boolean> {
+  const list = await readAlerts();
+  let found = false;
+  const next = list.map((a) => {
+    if (a.orderId !== orderId) return a;
+    found = true;
+    return { ...a, paidAt: Date.now() };
+  });
+  if (!found) return false;
+  await writeAlerts(next);
+  return true;
+}
+
+export async function markAlertReminded(orderId: string): Promise<boolean> {
+  const list = await readAlerts();
+  let found = false;
+  const next = list.map((a) => {
+    if (a.orderId !== orderId) return a;
+    found = true;
+    return { ...a, remindedAt: Date.now() };
+  });
+  if (!found) return false;
+  await writeAlerts(next);
+  return true;
+}
+
+/** Заказы, отмеченные «Оплачено» кнопкой в Telegram и ещё не применённые
+ *  в приложении — их отдаём синхронизации (GET /api/telegram/drafts). */
+export async function listUnappliedPaid(): Promise<TelegramAlert[]> {
+  const list = await readAlerts();
+  return list.filter((a) => a.paidAt && !a.appliedAt);
+}
+
+/** Приложение применило оплату — больше не отдаём в синхронизацию. */
+export async function markAlertsApplied(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const set = new Set(ids);
+  const list = await readAlerts();
+  const next = list.map((a) => (set.has(a.id) ? { ...a, appliedAt: Date.now() } : a));
+  await writeAlerts(next);
 }

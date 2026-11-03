@@ -593,15 +593,13 @@ function TelegramSection() {
     try {
       /* Офлайн-очередь: нет сети — сообщение встанет в очередь
        * (IndexedDB) и уйдёт само при восстановлении связи.
-       * Задача 24: раньше били в несуществующий /api/telegram/test
-       * (404 с задачи 7) — теперь честный /api/telegram/send. */
+       * Задача 25: kind: "test" — сервер собирает красивый шаблон
+       * с @ботом, расписанием и кнопками «Открыть FryFlow / Настройки». */
       const { queued, res } = await queueFetch({
         kind: "telegram",
         label: "Тестовое сообщение Telegram",
         url: "/api/telegram/send",
-        body: {
-          text: "FryFlow на связи — это тестовое сообщение. Алерты, дайджест перезвонов (9:00) и отчёт недели (вс 18:00) будут приходить сюда.",
-        },
+        body: { kind: "test" },
       });
       if (queued) {
         setTestResult({
@@ -1033,7 +1031,12 @@ function ReportsSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ preview: true, stats }),
       });
-      const data = (await res.json()) as { ok: boolean; text?: string; error?: string };
+      const data = (await res.json()) as {
+        ok: boolean;
+        text?: string;
+        html?: string;
+        error?: string;
+      };
       if (!data.ok || !data.text) {
         setError(data.error ?? "Не удалось собрать отчёт.");
         return;
@@ -1042,6 +1045,8 @@ function ReportsSection() {
         createdAt: new Date().toISOString(),
         period: `${stats.periodStart} — ${stats.periodEnd}`,
         text: data.text,
+        /* HTML-версия — уходит в Telegram в новом формате (задача 25). */
+        ...(data.html ? { html: data.html } : {}),
       });
       setCurrent(saved.id);
       toast({
@@ -1065,7 +1070,8 @@ function ReportsSection() {
       const res = await fetch("/api/telegram/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: r.text }),
+        /* Задача 25: HTML-версия с кнопками «Финансы / Клиенты / Отчёты». */
+        body: JSON.stringify({ kind: "report", html: r.html ?? r.text }),
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {

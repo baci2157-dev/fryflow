@@ -133,6 +133,7 @@ export async function syncTelegramSnapshot(force = false): Promise<void> {
     localStorage.setItem(SYNC_KEY, String(Date.now()));
 
     const { clients, calls } = useCrmStore.getState();
+    const addressById = new Map(clients.map((c) => [c.id, c.address] as const));
     const items = collectCallbacks(clients, calls);
     const callbacks = items
       .filter((i) => i.overdue || i.date <= isoDay(new Date(Date.now() + 7 * 86_400_000)))
@@ -140,6 +141,7 @@ export async function syncTelegramSnapshot(force = false): Promise<void> {
       .map((i) => ({
         clientName: i.clientName,
         phone: i.phone,
+        ...(addressById.get(i.clientId) ? { address: addressById.get(i.clientId) } : {}),
         date: i.date,
         overdue: i.overdue,
       }));

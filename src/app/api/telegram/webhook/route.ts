@@ -1,34 +1,35 @@
 import { NextResponse } from "next/server";
 
 import { chatCompletion } from "@/lib/ai-sdk";
+import { handleCallbackQuery, notifyNewDraft } from "@/lib/telegram-callbacks";
 import {
   addDraft,
-  DRAFT_REPLY,
   deleteTelegramWebhook,
   parseOrderRequest,
   readConfig,
-  sendTelegramMessage,
   setTelegramWebhook,
   webhookSecret,
   writeConfig,
   type TelegramDraft,
 } from "@/lib/telegram-server";
+import { MIN_WHOLESALE_BOXES, PRICE_PER_PACK, SMALL_WHOLESALE_PRICE_PER_PACK } from "@/types/models";
 
 /**
- * POST /api/telegram/webhook — приём входящих сообщений от клиентов.
+ * POST /api/telegram/webhook — приём апдейтов от Telegram (задача 24–25).
  *
- * Сюда Telegram присылает апдейты (Business Mode или личные чаты
- * бота), когда вебхук зарегистрирован. Регистрация — прямо отсюда:
- *   POST { action: "connect" } → setWebhook на текущий домен
- *   (кнопка «Подключить вебхук» в Настройках; с секретным токеном
- *   TELEGRAM_WEBHOOK_SECRET — каждый апдейт Telegram подписывает
- *   заголовком X-Telegram-Bot-Api-Secret-Token, подделать извне нельзя).
- *   POST { action: "disconnect" } → deleteWebhook.
+ * Сюда Telegram присылает апдейты, когда вебхук зарегистрирован:
+ *   • message — заявки клиентов: ИИ вытаскивает клиента, коробки и дату
+ *     (ZAI, при сбое — офлайн-парсер) → черновик в базе → владельцу
+ *     уведомление 🆕 с кнопками «Подтвердить / Отклонить», клиенту —
+ *     автоответ ✅ без кнопок;
+ *   • callback_query — нажатия inline-кнопок: confirm/reject (заявки),
+ *     call (tel:), remind (напоминание об оплате), paid (оплачено),
+ *     nav (разделы FryFlow) — см. lib/telegram-callbacks.ts.
  *
- * Цепочка: сообщение клиента → ИИ вытаскивает клиента, количество
- * коробок и дату доставки (ZAI, при сбое — офлайн-парсер) →
- * «Черновик заказа» в базе (.data/telegram-drafts.json, его забирает
- * экран «Заказы» → «Черновики») → автоответ клиенту: «Заявку принял…».
+ * Регистрация вебхука — прямо отсюда (кнопка «Подключить вебхук»
+ * в Настройках): POST { action: "connect" | "disconnect" }. Каждый
+ * апдейт Telegram подписывает заголовком X-Telegram-Bot-Api-Secret-Token
+ * (секрет TELEGRAM_WEBHOOK_SECRET) — подделать извне нельзя.
  *
  * Демо-режим: POST { demo: true, message: { text, from } } —
  * имитация заявки для проверки парсинга без реального бота.
@@ -50,6 +51,20 @@ interface TgMessage {
 
 interface TgUpdate {
   message?: TgMessage;
+  callback_query?: {
+    id: string;
+    from?: TgUser;
+    message?: {
+      message_id?: number;
+      chat?: { id?: number | string };
+      reply_markup?: {
+        inline_keyboard?: Array<
+          Array<{ text: string; callback_data?: string; url?: string }>
+        >;
+      };
+    };
+    data?: string;
+  };
 }
 
 interface WebhookBody extends TgUpdate {
@@ -107,6 +122,11 @@ async function extractWithZai(text: string) {
   return null;
 }
 
+/** Сумма заявки: опт от 10 коробок — 300 ₽/уп, мелкий опт — 350 ₽. */
+function draftTotal(boxes: number): number {
+  return boxes * (boxes >= MIN_WHOLESALE_BOXES ? PRICE_PER_PACK : SMALL_WHOLESALE_PRICE_PER_PACK);
+}
+
 export async function POST(request: Request) {
   let body: WebhookBody;
   try {
@@ -157,6 +177,18 @@ export async function POST(request: Request) {
     }
   }
 
+  const demo = Boolean(body.demo);
+
+  /* ── Нажатие inline-кнопки (задача 25): confirm/reject/call/remind/paid/nav. */
+  if (body.callback_query && !demo) {
+    const cfg = await readConfig();
+    if (!cfg.botToken) {
+      return NextResponse.json({ ok: true, ignored: true });
+    }
+    const result = await handleCallbackQuery(cfg, body.callback_query);
+    return NextResponse.json(result);
+  }
+
   const msg = body.message;
   const text = msg?.text?.trim();
   if (!text) {
@@ -164,8 +196,6 @@ export async function POST(request: Request) {
      * требует 200 OK, иначе он будет переотправлять вечно. */
     return NextResponse.json({ ok: true, ignored: true });
   }
-
-  const demo = Boolean(body.demo);
 
   /* Кто писал: имя из Telegram или название группы. */
   const fromParts = [msg?.from?.first_name, msg?.from?.last_name].filter(Boolean);
@@ -191,7 +221,9 @@ export async function POST(request: Request) {
   /* 2. Имя клиента: из текста (ИИ) или из Telegram-профиля. */
   const clientName = ai?.clientName || fromName;
 
-  /* 3. Черновик заказа — «в базе», экран «Заказы» заберёт его. */
+  /* 3. Черновик заказа — «в базе», экран «Заказы» заберёт его.
+   *    chatId клиента сохраняем: кнопка «Напомнить» сможет писать
+   *    клиенту напрямую, если заказ станет просроченным. */
   const draft: TelegramDraft = {
     id: `tg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     clientName,
@@ -200,22 +232,35 @@ export async function POST(request: Request) {
     message: text,
     fromName,
     receivedAt: new Date().toISOString(),
+    status: "pending",
+    ...(msg?.chat?.id !== undefined ? { chatId: String(msg.chat.id) } : {}),
   };
   await addDraft(draft);
 
-  /* 4. Автоответ клиенту + отметка, что вебхук живой. */
-  let replySent = false;
-  let replyError: string | undefined;
+  /* 4. Уведомление владельцу (🆕 с кнопками) + автоответ клиенту (✅). */
+  let notified = { ownerSent: false, clientSent: false, ownerMessageIds: [] as number[] };
+  let notifyError: string | undefined;
   if (!demo) {
     const cfg = await readConfig();
-    if (cfg.botToken && msg?.chat?.id !== undefined) {
-      const r = await sendTelegramMessage(
-        cfg.botToken,
-        String(msg.chat.id),
-        DRAFT_REPLY
+    if (cfg.botToken && cfg.chatId) {
+      const r = await notifyNewDraft(
+        cfg,
+        {
+          id: draft.id,
+          clientName: draft.clientName,
+          boxes: draft.boxes,
+          total: draftTotal(draft.boxes),
+          deliveryDate: draft.deliveryDate,
+          message: draft.message,
+        },
+        msg?.chat?.id !== undefined ? String(msg.chat.id) : undefined
       );
-      replySent = r.ok;
-      replyError = r.error;
+      notified = {
+        ownerSent: r.ownerSent,
+        clientSent: r.clientSent,
+        ownerMessageIds: r.ownerMessageIds,
+      };
+      notifyError = r.ownerError;
     }
     if (!cfg.webhookActive) {
       await writeConfig({ webhookActive: true });
@@ -231,8 +276,7 @@ export async function POST(request: Request) {
       confident: offline.confident,
       engine: ai ? "zai" : "offline",
     },
-    reply: DRAFT_REPLY,
-    replySent,
-    replyError,
+    notified,
+    ...(notifyError ? { notifyError } : {}),
   });
 }

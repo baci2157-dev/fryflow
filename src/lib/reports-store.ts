@@ -18,6 +18,8 @@ export interface WeeklyReport {
   period: string;
   /** Полный текст отчёта (для повторного показа и отправки). */
   text: string;
+  /** HTML-версия для Telegram (задача 25): тот же отчёт с кнопками. */
+  html?: string;
   /** Отправлялся ли в Telegram. */
   sentToTelegram: boolean;
 }

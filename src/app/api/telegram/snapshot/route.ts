@@ -28,6 +28,7 @@ interface SnapshotBody {
   callbacks?: Array<{
     clientName?: unknown;
     phone?: unknown;
+    address?: unknown;
     date?: unknown;
     overdue?: unknown;
   }>;
@@ -43,18 +44,21 @@ export async function POST(request: Request) {
   }
 
   /* Перевариваем большой словарь клиентов аккуратно: берём только
-   * неделю вперёд + просроченные, максимум 60 записей. */
+   * неделю вперёд + просроченные (до 30 дней — дайджест показывает
+   * их с ⚠️), максимум 60 записей. */
   const today = new Date().toISOString().slice(0, 10);
   const weekAhead = new Date(Date.now() + 8 * 86_400_000).toISOString().slice(0, 10);
+  const monthBack = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
   const callbacks: SnapshotCallback[] = [];
   for (const raw of Array.isArray(body.callbacks) ? body.callbacks : []) {
     const clientName = typeof raw.clientName === "string" ? raw.clientName.trim() : "";
     const date = typeof raw.date === "string" ? raw.date.slice(0, 10) : "";
     if (!clientName || !/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-    if (date < today || date > weekAhead) continue;
+    if (date < monthBack || date > weekAhead) continue;
     callbacks.push({
       clientName: clientName.slice(0, 80),
       phone: typeof raw.phone === "string" ? raw.phone.slice(0, 24) : "",
+      address: typeof raw.address === "string" ? raw.address.slice(0, 80) : "",
       date,
       overdue: Boolean(raw.overdue) || date < today,
     });

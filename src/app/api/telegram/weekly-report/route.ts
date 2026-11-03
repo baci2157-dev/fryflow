@@ -2,25 +2,34 @@ import { NextResponse } from "next/server";
 
 import { chatCompletion } from "@/lib/ai-sdk";
 import {
-  buildWeeklyReportText,
   readConfig,
   readSnapshot,
-  sendTelegramMessage,
+  sendTgMessage,
+  snapshotFresh,
   type WeeklyStats,
 } from "@/lib/telegram-server";
+import {
+  buildWeeklyReport,
+  weeklyReportPlain,
+  type TgMessage,
+  type WeeklyReportStats,
+} from "@/lib/telegram-templates";
 
 /**
- * GET /api/telegram/weekly-report — отчёт недели владельцу (задача 24).
+ * GET /api/telegram/weekly-report — отчёт недели владельцу (задачи 24–25).
  *
  * Vercel Cron (vercel.json): 0 15 * * 0 UTC = воскресенье 18:00 мск.
  * Из снапшота приложения (цифры недели) собираем отчёт: выручка, маржа,
  * новые клиенты, топ-5 сделок, проблемные клиенты. Мозг (ZAI) добавляет
  * 2–3 предложения выводов; при сбое — отчёт без выводов (не падаем).
- * Уходит в Telegram владельцу.
+ * Уходит в Telegram владельцу (🧠-блок не выводится вообще, если Мозг
+ * промолчал). Длинный отчёт автоматически режется на 2 сообщения
+ * (цифры + топ-5 / проблемы + выводы) — лимит Telegram 4096.
  *
  * POST { preview: true, stats: {...} } — «Показать отчёт» из Настроек:
- * тот же билдер на живых цифрах клиента, но БЕЗ отправки — текст
- * возвращается в приложение и сохраняется в разделе «Отчёты».
+ * тот же билдер на живых цифрах клиента, но БЕЗ отправки — приложению
+ * возвращается plain-текст (для показа в «Отчётах») и HTML (для
+ * отправки в Telegram в новом формате).
  *
  * Защита GET: CRON_SECRET (Vercel Cron шлёт Authorization: Bearer $CRON_SECRET).
  */
@@ -50,7 +59,7 @@ async function brainSummary(
             "Ниже цифры недели. Дай 2–3 предложения: главный вывод и одно конкретное действие на следующую неделю.",
             "Пиши по-русски, по-деловому, без воды и без markdown-разметки. Только текст выводов.",
             "",
-            buildWeeklyReportText(stats),
+            weeklyReportPlain(toReportStats(stats)),
           ].join("\n"),
         },
         {
@@ -62,11 +71,26 @@ async function brainSummary(
       temperature: 0.5,
     });
     const text = (reply ?? "").trim();
-    if (text) return { text: `\n\n🧠 Мозг: ${text}` };
+    if (text) return { text };
     return { text: "", error: error ?? "пустой ответ модели" };
   } catch (e) {
     return { text: "", error: e instanceof Error ? e.message : String(e) };
   }
+}
+
+/** Внутренние цифры → формат шаблона отчёта. */
+function toReportStats(stats: WeeklyStats): WeeklyReportStats {
+  return {
+    periodStart: stats.periodStart,
+    periodEnd: stats.periodEnd,
+    revenue: stats.revenue,
+    margin: stats.margin,
+    marginPct: stats.marginPct,
+    orders: stats.ordersCount,
+    newClients: stats.newClients,
+    topDeals: stats.topDeals,
+    problems: stats.problemClients,
+  };
 }
 
 /** Проверка цифр из клиента: только числа и строки, разумные рамки. */
@@ -121,23 +145,35 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: true, skipped: "not-configured" });
   }
   const snap = await readSnapshot();
-  if (!snap?.stats) {
-    const r = await sendTelegramMessage(
-      cfg.botToken,
-      cfg.chatId,
-      "Отчёт недели FryFlow не собрался: приложение давно не открывали — цифры не синхронизированы. Откройте FryFlow, и в следующее воскресенье отчёт придёт полный."
-    );
+  if (!snap?.stats || !snapshotFresh(snap)) {
+    const stale: TgMessage = {
+      text:
+        `📊 <b>Отчёт недели</b>\n\n` +
+        `Не собрался: приложение давно не открывали — цифры не синхронизированы. ` +
+        `Откройте FryFlow, и в следующее воскресенье отчёт придёт полный.\n\n` +
+        `<a href="https://fryflow.vercel.app/finance">Открыть финансы</a>`,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "📊 Финансы", callback_data: "nav:finance" },
+            { text: "📋 Отчёты", callback_data: "nav:reports" },
+          ],
+        ],
+      },
+    };
+    const r = await sendTgMessage(cfg.botToken, cfg.chatId, stale);
     return NextResponse.json({ ok: r.ok, error: r.error, sent: r.ok, fresh: false });
   }
 
   const brain = await brainSummary(snap.stats);
-  const text = buildWeeklyReportText(snap.stats) + brain.text;
-  const r = await sendTelegramMessage(cfg.botToken, cfg.chatId, text);
+  const msg = buildWeeklyReport(toReportStats(snap.stats), brain.text);
+  const r = await sendTgMessage(cfg.botToken, cfg.chatId, msg);
   return NextResponse.json({
     ok: r.ok,
     error: r.error,
     sent: r.ok,
     fresh: true,
+    parts: Math.max(1, Math.ceil(msg.text.length / 3900)),
     brainError: brain.error,
   });
 }
@@ -145,7 +181,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   let body: { preview?: boolean; stats?: unknown };
   try {
-    body = (await request.json()) as { preview?: boolean; stats?: unknown };
+    body = await request.json() as { preview?: boolean; stats?: unknown };
   } catch {
     return NextResponse.json({ ok: false, error: "Некорректный JSON" }, { status: 400 });
   }
@@ -160,8 +196,14 @@ export async function POST(request: Request) {
       );
     }
     const brain = await brainSummary(stats);
-    const text = buildWeeklyReportText(stats) + brain.text;
-    return NextResponse.json({ ok: true, text, brainError: brain.error });
+    const reportStats = toReportStats(stats);
+    return NextResponse.json({
+      ok: true,
+      /* plain — для показа в «Отчётах», html — для отправки в Telegram. */
+      text: weeklyReportPlain(reportStats, brain.text),
+      html: buildWeeklyReport(reportStats, brain.text).text,
+      brainError: brain.error,
+    });
   }
 
   /* Ручная отправка из приложения (кнопка «Отправить отчёт в Telegram»). */
@@ -180,7 +222,7 @@ export async function POST(request: Request) {
     );
   }
   const brain = await brainSummary(stats);
-  const text = buildWeeklyReportText(stats) + brain.text;
-  const r = await sendTelegramMessage(cfg.botToken, cfg.chatId, text);
+  const msg = buildWeeklyReport(toReportStats(stats), brain.text);
+  const r = await sendTgMessage(cfg.botToken, cfg.chatId, msg);
   return NextResponse.json({ ok: r.ok, error: r.error, sent: r.ok });
 }

@@ -12,6 +12,7 @@ import { useOrdersStore } from "@/lib/orders-store";
 import { useProductsStore } from "@/lib/products-store";
 import { useRegionsStore } from "@/lib/regions-store";
 import { useSettingsStore } from "@/lib/settings-store";
+import { daysSince } from "@/types/models";
 
 /**
  * Проактивный Мозг (задача 7).
@@ -85,6 +86,39 @@ function cleanAdviceText(raw: string): string {
     .trim();
 }
 
+/** Контекст критичного алерта (задача 25): самый проблемный
+ *  неоплаченный заказ + телефон клиента из CRM — для кнопок
+ *  «📞 Позвонить / 💬 Напомнить / ✅ Оплачено» в Telegram. */
+function criticalOrderContext(): {
+  orderId: string;
+  externalId?: string;
+  client: { id: string; name: string; phone: string };
+  debt: { amount: number; days: number };
+} | null {
+  try {
+    const deals = useOrdersStore.getState();
+    const crm = useCrmStore.getState();
+    const worst = deals.orders
+      .filter((o) => !o.isDraft && !o.isPaid)
+      .map((o) => ({ o, days: daysSince(o.createdAt) }))
+      .sort((a, b) => b.days - a.days || b.o.totalAmount - a.o.totalAmount)[0];
+    if (!worst) return null;
+    const client = crm.clients.find((c) => c.id === worst.o.clientId);
+    return {
+      orderId: worst.o.id,
+      ...(worst.o.externalId ? { externalId: worst.o.externalId } : {}),
+      client: {
+        id: worst.o.clientId,
+        name: worst.o.clientName,
+        phone: client?.phone ?? "",
+      },
+      debt: { amount: worst.o.totalAmount, days: worst.days },
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Генерация одного совета из банка промптов.
  *
@@ -137,14 +171,19 @@ export async function generateAdvice(
     const critical = isCriticalText(text);
     const inactive = Boolean(opts.inactive) && !opts.manual;
 
-    /* Пользователь неактивен, а совет горит — эскортируем в Telegram. */
+    /* Пользователь неактивен, а совет горит — эскортируем в Telegram.
+     * Задача 25: с контекстом долга — 🚨-алерт с кнопками «Позвонить /
+     * Напомнить / Оплачено»; без контекста — просто текст. */
     let sentToTelegram = false;
     if (critical && inactive) {
       try {
+        const ctx = criticalOrderContext();
         const r = await fetch("/api/telegram/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: `⚠️ ${text}` }),
+          body: JSON.stringify(
+            ctx ? { kind: "critical", ...ctx } : { text: `⚠️ ${text}` }
+          ),
         });
         const j = (await r.json()) as { ok?: boolean };
         sentToTelegram = Boolean(j.ok);
