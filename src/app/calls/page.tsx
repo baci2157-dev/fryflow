@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Layers, MessageSquareText, Phone, Snowflake } from "lucide-react";
+import { LocateFixed, Layers, MessageSquareText, Phone, Snowflake } from "lucide-react";
+import { format } from "date-fns";
 
 import { CallCard } from "@/components/calls/call-card";
 import { CallResultSheet } from "@/components/calls/result-sheet";
 import { ScriptsPanel } from "@/components/calls/scripts-panel";
 import { useCrmStore } from "@/lib/clients-store";
+import { useOrdersStore } from "@/lib/orders-store";
+import { haversineKm } from "@/lib/route-algorithm";
 import type { CallsFilter } from "@/lib/ui-store";
 import { useUiStore } from "@/lib/ui-store";
 import { DISTRICTS, type Call, type ClientStatus } from "@/types/models";
@@ -19,6 +22,13 @@ import { cn } from "@/lib/utils";
  * Сортировка списка: сначала green-приоритет, потом yellow, потом red;
  * внутри приоритета — кто дольше не получал внимания (по дате
  * последнего звонка; не звонили вовсе — наверх).
+ *
+ * Задача 18C — гео-сортировка: если на сегодня есть заказы с координатами
+ * (адрес доставки = клиент заказа), список сортируется по расстоянию
+ * (гаверсинус, lib/route-algorithm) до ближайшего сегодняшнего заказа:
+ * до 2 км — бейдж «Рядом с заказом» (зелёный), 2–5 км — «Близко»
+ * (жёлтый). Кнопка «Показывать только рядом» режет список до 2 км.
+ * Заказов на сегодня нет — прежняя сортировка по приоритету и давности.
  *
  * Чипы-фильтры: Все / Холодные / Недозвон / Перезвонить / Проба / Отказ,
  * селект района. «Скрипты» — панель с возражениями и калькулятором.
@@ -53,6 +63,8 @@ export default function CallsPage() {
   const [district, setDistrict] = useState("all");
   const [resultClientId, setResultClientId] = useState<string | null>(null);
   const [scriptsOpen, setScriptsOpen] = useState(false);
+  /* Задача 18C: «Показывать только рядом» — радиус 2 км от сегодняшних заказов. */
+  const [nearbyOnly, setNearbyOnly] = useState(false);
 
   // Интент (переход с дашборда) бьёт над локальным выбором до первого
   // действия пользователя — затем он сбрасывается.
@@ -100,25 +112,77 @@ export default function CallsPage() {
     return map;
   }, [clients]);
 
-  /* Фильтрация + сортировка: green → yellow → red, внутри — по давности
-     последнего звонка (кто дольше без внимания, тот выше). */
+  /* ── Задача 18C: гео-сортировка по близости к сегодняшним заказам ──
+   * Опорные точки — клиенты заказов с доставкой сегодня (адрес доставки
+   * заказа = адрес его клиента). Черновики и точки с примерными
+   * координатами (needsGeocode — центр города) опорой не служат. */
+  const orders = useOrdersStore((s) => s.orders);
+  const todayOrderPoints = useMemo(() => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const byId = new Map(clients.map((c) => [c.id, c]));
+    const pts: Array<{ lat: number; lng: number }> = [];
+    for (const o of orders) {
+      if (o.deliveryDate !== today || o.isDraft) continue;
+      const cl = byId.get(o.clientId);
+      if (cl && !cl.needsGeocode) pts.push(cl.coordinates);
+    }
+    return pts;
+  }, [orders, clients]);
+
+  const geoMode = todayOrderPoints.length > 0;
+
+  /* Расстояние каждого клиента до ближайшего заказа сегодня, км. */
+  const distanceKm = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!geoMode) return map;
+    for (const c of clients) {
+      let best = Infinity;
+      for (const p of todayOrderPoints) {
+        const d = haversineKm(c.coordinates, p);
+        if (d < best) best = d;
+      }
+      map.set(c.id, best);
+    }
+    return map;
+  }, [clients, todayOrderPoints, geoMode]);
+
+  const nearbyCount = useMemo(
+    () =>
+      geoMode
+        ? [...distanceKm.values()].filter((d) => d <= 2).length
+        : 0,
+    [geoMode, distanceKm]
+  );
+
+  /* Фильтрация + сортировка. Заказы на сегодня есть (geoMode) —
+   * сортируем по расстоянию до ближайшего заказа (Задача 18C);
+   * нет — green → yellow → red, внутри — по давности последнего
+   * звонка (кто дольше без внимания, тот выше). */
   const sorted = useMemo(() => {
     const tierRank = { green: 0, yellow: 1, red: 2 } as const;
-    return clients
-      .filter((c) => {
-        if (district !== "all" && c.district !== district) return false;
-        const f = FILTERS.find((x) => x.id === activeChip);
-        return !f?.status || c.status === f.status;
-      })
-      .sort((a, b) => {
-        const t = tierRank[a.priorityTier] - tierRank[b.priorityTier];
-        if (t !== 0) return t;
-        const la = callsByClient.get(a.id)?.last?.createdAt ?? "";
-        const lb = callsByClient.get(b.id)?.last?.createdAt ?? "";
-        if (la !== lb) return la.localeCompare(lb); // кто дольше без звонка — выше
-        return a.name.localeCompare(b.name, "ru");
-      });
-  }, [clients, activeChip, district, callsByClient]);
+    const list = clients.filter((c) => {
+      if (district !== "all" && c.district !== district) return false;
+      if (nearbyOnly && (distanceKm.get(c.id) ?? Infinity) > 2) return false;
+      const f = FILTERS.find((x) => x.id === activeChip);
+      return !f?.status || c.status === f.status;
+    });
+    if (geoMode) {
+      return list.sort(
+        (a, b) =>
+          (distanceKm.get(a.id) ?? Infinity) -
+            (distanceKm.get(b.id) ?? Infinity) ||
+          a.name.localeCompare(b.name, "ru")
+      );
+    }
+    return list.sort((a, b) => {
+      const t = tierRank[a.priorityTier] - tierRank[b.priorityTier];
+      if (t !== 0) return t;
+      const la = callsByClient.get(a.id)?.last?.createdAt ?? "";
+      const lb = callsByClient.get(b.id)?.last?.createdAt ?? "";
+      if (la !== lb) return la.localeCompare(lb); // кто дольше без звонка — выше
+      return a.name.localeCompare(b.name, "ru");
+    });
+  }, [clients, activeChip, district, callsByClient, geoMode, distanceKm, nearbyOnly]);
 
   const resultClient = resultClientId
     ? (clients.find((c) => c.id === resultClientId) ?? null)
@@ -195,34 +259,65 @@ export default function CallsPage() {
         ))}
       </div>
 
-      {/* ── Район + подсказка сортировки ── */}
+      {/* ── Район + фильтр «рядом» + подсказка сортировки ── */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <label className="relative inline-flex items-center">
-          <span className="sr-only">Фильтр по району</span>
-          <select
-            value={district}
-            onChange={(e) => {
-              clearCallsIntent();
-              setDistrict(e.target.value);
-            }}
-            className="h-10 appearance-none rounded-xl border border-border bg-surface pl-3.5 pr-9 text-[13.5px] text-ink focus:border-accent/50 focus:outline-none"
-          >
-            <option value="all">Все районы</option>
-            {DISTRICTS.map((d) => (
-              <option key={d} value={d}>
-                {d} · {districtCounts.get(d) ?? 0}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-3.5 text-[10px] text-ink-soft">
-            ▾
-          </span>
-        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="relative inline-flex items-center">
+            <span className="sr-only">Фильтр по району</span>
+            <select
+              value={district}
+              onChange={(e) => {
+                clearCallsIntent();
+                setDistrict(e.target.value);
+              }}
+              className="h-10 appearance-none rounded-xl border border-border bg-surface pl-3.5 pr-9 text-[13.5px] text-ink focus:border-accent/50 focus:outline-none"
+            >
+              <option value="all">Все районы</option>
+              {DISTRICTS.map((d) => (
+                <option key={d} value={d}>
+                  {d} · {districtCounts.get(d) ?? 0}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3.5 text-[10px] text-ink-soft">
+              ▾
+            </span>
+          </label>
+          {/* Задача 18C: радиус 2 км от сегодняшних заказов — есть только
+           * когда есть с чем сравнивать (заказы на сегодня). */}
+          {geoMode ? (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={nearbyOnly}
+              onClick={() => setNearbyOnly((v) => !v)}
+              className={cn(
+                "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3.5 text-[13px] font-medium transition-colors",
+                nearbyOnly
+                  ? "border-transparent bg-ink text-bg"
+                  : "border-border bg-surface text-ink-soft hover:bg-tint hover:text-ink"
+              )}
+            >
+              <LocateFixed className="size-3.5" />
+              Показывать только рядом
+              <span
+                className={cn(
+                  "font-mono text-[11px] tabular-nums",
+                  nearbyOnly ? "opacity-70" : "text-ink-soft"
+                )}
+              >
+                {nearbyCount}
+              </span>
+            </button>
+          ) : null}
+        </div>
         <p className="shrink-0 text-xs text-ink-soft">
           Показано{" "}
           <span className="font-mono tabular-nums">{sorted.length}</span> из{" "}
-          <span className="font-mono tabular-nums">{clients.length}</span> ·
-          green → yellow → red, дальше — кто дольше без звонка
+          <span className="font-mono tabular-nums">{clients.length}</span> ·{" "}
+          {geoMode
+            ? "по близости к сегодняшнему заказу: сначала ближние"
+            : "green → yellow → red, дальше — кто дольше без звонка"}
         </p>
       </div>
 
@@ -256,6 +351,7 @@ export default function CallsPage() {
                   callbackDate={info?.callback}
                   inRoute={routeStops.some((r) => r.clientId === client.id)}
                   highlighted={highlightId === client.id}
+                  orderDistanceKm={geoMode ? distanceKm.get(client.id) ?? null : null}
                   onResult={() => {
                     clearCallsIntent();
                     setResultClientId(client.id);

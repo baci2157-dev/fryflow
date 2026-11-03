@@ -361,12 +361,12 @@ export default function ClientsPage() {
         </p>
       </div>
 
-      {/* Скелетон первого запуска: база 248 точек грузится из сида */}
+      {/* Скелетон первого запуска: база 265 точек грузится из сида */}
       {clients.length === 0 && (!hydrated || seeding) ? (
         <div className="mt-4">
           <p className="mb-3 flex items-center gap-2 text-[13px] font-medium text-ink-soft">
             <Database className="size-4 animate-pulse text-accent" />
-            Загружаем базу — 248 точек Ростова-на-Дону…
+            Загружаем базу — 265 точек Ростова-на-Дону…
           </p>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (

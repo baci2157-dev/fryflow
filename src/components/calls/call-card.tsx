@@ -28,6 +28,11 @@ function plural(n: number, one: string, few: string, many: string): string {
   return many;
 }
 
+/** «1,2» — для расстояния до заказа (запятая — по-русски). */
+function formatKm(km: number): string {
+  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 }).format(km);
+}
+
 /** «сегодня» / «вчера» / «N дн. назад». */
 export function humanDaysAgo(iso: string): string {
   const days = Math.max(
@@ -58,6 +63,7 @@ export function CallCard({
   callbackDate,
   inRoute,
   highlighted,
+  orderDistanceKm,
   onResult,
 }: {
   client: Client;
@@ -66,11 +72,23 @@ export function CallCard({
   callbackDate?: string;
   inRoute: boolean;
   highlighted: boolean;
+  /** Задача 18C: расстояние до ближайшего заказа сегодня, км
+   *  (null — заказов на сегодня нет). */
+  orderDistanceKm?: number | null;
   onResult: () => void;
 }) {
   const telHref = client.phone
     ? `tel:${client.phone.replace(/[^+\d]/g, "")}`
     : undefined;
+
+  /* Задача 18C: близость к сегодняшнему заказу — бейдж до 2 км (зелёный)
+   * и 2–5 км (жёлтый); цвет — те же переменные, что у приоритетов базы. */
+  const proximity =
+    orderDistanceKm == null || orderDistanceKm > 5
+      ? null
+      : orderDistanceKm <= 2
+        ? { label: "Рядом с заказом", color: "var(--tier-green)" }
+        : { label: "Близко", color: "var(--tier-yellow)" };
 
   return (
     <motion.article
@@ -106,6 +124,13 @@ export function CallCard({
           </div>
           <p className="mt-0.5 text-[13px] text-ink-soft">
             {client.district} · {CLIENT_TYPE_LABEL[client.type]}
+            {orderDistanceKm != null
+              ? ` · ${
+                  orderDistanceKm < 0.1
+                    ? "точка заказа"
+                    : `${formatKm(orderDistanceKm)} км от заказа`
+                }`
+              : ""}
           </p>
         </div>
         <span
@@ -139,6 +164,18 @@ export function CallCard({
       {/* Строка 3: статусы воронки + индикаторы новой точки и звонков */}
       <div className="mt-2.5 flex flex-wrap items-center gap-2">
         <StatusBadge status={client.status} />
+        {proximity ? (
+          <span
+            className="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-medium"
+            style={{
+              color: proximity.color,
+              background: `color-mix(in srgb, ${proximity.color} 12%, transparent)`,
+              border: `1px solid color-mix(in srgb, ${proximity.color} 32%, transparent)`,
+            }}
+          >
+            {proximity.label}
+          </span>
+        ) : null}
         <NewClientBadge createdAt={client.createdAt} />
         <CalledIndicator called={attempts > 0} />
         {callbackDate ? <CallbackBadge date={callbackDate} /> : null}
