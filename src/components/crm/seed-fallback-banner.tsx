@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * Если после ensureBaseSeeded база всё ещё меньше 100 точек (файл сида
  * был недоступен, сеть оборвалась на первом запуске, геокодинг завис —
  * теперь он с таймаутом, но страховка не помешает), показываем ленту
- * с кнопкой «Загрузить базу (360 точек)» — это тот же seedClientsBase,
+ * с кнопкой «Загрузить базу (421 точек)» — это тот же seedClientsBase,
  * что и кнопка в Настройках: дедуп name+address не создаёт дублей и
  * не трогает уже добавленные карточки.
  *
@@ -64,7 +64,7 @@ export function SeedFallbackBanner() {
                 <span className="font-semibold tabular-nums">
                   {clients.length}
                 </span>{" "}
-                из 360 точек. Нажмите кнопку — догрузим базу владельца,
+                из 421 точек. Нажмите кнопку — догрузим базу владельца,
                 дубликаты не создадутся.
               </p>
               <button
@@ -74,7 +74,7 @@ export function SeedFallbackBanner() {
                 className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl bg-accent px-3.5 text-[13px] font-semibold text-accent-foreground transition-all hover:bg-accent/90 active:scale-[0.98] disabled:opacity-50"
               >
                 <RefreshCw className={cn("size-4", busy && "animate-spin")} />
-                {busy ? "Загружаем…" : "Загрузить базу (360 точек)"}
+                {busy ? "Загружаем…" : "Загрузить базу (421 точек)"}
               </button>
             </div>
           </div>

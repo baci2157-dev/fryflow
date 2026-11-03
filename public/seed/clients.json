@@ -5072,5 +5072,859 @@
       "lng": 39.741529
     },
     "notes": ""
+  },
+  {
+    "name": "Шаурма на Пушкинской",
+    "address": "ул. Пушкинская, 87",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.224745,
+      "lng": 39.710965
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма №1",
+    "address": "ул. Пушкинская, 104",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.225418,
+      "lng": 39.718122
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма House",
+    "address": "ул. Пушкинская, 124",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.224378,
+      "lng": 39.708756
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма City",
+    "address": "ул. Пушкинская, 135",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.226539,
+      "lng": 39.71956
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Будённовском",
+    "address": "Будённовский просп., 47",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.217235,
+      "lng": 39.713605
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Бар",
+    "address": "Будённовский просп., 60",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.226616,
+      "lng": 39.704958
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дон Шаурма",
+    "address": "Будённовский просп., 68",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.229515,
+      "lng": 39.704152
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Маркет",
+    "address": "Будённовский просп., 80",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.233155,
+      "lng": 39.70275
+    },
+    "notes": ""
+  },
+  {
+    "name": "Киоск шаурмы",
+    "address": "пер. Семашко, 28",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.219064,
+      "lng": 39.714184
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Семашко",
+    "address": "пер. Семашко, 60",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.22337,
+      "lng": 39.711772
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Giros",
+    "address": "пер. Семашко, 99",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.231165,
+      "lng": 39.708459
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Газетном",
+    "address": "пер. Газетный, 34",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223159,
+      "lng": 39.714559
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль Хаус",
+    "address": "пер. Газетный, 53",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223784,
+      "lng": 39.714277
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Соборном",
+    "address": "пер. Соборный, 18",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.216197,
+      "lng": 39.712333
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восточная шаурма",
+    "address": "пер. Соборный, 37",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.218671,
+      "lng": 39.711837
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма 61",
+    "address": "пер. Соборный, 84",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.219041,
+      "lng": 39.711991
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Московской",
+    "address": "ул. Московская, 32",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.216532,
+      "lng": 39.704438
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бистро на Московской",
+    "address": "ул. Московская, 65",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.219031,
+      "lng": 39.7154
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у М. Горького",
+    "address": "ул. Максима Горького, 60",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223563,
+      "lng": 39.701443
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Темерницкой",
+    "address": "ул. Темерницкая, 45",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.218312,
+      "lng": 39.709522
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль на Темерницкой",
+    "address": "ул. Темерницкая, 87",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.220108,
+      "lng": 39.71796
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Ульяновской",
+    "address": "ул. Ульяновская, 42",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.216518,
+      "lng": 39.717951
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма и Ко",
+    "address": "ул. Варфоломеева, 60",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.226892,
+      "lng": 39.684423
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Сервис",
+    "address": "ул. Варфоломеева, 121",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.228722,
+      "lng": 39.69305
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе на Шаумяна",
+    "address": "ул. Шаумяна, 40",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.219175,
+      "lng": 39.706046
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Шаумяна",
+    "address": "ул. Шаумяна, 98",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.220824,
+      "lng": 39.715921
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургер Клаб",
+    "address": "ул. Пушкинская, 140",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.22689,
+      "lng": 39.723503
+    },
+    "notes": ""
+  },
+  {
+    "name": "Burger Street",
+    "address": "Будённовский просп., 48",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.222175,
+      "lng": 39.707344
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пицца 24",
+    "address": "пер. Газетный, 40",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.220376,
+      "lng": 39.716322
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пиццерия Марко",
+    "address": "ул. Московская, 48",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.21663,
+      "lng": 39.705928
+    },
+    "notes": ""
+  },
+  {
+    "name": "Додо Пицца",
+    "address": "Будённовский просп., 62",
+    "district": "Ленинский",
+    "phone": "+7 (800) 333-00-60",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.227052,
+      "lng": 39.705392
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая на Московской",
+    "address": "ул. Московская, 72",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.2186,
+      "lng": 39.716145
+    },
+    "notes": ""
+  },
+  {
+    "name": "Домашняя столовая",
+    "address": "пер. Соборный, 59",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.219751,
+      "lng": 39.711466
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кулинария на Семашко",
+    "address": "пер. Семашко, 47",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.223715,
+      "lng": 39.711709
+    },
+    "notes": ""
+  },
+  {
+    "name": "Булочная на Ульяновской",
+    "address": "ул. Ульяновская, 27",
+    "district": "Ленинский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.215931,
+      "lng": 39.715087
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Толстого",
+    "address": "пл. Толстого, 2",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.230155,
+      "lng": 39.765693
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль Хаус на Толстого",
+    "address": "пл. Толстого, 8",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.232128,
+      "lng": 39.764409
+    },
+    "notes": ""
+  },
+  {
+    "name": "Донская шаурма",
+    "address": "пл. Толстого, 12",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.231212,
+      "lng": 39.764963
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Базарная",
+    "address": "пл. Базарная, 8",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.232356,
+      "lng": 39.763162
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у Базара",
+    "address": "пл. Базарная, 15",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.233249,
+      "lng": 39.762717
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма по-турецки",
+    "address": "пл. Карла Маркса, 9",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.232035,
+      "lng": 39.761958
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Карла Маркса",
+    "address": "пл. Карла Маркса, 12",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.231379,
+      "lng": 39.761612
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма №1 на 41-й",
+    "address": "ул. 41-я Линия, 23",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.229191,
+      "lng": 39.778606
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на 40-й Линии",
+    "address": "ул. 40-я Линия, 18",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.233669,
+      "lng": 39.774219
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль-бар 39-я",
+    "address": "ул. 39-я Линия, 30",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.230723,
+      "lng": 39.775875
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Шолохова",
+    "address": "просп. Шолохова, 22",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.237607,
+      "lng": 39.744392
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у Дома Быта",
+    "address": "просп. Шолохова, 68",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.239725,
+      "lng": 39.754001
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Бар",
+    "address": "просп. Шолохова, 145",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.238106,
+      "lng": 39.747168
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Ченцова",
+    "address": "ул. Ченцова, 28",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236758,
+      "lng": 39.757136
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бистро на Мясникова",
+    "address": "ул. Мясникова, 45",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.226688,
+      "lng": 39.759474
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Мясникова",
+    "address": "ул. Мясникова, 87",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.225954,
+      "lng": 39.753284
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль на Баррикадной",
+    "address": "ул. 1-я Баррикадная, 12",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.213485,
+      "lng": 39.682
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на 2-й Баррикадной",
+    "address": "ул. 2-я Баррикадная, 25",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.215333,
+      "lng": 39.668113
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургер-Хаус",
+    "address": "пл. Толстого, 15",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.232617,
+      "lng": 39.766131
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургерная на Шолохова",
+    "address": "просп. Шолохова, 90",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.238471,
+      "lng": 39.745718
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пиццерия Нахичевань",
+    "address": "пл. Толстого, 7",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.231476,
+      "lng": 39.76561
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пицца на Карла Маркса",
+    "address": "пл. Карла Маркса, 14",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.230655,
+      "lng": 39.762875
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая на 41-й",
+    "address": "ул. 41-я Линия, 55",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.229254,
+      "lng": 39.77713
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая у ДК",
+    "address": "просп. Шолохова, 30",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.2385,
+      "lng": 39.74551
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кулинария на Мясникова",
+    "address": "ул. Мясникова, 60",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.225837,
+      "lng": 39.757311
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе у Театра",
+    "address": "Театральный просп., 48",
+    "district": "Пролетарский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.231473,
+      "lng": 39.741198
+    },
+    "notes": ""
   }
 ]
