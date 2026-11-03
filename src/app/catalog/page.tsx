@@ -181,7 +181,7 @@ export default function CatalogPage() {
 
       {/* ── Фильтр по категориям ── */}
       <div
-        className="fryflow-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+        className="fryflow-scroll flex gap-2 overflow-x-auto pb-1"
         role="tablist"
         aria-label="Категории товаров"
       >
@@ -303,7 +303,7 @@ function CategoryChip({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
+        "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
         active
           ? "border-transparent bg-ink text-bg"
           : "border-border bg-surface text-ink-soft hover:bg-tint hover:text-ink"
@@ -572,7 +572,7 @@ function ProductFormFields({
                   type="button"
                   aria-pressed={active}
                   onClick={() => setForm({ ...form, category: key })}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-medium transition-colors"
+                  className="inline-flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-medium transition-colors"
                   style={{
                     color: active ? color : "var(--ink-soft)",
                     borderColor: active

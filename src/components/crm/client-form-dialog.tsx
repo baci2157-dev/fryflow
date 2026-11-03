@@ -222,6 +222,7 @@ export function ClientFormDialog({
           <input
             {...register("name")}
             placeholder="Шаурма на Зорге"
+            autoComplete="organization"
             className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-[14px] text-ink placeholder:text-ink-soft/60 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
         </Field>
@@ -237,6 +238,7 @@ export function ClientFormDialog({
                 onChange={(e) => field.onChange(formatPhoneInput(e.target.value))}
                 placeholder="+7 (999) 123-45-67"
                 inputMode="tel"
+                autoComplete="tel"
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 font-mono text-[14px] tabular-nums text-ink placeholder:text-ink-soft/60 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/30"
               />
             )}
@@ -505,8 +507,11 @@ export function ClientFormDialog({
           </div>
         </details>
 
-        {/* Кнопки */}
-        <div className="flex gap-2 pt-1">
+        {/* Кнопки — sticky внизу листа (задача 23): всегда видимы
+         * и кликабельны, z-index ВЫШЕ выпадающего списка подсказок
+         * (список z-20 не может перекрыть кнопки), при клавиатуре
+         * iOS кнопки не уезжают под поле. */}
+        <div className="sticky bottom-0 z-30 -mx-5 mt-2 flex gap-2 border-t border-border bg-surface px-5 py-3 md:-mx-6 md:px-6">
           <button
             type="button"
             onClick={onClose}
@@ -545,6 +550,22 @@ function AddressFieldWithGeocode({ register, setValue, control, error }: Address
   const [state, setState] = useState<"idle" | "searching" | "none" | "error" | "applied">("idle");
   const abortRef = useRef<AbortController | null>(null);
   const appliedRef = useRef<string>("");
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const addressField = register("address");
+
+  /* Баг «список перекрывает окно»: список живёт только внутри поля —
+   * клик вне него (по кнопкам формы, в фон) закрывает подсказки. */
+  useEffect(() => {
+    if (suggestions.length === 0) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) {
+        setSuggestions([]);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [suggestions.length]);
 
   // Debounce 1,5 с: тишина в наборе → один запрос к Nominatim.
   // Все обновления состояния — внутри колбэка таймера (не в теле эффекта).
@@ -586,15 +607,38 @@ function AddressFieldWithGeocode({ register, setValue, control, error }: Address
     }
     setSuggestions([]);
     setState("applied");
+    /* Выбрали адрес — фокус возвращается в поле: Esc дальше уйдёт
+     * в форму, а не потеряется где-то в списке. */
+    inputRef.current?.focus();
   };
 
   return (
     <div>
       <Field label="Адрес" required error={error}>
-        <div className="relative">
+        <div className="relative" ref={wrapRef}>
           <input
-            {...register("address")}
+            {...addressField}
+            /* Две ref: react-hook-form регистрирует поле в форме,
+             * локальная — возвращает фокус после выбора подсказки. */
+            ref={(el) => {
+              addressField.ref(el);
+              inputRef.current = el;
+            }}
             placeholder="ул. Зорге, 19"
+            autoComplete="street-address"
+            role="combobox"
+            aria-expanded={suggestions.length > 0}
+            aria-controls="address-suggestions"
+            aria-autocomplete="list"
+            /* Esc: сначала закрываем список (не лист). Список закрыт —
+             * Esc свободно уходит в SpringSheet и закрывает форму. */
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && suggestions.length > 0) {
+                e.stopPropagation();
+                e.preventDefault();
+                setSuggestions([]);
+              }
+            }}
             className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 pr-10 text-[14px] text-ink placeholder:text-ink-soft/60 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft">
@@ -607,15 +651,22 @@ function AddressFieldWithGeocode({ register, setValue, control, error }: Address
             )}
           </span>
 
-          {/* Подсказки Nominatim */}
+          {/* Подсказки Nominatim: высота ограничена 200px + внутренний
+           * скролл — список физически не может растянуться на весь лист
+           * и перекрыть кнопки «Сохранить»/«Отмена». Закрытие: выбор,
+           * клик вне, Esc. */}
           {suggestions.length > 0 && (
-            <ul className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
+            <ul
+              role="listbox"
+              id="address-suggestions"
+              className="fryflow-scroll absolute z-20 mt-1.5 max-h-[200px] w-full overflow-y-auto overscroll-contain rounded-xl border border-border bg-surface shadow-xl"
+            >
               {suggestions.map((s) => (
                 <li key={`${s.lat}-${s.lng}`}>
                   <button
                     type="button"
                     onClick={() => apply(s)}
-                    className="flex w-full flex-col gap-0.5 border-b border-border px-3.5 py-2 text-left last:border-b-0 hover:bg-tint"
+                    className="flex min-h-11 w-full flex-col gap-0.5 border-b border-border px-3.5 py-2 text-left last:border-b-0 hover:bg-tint"
                   >
                     <span className="text-[13.5px] font-medium text-ink">{s.label}</span>
                     <span className="flex items-center justify-between gap-2 text-[11.5px] text-ink-soft">

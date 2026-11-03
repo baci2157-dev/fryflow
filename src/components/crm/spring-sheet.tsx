@@ -154,9 +154,9 @@ function SheetHeader({
         type="button"
         onClick={onClose}
         aria-label="Закрыть"
-        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-tint text-ink-soft transition-colors hover:bg-accent/15 hover:text-ink"
+        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-tint text-ink-soft transition-colors hover:bg-accent/15 hover:text-ink"
       >
-        <X className="size-4" />
+        <X className="size-5" />
       </button>
     </div>
   );

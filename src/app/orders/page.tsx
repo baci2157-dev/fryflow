@@ -257,7 +257,7 @@ export default function OrdersPage() {
 
       {/* ── Табы ── */}
       <div
-        className="fryflow-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+        className="fryflow-scroll flex gap-2 overflow-x-auto pb-1"
         role="tablist"
         aria-label="Фильтры заказов"
       >

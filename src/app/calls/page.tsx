@@ -71,6 +71,23 @@ export default function CallsPage() {
   const activeChip: CallsFilter = callsIntent?.filter ?? chip;
   const highlightId = callsIntent?.clientId ?? null;
 
+  /* Мобильная производительность (задача 23): воронка — 455 карточек,
+   * рендерим порциями по 40, дальше — «Показать ещё». Счётчик вместе
+   * с фильтрами (derived state — без setState-в-эффекте, так требует
+   * линтер): фильтр сменился — счётчик автоматически свежие 40. */
+  const [pagination, setPagination] = useState({
+    filter: "all" as CallsFilter,
+    district: "all",
+    nearbyOnly: false,
+    count: 40,
+  });
+  const visibleCount =
+    pagination.filter === activeChip &&
+    pagination.district === district &&
+    pagination.nearbyOnly === nearbyOnly
+      ? pagination.count
+      : 40;
+
   const applyChip = (f: CallsFilter) => {
     clearCallsIntent();
     setChip(f);
@@ -227,7 +244,7 @@ export default function CallsPage() {
 
       {/* ── Чипы-фильтры ── */}
       <div
-        className="fryflow-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+        className="fryflow-scroll flex gap-2 overflow-x-auto pb-1"
         role="tablist"
         aria-label="Фильтры воронки"
       >
@@ -239,7 +256,7 @@ export default function CallsPage() {
             aria-selected={activeChip === f.id}
             onClick={() => applyChip(f.id)}
             className={cn(
-              "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
+              "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
               activeChip === f.id
                 ? "border-transparent bg-ink text-bg"
                 : "border-border bg-surface text-ink-soft hover:bg-tint hover:text-ink"
@@ -292,7 +309,7 @@ export default function CallsPage() {
               aria-selected={nearbyOnly}
               onClick={() => setNearbyOnly((v) => !v)}
               className={cn(
-                "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3.5 text-[13px] font-medium transition-colors",
+                "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl border px-3.5 text-[13px] font-medium transition-colors",
                 nearbyOnly
                   ? "border-transparent bg-ink text-bg"
                   : "border-border bg-surface text-ink-soft hover:bg-tint hover:text-ink"
@@ -311,9 +328,12 @@ export default function CallsPage() {
             </button>
           ) : null}
         </div>
-        <p className="shrink-0 text-xs text-ink-soft">
+        <p className="min-w-0 text-xs leading-snug text-ink-soft">
           Показано{" "}
-          <span className="font-mono tabular-nums">{sorted.length}</span> из{" "}
+          <span className="font-mono tabular-nums">
+            {Math.min(visibleCount, sorted.length)}
+          </span>{" "}
+          из{" "}
           <span className="font-mono tabular-nums">{clients.length}</span> ·{" "}
           {geoMode
             ? "по близости к сегодняшнему заказу: сначала ближние"
@@ -340,7 +360,7 @@ export default function CallsPage() {
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           <AnimatePresence mode="popLayout" initial={false}>
-            {sorted.map((client) => {
+            {sorted.slice(0, visibleCount).map((client) => {
               const info = callsByClient.get(client.id);
               return (
                 <CallCard
@@ -360,6 +380,26 @@ export default function CallsPage() {
               );
             })}
           </AnimatePresence>
+        </div>
+      )}
+
+      {/* ── Догрузка воронки (пагинация по 40 карточек) ── */}
+      {sorted.length > visibleCount && (
+        <div className="mt-5 flex flex-col items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() =>
+              setPagination({
+                filter: activeChip,
+                district,
+                nearbyOnly,
+                count: visibleCount + 40,
+              })
+            }
+            className="h-11 rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-ink transition-colors hover:border-accent/50 hover:text-accent"
+          >
+            Показать ещё {Math.min(40, sorted.length - visibleCount)}
+          </button>
         </div>
       )}
 

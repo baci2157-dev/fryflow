@@ -41,7 +41,7 @@ export function MobileBottomNav() {
                       });
                     }
                   }}
-                  className="flex min-h-[60px] flex-col items-center justify-center gap-1 px-1 pt-2 pb-1.5"
+                  className="flex min-h-[64px] flex-col items-center justify-center gap-1 px-1 pt-2 pb-1.5"
                 >
                   <span className="relative flex items-center justify-center">
                     {active && (
@@ -80,7 +80,7 @@ export function MobileBottomNav() {
             <button
               type="button"
               onClick={() => setMoreOpen(true)}
-              className="flex min-h-[60px] w-full flex-col items-center justify-center gap-1 px-1 pt-2 pb-1.5"
+              className="flex min-h-[64px] w-full flex-col items-center justify-center gap-1 px-1 pt-2 pb-1.5"
               aria-label="Ещё — остальные разделы"
             >
               <span className="relative flex items-center justify-center">

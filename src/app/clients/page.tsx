@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   CircleDot,
@@ -59,6 +59,16 @@ export default function ClientsPage() {
 
   const [chip, setChip] = useState<ChipId>("all");
   const [district, setDistrict] = useState<string>("all");
+  /* Мобильная производительность (задача 23): 455 карточек одним
+   * списком лагают на телефоне — рендерим порциями по 60, дальше —
+   * кнопка «Показать ещё». Счётчик хранится вместе с фильтрами
+   * (derived state — без setState-в-эффекте, этого требует линтер):
+   * фильтр сменился — счётчик автоматически свежие 60. */
+  const [pagination, setPagination] = useState({ chip, district, count: 60 });
+  const visibleCount =
+    pagination.chip === chip && pagination.district === district
+      ? pagination.count
+      : 60;
   const [importOpen, setImportOpen] = useState(false);
   // Локальные источники открытия + производные от интентов палитры —
   // без копирования в эффектах (setState-в-effect запрещён линтером).
@@ -302,7 +312,7 @@ export default function ClientsPage() {
 
       {/* ── Фильтры-чипы ── */}
       <div
-        className="fryflow-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+        className="fryflow-scroll flex gap-2 overflow-x-auto pb-1"
         role="tablist"
         aria-label="Фильтры клиентов"
       >
@@ -314,7 +324,7 @@ export default function ClientsPage() {
             aria-selected={chip === c.id}
             onClick={() => setChip(c.id)}
             className={cn(
-              "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
+              "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
               chip === c.id
                 ? "border-transparent bg-ink text-bg"
                 : "border-border bg-surface text-ink-soft hover:bg-tint hover:text-ink"
@@ -354,8 +364,12 @@ export default function ClientsPage() {
             ▾
           </span>
         </label>
-        <p className="shrink-0 text-xs text-ink-soft">
-          Показано <span className="font-mono tabular-nums">{filtered.length}</span> из{" "}
+        <p className="min-w-0 text-xs leading-snug text-ink-soft">
+          Показано{" "}
+          <span className="font-mono tabular-nums">
+            {Math.min(visibleCount, filtered.length)}
+          </span>{" "}
+          из{" "}
           <span className="font-mono tabular-nums">{clients.length}</span>
           {district !== "all" ? ` · ${district}` : ""}
         </p>
@@ -414,7 +428,7 @@ export default function ClientsPage() {
         </div>
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((client) => (
+          {filtered.slice(0, visibleCount).map((client) => (
             <ClientCard
               key={client.id}
               client={client}
@@ -422,6 +436,21 @@ export default function ClientsPage() {
               onEdit={() => openEditForm(client)}
             />
           ))}
+        </div>
+      )}
+
+      {/* ── Догрузка списка (пагинация по 60 карточек) ── */}
+      {filtered.length > visibleCount && (
+        <div className="mt-5 flex flex-col items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() =>
+              setPagination({ chip, district, count: visibleCount + 60 })
+            }
+            className="h-11 rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-ink transition-colors hover:border-accent/50 hover:text-accent"
+          >
+            Показать ещё {Math.min(60, filtered.length - visibleCount)}
+          </button>
         </div>
       )}
 

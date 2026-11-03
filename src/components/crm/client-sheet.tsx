@@ -430,7 +430,7 @@ function CallLogForm({ clientId }: { clientId: string }) {
             type="button"
             onClick={() => setResult(r)}
             className={cn(
-              "h-8 rounded-full border px-3 text-[12.5px] font-medium transition-colors",
+              "h-10 rounded-full border px-3 text-[12.5px] font-medium transition-colors",
               result === r
                 ? "border-accent bg-accent/15 text-ink"
                 : "border-border bg-surface text-ink-soft hover:bg-tint"
@@ -460,7 +460,7 @@ function CallLogForm({ clientId }: { clientId: string }) {
       ) : null}
       <button
         type="submit"
-        className="mt-2.5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-4 text-[13px] font-semibold text-[#1C1A17] transition-colors hover:bg-accent/90"
+        className="mt-2.5 inline-flex h-11 items-center gap-1.5 rounded-lg bg-accent px-4 text-[13px] font-semibold text-[#1C1A17] transition-colors hover:bg-accent/90"
       >
         <Phone className="size-3.5" />
         Записать звонок

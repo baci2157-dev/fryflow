@@ -557,7 +557,7 @@ export default function RegionsPage() {
 
       {/* Чипы городов с количеством */}
       <div
-        className="fryflow-scroll -mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1"
+        className="fryflow-scroll mt-4 flex gap-2 overflow-x-auto pb-1"
         role="tablist"
         aria-label="Фильтр по городам"
       >

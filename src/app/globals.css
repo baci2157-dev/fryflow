@@ -199,9 +199,24 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Мобильные (HIG/M3): резиновый отскок страницы выключен —
+     * «отскакивает» только внутренний скролл списков (overscroll-contain). */
+    overscroll-behavior-y: none;
+    /* Переключение темы — мягкий переход 200 мс (WCAG: без мигания). */
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   ::selection {
     background: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  /* iOS Safari: авто-зум страницы при фокусе, если шрифт в поле < 16px.
+   * На тач-устройствах (pointer: coarse) поднимаем шрифт полей
+   * до 16px — десктопную типографику не трогаем. */
+  @media (pointer: coarse) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
   }
 }
 
@@ -209,6 +224,24 @@
 .leaflet-container {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   background: var(--tint);
+  /* Свой stacking-контекст: попапы/контролы карты (z 400–1000)
+     * не выпрыгивают поверх нижней навигации (z-40) и модалок (z-50). */
+  isolation: isolate;
+}
+/* Тач-устройства: зум-кнопки 44×44 (Apple HIG) — промахнуться пальцем
+   * нельзя; на десктопе остаются компактные 30×30. */
+@media (pointer: coarse) {
+  .leaflet-bar a,
+  .leaflet-bar a:hover {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+  }
+  /* Крестик попапа маркера — тач-таргет 44px. */
+  .leaflet-popup-close-button {
+    min-width: 44px;
+    min-height: 34px;
+  }
 }
 /* кастомные маркеры FryFlow (divIcon без белой подложки) */
 .fryflow-pin {

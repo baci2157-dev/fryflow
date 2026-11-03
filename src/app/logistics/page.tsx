@@ -145,7 +145,7 @@ export default function LogisticsPage() {
               aria-selected={mode === m.id}
               onClick={() => setMode(m.id)}
               className={cn(
-                "h-8 rounded-lg px-3 text-[12.5px] font-medium transition-colors",
+                "h-10 rounded-lg px-3 text-[12.5px] font-medium transition-colors",
                 mode === m.id
                   ? "bg-ink text-bg"
                   : "text-ink-soft hover:bg-tint hover:text-ink"
@@ -159,7 +159,7 @@ export default function LogisticsPage() {
 
       {/* ── Чипы районов ── */}
       <div
-        className="fryflow-scroll -mx-1 mb-3 flex gap-2 overflow-x-auto px-1 pb-1"
+        className="fryflow-scroll mb-3 flex gap-2 overflow-x-auto pb-1"
         role="tablist"
         aria-label="Районы"
       >
@@ -196,7 +196,7 @@ export default function LogisticsPage() {
         <button
           type="button"
           onClick={buildRoute}
-          className="absolute bottom-4 left-4 z-[1200] inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#1C1A17] shadow-lg shadow-black/15 transition-colors hover:bg-accent/90"
+          className="absolute bottom-[calc(84px+env(safe-area-inset-bottom))] left-4 z-[1200] inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#1C1A17] shadow-lg shadow-black/15 transition-colors hover:bg-accent/90"
         >
           <Route className="size-4" />
           Собрать маршрут
@@ -316,7 +316,7 @@ function DistrictChip({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
+        "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
         active
           ? "border-transparent bg-ink text-bg"
           : "border-border bg-surface text-ink-soft hover:bg-tint hover:text-ink"

@@ -108,7 +108,7 @@ export function ClientCard({
                 if (!telHref) e.preventDefault();
               }}
               aria-disabled={!telHref}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-medium transition-colors"
+              className="inline-flex h-11 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-medium transition-colors"
               style={
                 telHref
                   ? {
@@ -128,7 +128,7 @@ export function ClientCard({
                 e.stopPropagation();
                 window.open(buildYandexNavUrl(client), "_blank", "noopener");
               }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-tint px-3 text-[13px] font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/10"
+              className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-border bg-tint px-3 text-[13px] font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/10"
             >
               <Navigation className="size-3.5" />
               Навигатор
@@ -139,7 +139,7 @@ export function ClientCard({
                 e.stopPropagation();
                 onEdit();
               }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-tint px-3 text-[13px] font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/10"
+              className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-border bg-tint px-3 text-[13px] font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/10"
             >
               <Pencil className="size-3.5" />
               Редактировать
