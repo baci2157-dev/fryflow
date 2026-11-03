@@ -971,7 +971,7 @@ export default function SettingsPage() {
   /* Сброс демо-данных — двухшаговое подтверждение (случайный тап не обнулит базу). */
   const [confirmReset, setConfirmReset] = useState(false);
   const [confirmPurge, setConfirmPurge] = useState(false);
-  /* Восстановление базы из 330 точек сида (public/seed/clients.json). */
+  /* Восстановление базы из 360 точек сида (public/seed/clients.json). */
   const [confirmRestore, setConfirmRestore] = useState(false);
   const [restoring, setRestoring] = useState(false);
   useEffect(() => {
@@ -1341,7 +1341,7 @@ export default function SettingsPage() {
               Скачать резервную копию (JSON)
             </button>
 
-            {/* Восстановление базы владельца: 330 точек из сида.
+            {/* Восстановление базы владельца: 360 точек из сида.
              * Дедуп сам вернёт только недостающее — ручные правки
              * и добавленные клиенты не трогаются. */}
             <button
@@ -1373,7 +1373,7 @@ export default function SettingsPage() {
                           ]
                             .filter(Boolean)
                             .join(" · ") || "Все записи на месте."
-                        : "Все 330 точек уже в базе — дубликаты не создаём.",
+                        : "Все 360 точек уже в базе — дубликаты не создаём.",
                     duration: 5200,
                   });
                 } catch {
@@ -1399,7 +1399,7 @@ export default function SettingsPage() {
                 ? "Загружаем базу…"
                 : confirmRestore
                   ? "Точно? Нажмите ещё раз для загрузки"
-                  : "Восстановить базу (330 точек)"}
+                  : "Восстановить базу (360 точек)"}
             </button>
 
             {/* Удаление демо-карточек — перед импортом реальной базы:
@@ -1455,12 +1455,12 @@ export default function SettingsPage() {
                 resetAdvice();
                 clearChat();
                 /* База владельца возвращается автоматически: стор пуст →
-                 * авто-сид грузит 330 точек из public/seed/clients.json. */
+                 * авто-сид грузит 360 точек из public/seed/clients.json. */
                 void ensureBaseSeeded();
                 toast({
                   title: "Всё сброшено к первому запуску",
                   description:
-                    "Клиентская база (330 точек) загружается заново из сида, звонки и заказы — пустые, регионы и каталог — по умолчанию. Настройки, реквизиты и устав ИИ не тронуты.",
+                    "Клиентская база (360 точек) загружается заново из сида, звонки и заказы — пустые, регионы и каталог — по умолчанию. Настройки, реквизиты и устав ИИ не тронуты.",
                   duration: 4200,
                 });
               }}

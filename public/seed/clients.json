@@ -4652,5 +4652,425 @@
       "lng": 39.604707
     },
     "notes": ""
+  },
+  {
+    "name": "Киоск шаурмы",
+    "address": "ул. Киргизская, 38Д",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.275344,
+      "lng": 39.752169
+    },
+    "notes": ""
+  },
+  {
+    "name": "Вкус улиц",
+    "address": "ул. Казахская, 153А/1",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.275903,
+      "lng": 39.736176
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шашлычная 61",
+    "address": "ул. Белорусская, 130",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.282874,
+      "lng": 39.736002
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дон Шашлык — Бистро",
+    "address": "пер. Мезенский, 79Б",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.279203,
+      "lng": 39.72732
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Ростовская-61",
+    "address": "ул. Вятская, 45/3",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.283936,
+      "lng": 39.754835
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма сити",
+    "address": "ул. Вятская, 45А",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.283616,
+      "lng": 39.754859
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Istanbul",
+    "address": "ул. Вятская, 45А",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.283792,
+      "lng": 39.755435
+    },
+    "notes": ""
+  },
+  {
+    "name": "Душевная по-ливански",
+    "address": "ул. Вятская, 45/4 (киоск)",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.284241,
+      "lng": 39.755479
+    },
+    "notes": ""
+  },
+  {
+    "name": "Мандыр (киоск фастфуда)",
+    "address": "ул. Вятская, 31",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.286577,
+      "lng": 39.741847
+    },
+    "notes": ""
+  },
+  {
+    "name": "Закусочная на Вятской",
+    "address": "ул. Вятская, 47/107 (рынок)",
+    "district": "Первомайский",
+    "phone": "+7 (863) 273-09-42",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.283854,
+      "lng": 39.756525
+    },
+    "notes": ""
+  },
+  {
+    "name": "Магазин быстрого питания",
+    "address": "ул. Вятская, 31",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.286517,
+      "lng": 39.742396
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дом шашлыка",
+    "address": "пер. Днепровский, 124/6",
+    "district": "Первомайский",
+    "phone": "+7 (900) 125-57-71",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.288596,
+      "lng": 39.764278
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дом шашлыка",
+    "address": "ул. Казахская, 70А",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.274502,
+      "lng": 39.741388
+    },
+    "notes": ""
+  },
+  {
+    "name": "Mangal&Pizza",
+    "address": "пер. Обский, 33",
+    "district": "Первомайский",
+    "phone": "+7 (900) 134-08-86",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.27876,
+      "lng": 39.74307
+    },
+    "notes": ""
+  },
+  {
+    "name": "Dilif",
+    "address": "ул. Вятская, 64/117",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.285593,
+      "lng": 39.74581
+    },
+    "notes": ""
+  },
+  {
+    "name": "Штольц (пиццерия)",
+    "address": "пер. Обский, 4А",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.274362,
+      "lng": 39.741117
+    },
+    "notes": ""
+  },
+  {
+    "name": "Якитория",
+    "address": "ул. Вятская, 104",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.281391,
+      "lng": 39.759315
+    },
+    "notes": ""
+  },
+  {
+    "name": "Sushibox",
+    "address": "пер. Обский, 2",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.274086,
+      "lng": 39.741155
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая (Белорусская)",
+    "address": "ул. Белорусская, 9/7Г",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.277036,
+      "lng": 39.764244
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе-столовая (Сальский)",
+    "address": "пер. Сальский, 82",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.28168,
+      "lng": 39.752243
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая (Беломорский)",
+    "address": "пер. Беломорский, 94",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.275626,
+      "lng": 39.755774
+    },
+    "notes": ""
+  },
+  {
+    "name": "101 рецепт",
+    "address": "пер. Обский, 5/74",
+    "district": "Первомайский",
+    "phone": "+7 (863) 270-73-77",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.27536,
+      "lng": 39.740773
+    },
+    "notes": ""
+  },
+  {
+    "name": "Вкуснолюбов",
+    "address": "ул. Казахская, 84 (киоск)",
+    "district": "Первомайский",
+    "phone": "+7 (863) 255-21-32",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.276271,
+      "lng": 39.737166
+    },
+    "notes": ""
+  },
+  {
+    "name": "Хлеб на камне",
+    "address": "ул. Казахская, 62",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.274544,
+      "lng": 39.743397
+    },
+    "notes": ""
+  },
+  {
+    "name": "ГРИДНЕВЪ-ХЛЕБЪ",
+    "address": "ул. Казахская, 115",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.274755,
+      "lng": 39.740452
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе Оазис",
+    "address": "ул. Вятская, 49А",
+    "district": "Первомайский",
+    "phone": "+7 (863) 291-25-46",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.282746,
+      "lng": 39.759078
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе Тавуш",
+    "address": "ул. Вятская, 67А",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.280557,
+      "lng": 39.768666
+    },
+    "notes": ""
+  },
+  {
+    "name": "Burka (кавказское бистро)",
+    "address": "ул. Вятская, 104",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.281021,
+      "lng": 39.760131
+    },
+    "notes": ""
+  },
+  {
+    "name": "Тим (булочная-столовая)",
+    "address": "пер. Обский, 5/74",
+    "district": "Первомайский",
+    "phone": "+7 (863) 252-26-69",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.275383,
+      "lng": 39.741011
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кофейня (Обский)",
+    "address": "пер. Обский, 8",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.274733,
+      "lng": 39.741529
+    },
+    "notes": ""
   }
 ]
