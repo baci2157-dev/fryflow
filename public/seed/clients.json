@@ -3742,5 +3742,915 @@
       "lng": 39.655907
     },
     "notes": ""
+  },
+  {
+    "name": "Шеф-Шаурма (Левенцовка)",
+    "address": "ул. Жданова, 14",
+    "district": "Советский",
+    "phone": "+7 (928) 906-12-13",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236509,
+      "lng": 39.59531
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Ассорти",
+    "address": "ул. Жданова, 14, пав. 9",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236446,
+      "lng": 39.595274
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Хаус",
+    "address": "ул. Жданова, 14",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236431,
+      "lng": 39.595673
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма 24",
+    "address": "ул. Жданова, 14",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236075,
+      "lng": 39.595761
+    },
+    "notes": ""
+  },
+  {
+    "name": "Neшаурма",
+    "address": "ул. Малиновского, 39",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.227811,
+      "lng": 39.614164
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Кикчак",
+    "address": "ул. Малиновского, 3",
+    "district": "Советский",
+    "phone": "+7 (993) 993-63-30",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.201542,
+      "lng": 39.611102
+    },
+    "notes": ""
+  },
+  {
+    "name": "ШаурМАХ",
+    "address": "ул. Малиновского, 25А",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.230391,
+      "lng": 39.610916
+    },
+    "notes": ""
+  },
+  {
+    "name": "Дивная шаурма",
+    "address": "ул. Малиновского, 12",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.201047,
+      "lng": 39.614332
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восточный Базар",
+    "address": "ул. Малиновского, 25",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.22999,
+      "lng": 39.610667
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Малиновского, 23",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.226454,
+      "lng": 39.613044
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восточная шаурма",
+    "address": "пр. Стачки, 25",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.210774,
+      "lng": 39.672732
+    },
+    "notes": ""
+  },
+  {
+    "name": "Киоск фастфуда (Стачки)",
+    "address": "пр. Стачки, 25/1",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.21048,
+      "lng": 39.672203
+    },
+    "notes": ""
+  },
+  {
+    "name": "Good Zone Шаурма",
+    "address": "пр. Стачки, 13",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.211013,
+      "lng": 39.686219
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kebab & Grill House",
+    "address": "пр. Стачки, 25 (фудкорт Западный)",
+    "district": "Железнодорожный",
+    "phone": "+7 (918) 561-72-22",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.210606,
+      "lng": 39.671996
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "пр. Стачки, 312/1",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.211726,
+      "lng": 39.601335
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "пр. Стачки, 183",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.211115,
+      "lng": 39.647215
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма Маркет",
+    "address": "ул. Зорге, 12А",
+    "district": "Советский",
+    "phone": "+7 (960) 454-00-00",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.211347,
+      "lng": 39.636566
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма по-восточному",
+    "address": "ул. Зорге, 38",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223925,
+      "lng": 39.630855
+    },
+    "notes": ""
+  },
+  {
+    "name": "ШаурманЖи",
+    "address": "ул. Зорге, 52А",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.220803,
+      "lng": 39.631965
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шеф-Шаурма",
+    "address": "ул. Зорге, 19/162",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223019,
+      "lng": 39.630007
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма от души",
+    "address": "ул. Зорге",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.223829,
+      "lng": 39.630212
+    },
+    "notes": ""
+  },
+  {
+    "name": "Крутим вертел",
+    "address": "ул. Зорге (район Западный)",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.224775,
+      "lng": 39.630702
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма №1",
+    "address": "Коммунистический просп., 30",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.20888,
+      "lng": 39.630936
+    },
+    "notes": ""
+  },
+  {
+    "name": "Киоск фастфуда",
+    "address": "Коммунистический просп., 46А",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.20789,
+      "lng": 39.616824
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у Рашада",
+    "address": "Коммунистический просп., 36/4",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.208087,
+      "lng": 39.627364
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурмичная на Коммунистическом",
+    "address": "Коммунистический просп., 10а/2",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.209438,
+      "lng": 39.640984
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восточная сказка",
+    "address": "Коммунистический просп., 36",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.208427,
+      "lng": 39.624408
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма 1",
+    "address": "Коммунистический просп., 32/14",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.209041,
+      "lng": 39.629959
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на углях",
+    "address": "Коммунистический просп., 10",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.209588,
+      "lng": 39.640695
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "Коммунистический просп., 32/16",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.208887,
+      "lng": 39.629696
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурмания",
+    "address": "ул. Ерёменко, 66Е",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.232431,
+      "lng": 39.617386
+    },
+    "notes": ""
+  },
+  {
+    "name": "Kikchak",
+    "address": "ул. Ерёменко, 66Е",
+    "district": "Советский",
+    "phone": "+7 (993) 993-63-30",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.231784,
+      "lng": 39.617154
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаверма-хаус",
+    "address": "ул. Ерёменко, 85/7",
+    "district": "Советский",
+    "phone": "+7 (961) 409-07-XX",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.233049,
+      "lng": 39.61736
+    },
+    "notes": ""
+  },
+  {
+    "name": "Киоск фастфуда",
+    "address": "ул. Ерёменко, 87Б",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.233233,
+      "lng": 39.615363
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма24.ру",
+    "address": "ул. Ерёменко, 66е",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.231973,
+      "lng": 39.616907
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма shop",
+    "address": "ул. Доватора, 156Г",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.238133,
+      "lng": 39.589296
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Доватора, 124",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.238218,
+      "lng": 39.634299
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе (Доватора)",
+    "address": "ул. Доватора, 154А/1",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.238878,
+      "lng": 39.590906
+    },
+    "notes": ""
+  },
+  {
+    "name": "Grand Mangal",
+    "address": "ул. Доватора, 257А",
+    "district": "Советский",
+    "phone": "+7 (988) 949-19-91",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236421,
+      "lng": 39.603441
+    },
+    "notes": ""
+  },
+  {
+    "name": "На Гриле",
+    "address": "ул. Доватора, 267",
+    "district": "Советский",
+    "phone": "+7 (950) 967-42-87",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.236025,
+      "lng": 39.59823
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма (339-й)",
+    "address": "ул. 339-й Стрелковой Дивизии, 29А",
+    "district": "Советский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.225664,
+      "lng": 39.617317
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе (339-й)",
+    "address": "ул. 339-й Стрелковой Дивизии, 27",
+    "district": "Советский",
+    "phone": "8 (800) 700-24-97",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.226266,
+      "lng": 39.618816
+    },
+    "notes": ""
+  },
+  {
+    "name": "Don Mangal",
+    "address": "ул. Интернациональная, 13",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.208563,
+      "lng": 39.674874
+    },
+    "notes": ""
+  },
+  {
+    "name": "Воккер",
+    "address": "ул. Малиновского, 25",
+    "district": "Советский",
+    "phone": "+7 (863) 204-31-29",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.230356,
+      "lng": 39.610128
+    },
+    "notes": ""
+  },
+  {
+    "name": "Wing Stop",
+    "address": "ул. Малиновского, 25",
+    "district": "Советский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.230507,
+      "lng": 39.610294
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургер Бро",
+    "address": "ул. Малиновского, 25 (Золотой Вавилон)",
+    "district": "Советский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.230237,
+      "lng": 39.610857
+    },
+    "notes": ""
+  },
+  {
+    "name": "Штефан Бургер",
+    "address": "ул. Зорге, 64/3",
+    "district": "Советский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.228618,
+      "lng": 39.630422
+    },
+    "notes": ""
+  },
+  {
+    "name": "Штефан Бургер",
+    "address": "ул. Зорге, 66а",
+    "district": "Советский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.229154,
+      "lng": 39.630188
+    },
+    "notes": ""
+  },
+  {
+    "name": "BUS_GARAGE",
+    "address": "ул. Ерёменко, 66е",
+    "district": "Советский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.23219,
+      "lng": 39.617478
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гамбургер",
+    "address": "ул. 339-й Стрелковой Дивизии, 17к6",
+    "district": "Советский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.225927,
+      "lng": 39.622578
+    },
+    "notes": ""
+  },
+  {
+    "name": "Такая еда",
+    "address": "ТРЦ Левенцовский, ул. Жданова, 2/7",
+    "district": "Советский",
+    "phone": "",
+    "type": "foodcourt",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.235744,
+      "lng": 39.604142
+    },
+    "notes": ""
+  },
+  {
+    "name": "The Place",
+    "address": "ул. Жданова, 2/7, Левенцовский",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.236006,
+      "lng": 39.604747
+    },
+    "notes": ""
+  },
+  {
+    "name": "Панчо",
+    "address": "ул. Жданова, 2/7, ТРЦ Левенцовский",
+    "district": "Советский",
+    "phone": "+7 (863) 322-02-00",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.235528,
+      "lng": 39.604794
+    },
+    "notes": ""
+  },
+  {
+    "name": "ВулканПарк",
+    "address": "ТРЦ Левенцовский, ул. Жданова, 2/7",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.235803,
+      "lng": 39.604388
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая (Гарнизонный)",
+    "address": "пер. Гарнизонный, 7",
+    "district": "Советский",
+    "phone": "+7 (928) 602-53-XX",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.234428,
+      "lng": 39.603275
+    },
+    "notes": ""
+  },
+  {
+    "name": "Приятного аппетита",
+    "address": "ул. Доватора, 156, эт. 1",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.238977,
+      "lng": 39.588075
+    },
+    "notes": ""
+  },
+  {
+    "name": "Жар Птица",
+    "address": "ул. Доватора, 156Б",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.241376,
+      "lng": 39.588725
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая (Малиновского)",
+    "address": "ул. Малиновского, 216",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.257676,
+      "lng": 39.618836
+    },
+    "notes": ""
+  },
+  {
+    "name": "Еда всегда",
+    "address": "ул. Зорге, 21ж",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.224323,
+      "lng": 39.629001
+    },
+    "notes": ""
+  },
+  {
+    "name": "Лавница",
+    "address": "просп. Солженицына, 15 ст1",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.229472,
+      "lng": 39.587896
+    },
+    "notes": ""
+  },
+  {
+    "name": "Синнабон",
+    "address": "ТРЦ Золотой Вавилон, ул. Малиновского, 25",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.230306,
+      "lng": 39.610952
+    },
+    "notes": ""
+  },
+  {
+    "name": "Subway",
+    "address": "ТРЦ Золотой Вавилон, ул. Малиновского, 25",
+    "district": "Советский",
+    "phone": "",
+    "type": "foodcourt",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.23048,
+      "lng": 39.610682
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пиццерия (Ерёменко)",
+    "address": "ул. Ерёменко, 100/70",
+    "district": "Советский",
+    "phone": "+7 (863) 333-23-23",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.231665,
+      "lng": 39.59335
+    },
+    "notes": ""
+  },
+  {
+    "name": "Good coffee",
+    "address": "ул. Малиновского, 25",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.230517,
+      "lng": 39.610762
+    },
+    "notes": ""
+  },
+  {
+    "name": "ПАТИСАРИ",
+    "address": "ул. Жданова, 2/7, Левенцовский, эт. 1",
+    "district": "Советский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.236087,
+      "lng": 39.604707
+    },
+    "notes": ""
   }
 ]
