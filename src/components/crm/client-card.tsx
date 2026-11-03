@@ -147,11 +147,23 @@ export function ClientCard({
           </div>
         </div>
 
+        {/* Задача 24: кольцо Health Score — только когда есть данные
+         * для оценки (заказы). Новичкам без истории (ни заказов, ни
+         * звонков) — серый текст «Новый клиент» вместо пустого кольца
+         * «неизвестен», которое выглядело как баг. */}
         <div className="flex flex-col items-center gap-1.5 self-start pt-0.5">
-          <HealthRing score={health.score} size={44} />
-          <span className="text-[9px] font-medium uppercase tracking-wide text-ink-soft">
-            Health
-          </span>
+          {health.score === null && !called ? (
+            <span className="w-12 text-center text-[9.5px] font-medium uppercase leading-tight tracking-wide text-ink-soft/80">
+              Новый клиент
+            </span>
+          ) : (
+            <>
+              <HealthRing score={health.score} size={44} />
+              <span className="text-[9px] font-medium uppercase tracking-wide text-ink-soft">
+                Health
+              </span>
+            </>
+          )}
         </div>
       </div>
     </article>

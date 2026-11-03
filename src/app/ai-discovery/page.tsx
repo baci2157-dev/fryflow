@@ -314,11 +314,14 @@ export default function AiDiscoveryPage() {
           </p>
         </div>
 
-        {/* Кнопка неактивна: поиск вернётся в следующем обновлении (задача 13) */}
+        {/* TODO: интеграция с Perplexity/Tavily — когда API будет готов,
+         * здесь будет кнопка "Найти новые точки", которая получает JSON
+         * в нужном формате и одной кнопкой добавляет в базу
+         * (задача 24: раздел не трогаем, заглушка «Функция появится позже»). */}
         <button
           type="button"
           disabled
-          title="Функция поиска новых точек появится в следующем обновлении"
+          title="Функция появится позже"
           className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-semibold text-[#1C1A17] opacity-50"
         >
           <Radar className="size-4" />
@@ -326,12 +329,13 @@ export default function AiDiscoveryPage() {
         </button>
       </header>
 
-      {/* ── Заглушка: поиск временно отключён (задача 13, Go-Live) ── */}
+      {/* ── Заглушка: поиск временно отключён (задача 13, Go-Live;
+       * задача 24 — текст «Функция появится позже», раздел сохранён) ── */}
       <div className="flex items-start gap-3 rounded-2xl border border-dashed border-accent/40 bg-accent/5 px-4 py-3.5">
         <Radar className="mt-0.5 size-4 shrink-0 text-accent" />
         <div className="min-w-0">
           <p className="text-[13.5px] font-semibold text-ink">
-            Функция поиска новых точек появится в следующем обновлении
+            Функция появится позже
           </p>
           <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">
             Мозг уже работает на данных вашей базы — спрашивайте

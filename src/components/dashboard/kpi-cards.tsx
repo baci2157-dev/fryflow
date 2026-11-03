@@ -193,16 +193,25 @@ export function TasksCard({
         <div className="min-w-0 flex-1 text-right">
           <p className="text-sm text-ink">
             <span className="font-mono font-semibold text-ink tabular-nums">{calls}</span>{" "}
-            <span className="text-ink-soft">перезвонов</span>
+            <span className="text-ink-soft">{plural(calls, "перезвон", "перезвона", "перезвонов")}</span>
           </p>
           <p className="mt-1 text-sm">
             <span className="font-mono font-semibold text-ink tabular-nums">{debts}</span>{" "}
-            <span className="text-ink-soft">долга</span>
+            <span className="text-ink-soft">{plural(debts, "долг", "долга", "долгов")}</span>
           </p>
         </div>
       </div>
     </BentoCard>
   );
+}
+
+/** Русская плюрализация: 1 перезвон / 2 перезвона / 5 перезвонов. */
+function plural(n: number, one: string, few: string, many: string): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+  return many;
 }
 
 /* ── KPI: маржа за месяц (реальные заказы) ───────────────────── */

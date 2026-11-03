@@ -4,9 +4,12 @@ import { chatCompletion } from "@/lib/ai-sdk";
 import {
   addDraft,
   DRAFT_REPLY,
+  deleteTelegramWebhook,
   parseOrderRequest,
   readConfig,
   sendTelegramMessage,
+  setTelegramWebhook,
+  webhookSecret,
   writeConfig,
   type TelegramDraft,
 } from "@/lib/telegram-server";
@@ -15,8 +18,12 @@ import {
  * POST /api/telegram/webhook — приём входящих сообщений от клиентов.
  *
  * Сюда Telegram присылает апдейты (Business Mode или личные чаты
- * бота), когда вебхук зарегистрирован:
- *   https://api.telegram.org/bot<TOKEN>/setWebhook?url=<домен>/api/telegram/webhook
+ * бота), когда вебхук зарегистрирован. Регистрация — прямо отсюда:
+ *   POST { action: "connect" } → setWebhook на текущий домен
+ *   (кнопка «Подключить вебхук» в Настройках; с секретным токеном
+ *   TELEGRAM_WEBHOOK_SECRET — каждый апдейт Telegram подписывает
+ *   заголовком X-Telegram-Bot-Api-Secret-Token, подделать извне нельзя).
+ *   POST { action: "disconnect" } → deleteWebhook.
  *
  * Цепочка: сообщение клиента → ИИ вытаскивает клиента, количество
  * коробок и дату доставки (ZAI, при сбое — офлайн-парсер) →
@@ -48,6 +55,10 @@ interface TgUpdate {
 interface WebhookBody extends TgUpdate {
   /** true — симуляция заявки из «Настроек» (реальный бот не нужен). */
   demo?: boolean;
+  /** connect — зарегистрировать вебхук (setWebhook), disconnect — снять. */
+  action?: "connect" | "disconnect";
+  /** Публичный URL вебхука (по умолчанию — домен запроса). */
+  url?: string;
 }
 
 /** Попытка вытянуть заявку из текста живой моделью (строгий JSON). */
@@ -102,6 +113,48 @@ export async function POST(request: Request) {
     body = (await request.json()) as WebhookBody;
   } catch {
     return NextResponse.json({ ok: false, error: "Некорректный JSON" }, { status: 400 });
+  }
+
+  /* ── Управление вебхуком (задача 24): «Подключить вебхук» в Настройках. */
+  if (body.action === "connect" || body.action === "disconnect") {
+    const cfg = await readConfig();
+    if (!cfg.botToken) {
+      return NextResponse.json(
+        { ok: false, error: "Сначала укажите Bot Token в настройках Telegram." },
+        { status: 400 }
+      );
+    }
+    if (body.action === "disconnect") {
+      const r = await deleteTelegramWebhook(cfg.botToken);
+      if (r.ok) await writeConfig({ webhookActive: false });
+      return NextResponse.json(
+        r.ok ? { ok: true, connected: false } : { ok: false, error: r.error },
+        { status: r.ok ? 200 : 400 }
+      );
+    }
+    const origin = body.url?.trim() || new URL(request.url).origin;
+    const target = `${origin}/api/telegram/webhook`;
+    const r = await setTelegramWebhook(cfg.botToken, target);
+    if (r.ok) await writeConfig({ webhookActive: true });
+    return NextResponse.json(
+      r.ok
+        ? { ok: true, connected: true, url: target, secret: Boolean(webhookSecret()) }
+        : { ok: false, error: r.error },
+      { status: r.ok ? 200 : 400 }
+    );
+  }
+
+  /* ── Секрет вебхука: если TELEGRAM_WEBHOOK_SECRET задан, Telegram
+   * подписывает каждый апдейт заголовком X-Telegram-Bot-Api-Secret-Token.
+   * Не совпал — запрос не от Telegram, молча отбрасываем (200, чтобы
+   * Telegram не переотправлял). */
+  const secret = webhookSecret();
+  if (secret && !body.demo) {
+    const got =
+      request.headers.get("x-telegram-bot-api-secret-token") ?? "";
+    if (got !== secret) {
+      return NextResponse.json({ ok: true, ignored: true });
+    }
   }
 
   const msg = body.message;

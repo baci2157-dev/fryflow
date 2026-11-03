@@ -35,8 +35,51 @@ function resolveDataDir(): string {
 }
 
 const DATA_DIR = resolveDataDir();
-const CONFIG_FILE = path.join(DATA_DIR, "telegram.json");
-const DRAFTS_FILE = path.join(DATA_DIR, "telegram-drafts.json");
+
+/** Каталог записи на проде без постоянной ФС (Vercel): .data недоступен
+ *  для записи — работаем в /tmp текущего инстанса (best-effort, живёт
+ *  пока инстанс тёплый; полноценный режим — с Supabase). */
+let writeDir: string | null = null;
+
+async function ensureWriteDir(): Promise<string> {
+  if (writeDir) return writeDir;
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    /* проверяем, что писать реально можно (Vercel: /var/task только чтение) */
+    const probe = path.join(DATA_DIR, ".write-probe");
+    await fs.writeFile(probe, "ok", "utf-8");
+    await fs.rm(probe, { force: true });
+    writeDir = DATA_DIR;
+  } catch {
+    const tmp = "/tmp/fryflow-data";
+    try {
+      await fs.mkdir(tmp, { recursive: true });
+    } catch {
+      /* и /tmp недоступен — пусть падает у вызывающего (try/catch выше по стеку) */
+    }
+    writeDir = tmp;
+  }
+  return writeDir;
+}
+
+/** Читаем файл из обоих возможных каталогов (после падения на /tmp). */
+async function readDataJson(file: string): Promise<unknown | null> {
+  const dirs = writeDir ? [writeDir, DATA_DIR] : [DATA_DIR, "/tmp/fryflow-data"];
+  for (const dir of dirs) {
+    try {
+      const raw = await fs.readFile(path.join(dir, file), "utf-8");
+      return JSON.parse(raw) as unknown;
+    } catch {
+      /* следующий каталог */
+    }
+  }
+  return null;
+}
+
+async function writeDataJson(file: string, data: unknown): Promise<void> {
+  const dir = await ensureWriteDir();
+  await fs.writeFile(path.join(dir, file), JSON.stringify(data, null, 2), "utf-8");
+}
 
 /* ── Конфиг ──────────────────────────────────────────────── */
 
@@ -70,18 +113,10 @@ export const DEFAULT_CONFIG: TelegramConfig = {
   webhookActive: false,
 };
 
-async function ensureDir() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-}
-
 export async function readConfig(): Promise<TelegramConfig> {
   let cfg: TelegramConfig;
-  try {
-    const raw = await fs.readFile(CONFIG_FILE, "utf-8");
-    cfg = { ...DEFAULT_CONFIG, ...(JSON.parse(raw) as Partial<TelegramConfig>) };
-  } catch {
-    cfg = { ...DEFAULT_CONFIG };
-  }
+  const raw = (await readDataJson("telegram.json")) as Partial<TelegramConfig> | null;
+  cfg = raw ? { ...DEFAULT_CONFIG, ...raw } : { ...DEFAULT_CONFIG };
   /* Фолбэк на переменные окружения — для деплоя (Vercel), где
    * файловой системы нет. Файл (.data/telegram.json) приоритетнее. */
   if (!cfg.botToken && process.env.TELEGRAM_BOT_TOKEN) {
@@ -97,8 +132,7 @@ export async function writeConfig(
   patch: Partial<TelegramConfig>
 ): Promise<TelegramConfig> {
   const next = { ...(await readConfig()), ...patch };
-  await ensureDir();
-  await fs.writeFile(CONFIG_FILE, JSON.stringify(next, null, 2), "utf-8");
+  await writeDataJson("telegram.json", next);
   return next;
 }
 
@@ -240,12 +274,8 @@ async function readDrafts(): Promise<TelegramDraft[]> {
       .order("received_at", { ascending: false });
     return (data ?? []).map(rowToDraft);
   }
-  try {
-    const raw = await fs.readFile(DRAFTS_FILE, "utf-8");
-    return JSON.parse(raw) as TelegramDraft[];
-  } catch {
-    return [];
-  }
+  const raw = await readDataJson("telegram-drafts.json");
+  return Array.isArray(raw) ? (raw as TelegramDraft[]) : [];
 }
 
 export async function addDraft(draft: TelegramDraft): Promise<void> {
@@ -256,8 +286,7 @@ export async function addDraft(draft: TelegramDraft): Promise<void> {
   }
   const list = await readDrafts();
   list.unshift(draft);
-  await ensureDir();
-  await fs.writeFile(DRAFTS_FILE, JSON.stringify(list, null, 2), "utf-8");
+  await writeDataJson("telegram-drafts.json", list);
 }
 
 export async function removeDraft(id: string): Promise<boolean> {
@@ -273,7 +302,7 @@ export async function removeDraft(id: string): Promise<boolean> {
   const list = await readDrafts();
   const next = list.filter((d) => d.id !== id);
   if (next.length === list.length) return false;
-  await fs.writeFile(DRAFTS_FILE, JSON.stringify(next, null, 2), "utf-8");
+  await writeDataJson("telegram-drafts.json", next);
   return true;
 }
 
@@ -406,3 +435,181 @@ export function varyTemplate(
 /** Ответ бота клиенту после заявки — «человеческое» подтверждение. */
 export const DRAFT_REPLY =
   "Заявку принял, менеджер подтвердит в течение часа. Если нужно срочно — звоните: +7 (918) 500-40-30.";
+
+/* ── Вебхук: регистрация через setWebhook (задача 24) ────── */
+
+/** Секрет вебхука: Telegram шлёт его в заголовке каждого апдейта —
+ *  подделать запрос извне нельзя. Берём из env (прод) — единый
+ *  источник для setWebhook и проверки в роуте. */
+export function webhookSecret(): string {
+  return (process.env.TELEGRAM_WEBHOOK_SECRET ?? "").trim();
+}
+
+export async function setTelegramWebhook(
+  token: string,
+  url: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const secret = webhookSecret();
+    const res = await fetch(`${API_BASE}/bot${token}/setWebhook`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url,
+        ...(secret ? { secret_token: secret } : {}),
+        allowed_updates: ["message"],
+        drop_pending_updates: false,
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = (await res.json().catch(() => null)) as
+      | { ok: boolean; description?: string }
+      | null;
+    if (data?.ok) return { ok: true };
+    return { ok: false, error: humanError(res.status, data?.description ?? "") };
+  } catch {
+    return {
+      ok: false,
+      error: "Не удалось связаться с Telegram — проверьте подключение к сети.",
+    };
+  }
+}
+
+export async function deleteTelegramWebhook(
+  token: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/bot${token}/deleteWebhook`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ drop_pending_updates: false }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = (await res.json().catch(() => null)) as
+      | { ok: boolean; description?: string }
+      | null;
+    if (data?.ok) return { ok: true };
+    return { ok: false, error: humanError(res.status, data?.description ?? "") };
+  } catch {
+    return { ok: false, error: "Не удалось связаться с Telegram." };
+  }
+}
+
+/* ── Снапшот данных приложения (задача 24) ───────────────── */
+
+/** Перезвон из журнала звонков — для утреннего дайджеста. */
+export interface SnapshotCallback {
+  clientName: string;
+  phone: string;
+  /** yyyy-MM-dd. */
+  date: string;
+  overdue: boolean;
+}
+
+/** Ключевые цифры недели — для отчёта владельцу. */
+export interface WeeklyStats {
+  periodStart: string;
+  periodEnd: string;
+  /** Выручка за 7 дней, ₽ (сумма заказов). */
+  revenue: number;
+  /** Маржа за 7 дней, ₽. */
+  margin: number;
+  /** Маржа, %. */
+  marginPct: number;
+  ordersCount: number;
+  newClients: number;
+  topDeals: Array<{ clientName: string; amount: number }>;
+  problemClients: Array<{ clientName: string; reason: string }>;
+  /** Остатки склада на момент снапшота. */
+  stockKg: number;
+  stockPacks: number;
+}
+
+/** Снимок живых данных приложения: приложение шлёт при каждом открытии
+ *  (троттлинг на клиенте) — cron в 9:00 строит по нему дайджест и отчёт.
+ *  На Vercel без БД живёт в /tmp инстанса (best-effort). */
+export interface TelegramSnapshot {
+  callbacks: SnapshotCallback[];
+  stats: WeeklyStats | null;
+  syncedAt: string;
+}
+
+export async function readSnapshot(): Promise<TelegramSnapshot | null> {
+  const raw = (await readDataJson("telegram-snapshot.json")) as TelegramSnapshot | null;
+  if (!raw || typeof raw !== "object") return null;
+  return {
+    callbacks: Array.isArray(raw.callbacks) ? raw.callbacks : [],
+    stats: raw.stats ?? null,
+    syncedAt: raw.syncedAt ?? "",
+  };
+}
+
+export async function writeSnapshot(snap: TelegramSnapshot): Promise<void> {
+  await writeDataJson("telegram-snapshot.json", snap);
+}
+
+/* ── Утренний дайджест перезвонов (задача 24, cron 9:00) ──── */
+
+const fmtRub = (n: number) =>
+  `${new Intl.NumberFormat("ru-RU").format(Math.round(n))} ₽`;
+
+/** «Сегодня 12 перезвонов: список с телефонами» — по свежему снапшоту. */
+export function buildCallbacksDigest(
+  snap: TelegramSnapshot | null,
+  today: string
+): { text: string; fresh: boolean } {
+  if (!snap || !snap.syncedAt || Date.now() - Date.parse(snap.syncedAt) > 36 * 3600_000) {
+    return {
+      text:
+        "Доброе утро! Это FryFlow. Список перезвонов на сегодня — в приложении" +
+        " (Дашборд → Перезвоны). Откройте его, и следующий утренний дайджест" +
+        " придёт со списком и телефонами.",
+      fresh: false,
+    };
+  }
+  const todays = snap.callbacks.filter((c) => c.date <= today);
+  const overdue = todays.filter((c) => c.overdue || c.date < today);
+  if (todays.length === 0) {
+    return { text: "Доброе утро! Перезвонов на сегодня нет — спокойный день.", fresh: true };
+  }
+  const lines = todays.slice(0, 20).map(
+    (c) => `• ${c.clientName}${c.phone ? ` — ${c.phone}` : " (телефона нет)"}${c.date < today ? " [просрочено]" : ""}`
+  );
+  const head =
+    `Доброе утро! ${todays.length === 1 ? "1 перезвон" : `${todays.length} перезвонов`} на сегодня` +
+    (overdue.length > 0 ? `, из них ${overdue.length} просрочено` : "") +
+    ":\n" +
+    lines.join("\n");
+  const tail =
+    todays.length > 20 ? `\n…и ещё ${todays.length - 20} — полный список в приложении.` : "";
+  return { text: head + tail, fresh: true };
+}
+
+/* ── Отчёт недели владельцу (задача 24, воскресенье 18:00) ─ */
+
+export function buildWeeklyReportText(stats: WeeklyStats): string {
+  const top =
+    stats.topDeals.length > 0
+      ? stats.topDeals
+          .map((d, i) => `${i + 1}. ${d.clientName} — ${fmtRub(d.amount)}`)
+          .join("\n")
+      : "—";
+  const problems =
+    stats.problemClients.length > 0
+      ? stats.problemClients.map((p) => `• ${p.clientName} — ${p.reason}`).join("\n")
+      : "—";
+  return [
+    `📊 Отчёт недели FryFlow · ${stats.periodStart} — ${stats.periodEnd}`,
+    ``,
+    `Выручка: ${fmtRub(stats.revenue)}`,
+    `Маржа: ${fmtRub(stats.margin)} (${stats.marginPct.toFixed(0)}%)`,
+    `Заказов: ${stats.ordersCount} · Новых клиентов: ${stats.newClients}`,
+    `Остаток склада: ${stats.stockKg} кг (${stats.stockPacks} уп.)`,
+    ``,
+    `Топ-5 сделок недели:`,
+    top,
+    ``,
+    `Проблемные клиенты:`,
+    problems,
+  ].join("\n");
+}

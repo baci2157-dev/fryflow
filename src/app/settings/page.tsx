@@ -8,6 +8,7 @@ import {
   AlertCircle,
   ArchiveRestore,
   BadgeCheck,
+  BarChart3,
   CheckCircle2,
   Database,
   Download,
@@ -23,6 +24,7 @@ import {
   Timer,
   Trash2,
   UserRound,
+  Webhook,
   Zap,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -41,6 +43,8 @@ import {
 import { useCrmStore } from "@/lib/clients-store";
 import { queueFetch } from "@/lib/offline-queue";
 import { purgeDemoData } from "@/lib/purge-demo";
+import { buildWeeklyStats } from "@/lib/reports";
+import { useReportsStore } from "@/lib/reports-store";
 import { ensureBaseSeeded, seedClientsBase } from "@/lib/seed-base";
 import { useOrdersStore } from "@/lib/orders-store";
 import { useProductsStore } from "@/lib/products-store";
@@ -544,7 +548,8 @@ function TelegramSection() {
   const [testResult, setTestResult] = useState<{ ok: boolean; error?: string } | null>(null);
   const [simResult, setSimResult] = useState<{ ok: boolean; name?: string; boxes?: number; error?: string } | null>(null);
   const [postResult, setPostResult] = useState<{ posted?: number; error?: string; text?: string } | null>(null);
-  const [busy, setBusy] = useState<"test" | "sim" | "post" | null>(null);
+  const [hookResult, setHookResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState<"test" | "sim" | "post" | "hook" | null>(null);
 
   useEffect(() => {
     fetch("/api/telegram/config")
@@ -587,12 +592,16 @@ function TelegramSection() {
     setTestResult(null);
     try {
       /* Офлайн-очередь: нет сети — сообщение встанет в очередь
-       * (IndexedDB) и уйдёт само при восстановлении связи. */
+       * (IndexedDB) и уйдёт само при восстановлении связи.
+       * Задача 24: раньше били в несуществующий /api/telegram/test
+       * (404 с задачи 7) — теперь честный /api/telegram/send. */
       const { queued, res } = await queueFetch({
         kind: "telegram",
         label: "Тестовое сообщение Telegram",
-        url: "/api/telegram/test",
-        method: "POST",
+        url: "/api/telegram/send",
+        body: {
+          text: "FryFlow на связи — это тестовое сообщение. Алерты, дайджест перезвонов (9:00) и отчёт недели (вс 18:00) будут приходить сюда.",
+        },
       });
       if (queued) {
         setTestResult({
@@ -606,6 +615,40 @@ function TelegramSection() {
       setTestResult(data ?? { ok: false, error: "Пустой ответ сервера." });
     } catch {
       setTestResult({ ok: false, error: "Сервер недоступен — проверьте соединение." });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  /* Задача 24: «Подключить вебхук» — регистрируем setWebhook на
+   * текущий домен (с секретом TELEGRAM_WEBHOOK_SECRET на проде).
+   * После этого заявки клиентов из Telegram падают в «Черновики». */
+  const connectWebhook = async () => {
+    setBusy("hook");
+    setHookResult(null);
+    try {
+      const res = await fetch("/api/telegram/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "connect" }),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        url?: string;
+        secret?: boolean;
+        error?: string;
+      };
+      if (data.ok) {
+        setHookResult({
+          ok: true,
+          text: `Вебхук подключён${data.secret ? " (с секретным токеном — апдейты проверяются)" : ""}: заявки клиентов из Telegram теперь падают в «Черновики» (Заказы).`,
+        });
+        setStatus((s) => (s ? { ...s, webhookActive: true } : s));
+      } else {
+        setHookResult({ ok: false, text: data.error ?? "Не удалось подключить вебхук." });
+      }
+    } catch {
+      setHookResult({ ok: false, text: "Сервер недоступен — проверьте соединение." });
     } finally {
       setBusy(null);
     }
@@ -678,11 +721,6 @@ function TelegramSection() {
       setBusy(null);
     }
   };
-
-  const webhookUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/api/telegram/webhook`
-      : "/api/telegram/webhook";
 
   return (
     <Section
@@ -769,6 +807,31 @@ function TelegramSection() {
           <InlineResult ok={false}>{testResult.error}</InlineResult>
         ))}
 
+      {/* Задача 24: кнопка «Подключить вебхук» — setWebhook прямо из
+       * настроек, без ручных команд. Рядом — статус вебхука. */}
+      <div className="mt-3 flex flex-wrap items-center gap-2.5">
+        <button
+          type="button"
+          onClick={connectWebhook}
+          disabled={busy === "hook"}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:border-accent/40 hover:bg-accent/10 disabled:opacity-50"
+        >
+          <Webhook className="size-4 text-accent" />
+          {busy === "hook" ? "Подключаем…" : "Подключить вебхук"}
+        </button>
+        {status?.webhookActive && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/12 px-3 py-1 text-[12px] font-semibold text-accent">
+            вебхук активен — заявки идут в «Черновики»
+          </span>
+        )}
+      </div>
+      {hookResult &&
+        (hookResult.ok ? (
+          <InlineResult ok>{hookResult.text}</InlineResult>
+        ) : (
+          <InlineResult ok={false}>{hookResult.text}</InlineResult>
+        ))}
+
       {/* Инструкция — чётко и по шагам */}
       <details className="group mt-5 rounded-xl border border-border bg-bg p-4 open:bg-surface">
         <summary className="cursor-pointer list-none text-[13.5px] font-semibold text-ink transition-colors hover:text-accent">
@@ -811,10 +874,7 @@ function TelegramSection() {
               <b className="text-ink">Business Mode — заявки клиентов:</b> @BotFather →{" "}
               <code className="rounded bg-tint px-1.5 py-0.5 font-mono text-[12px]">/mybots</code> → ваш бот → Settings →{" "}
               <b className="text-ink">Business Mode</b> → подключите личный аккаунт. Тогда клиенты пишут вам в личку, а заявки падают прямо в «Черновики».
-              Зарегистрируйте вебхук (одна команда):
-              <code className="mt-1.5 block break-all rounded-lg bg-tint px-2.5 py-2 font-mono text-[11.5px] text-ink">
-                api.telegram.org/bot&lt;ТОКЕН&gt;/setWebhook?url={webhookUrl}
-              </code>
+              Затем просто нажмите «Подключить вебхук» выше — команда setWebhook выполнится сама.
             </span>
           </li>
         </ol>
@@ -941,6 +1001,194 @@ function TelegramSection() {
             </InlineResult>
           ))}
       </div>
+    </Section>
+  );
+}
+
+/* ── Блок «Отчёты» (задача 24) ──────────────────────────── */
+
+function ReportsSection() {
+  const { toast } = useToast();
+  const reports = useReportsStore((s) => s.reports);
+  const addReport = useReportsStore((s) => s.addReport);
+  const markSent = useReportsStore((s) => s.markSent);
+  const removeReport = useReportsStore((s) => s.remove);
+
+  const [busy, setBusy] = useState(false);
+  const [current, setCurrent] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+
+  const currentReport = reports.find((r) => r.id === current) ?? null;
+
+  /* «Показать отчёт»: цифры считаются на устройстве из живых данных,
+   * Мозг (на сервере) добавляет 2–3 предложения выводов. */
+  const showReport = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const stats = buildWeeklyStats();
+      const res = await fetch("/api/telegram/weekly-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preview: true, stats }),
+      });
+      const data = (await res.json()) as { ok: boolean; text?: string; error?: string };
+      if (!data.ok || !data.text) {
+        setError(data.error ?? "Не удалось собрать отчёт.");
+        return;
+      }
+      const saved = addReport({
+        createdAt: new Date().toISOString(),
+        period: `${stats.periodStart} — ${stats.periodEnd}`,
+        text: data.text,
+      });
+      setCurrent(saved.id);
+      toast({
+        title: "Отчёт недели готов",
+        description: "Сохранён здесь; воскресенье 18:00 — такой же уйдёт в Telegram.",
+        duration: 4000,
+      });
+    } catch {
+      setError("Сервер недоступен — проверьте соединение.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /* Отправить сохранённый отчёт в Telegram (владельцу). */
+  const sendReport = async (id: string) => {
+    const r = reports.find((x) => x.id === id);
+    if (!r) return;
+    setSendingId(id);
+    try {
+      const res = await fetch("/api/telegram/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: r.text }),
+      });
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (data.ok) {
+        markSent(id);
+        toast({ title: "Отчёт отправлен", description: "Проверьте Telegram.", duration: 3200 });
+      } else {
+        toast({
+          title: "Не отправлено",
+          description: data.error ?? "Проверьте настройки Telegram.",
+          duration: 4200,
+        });
+      }
+    } catch {
+      toast({ title: "Сервер недоступен", description: "Проверьте соединение.", duration: 3200 });
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  return (
+    <Section
+      icon={<BarChart3 className="size-5" />}
+      title="Отчёты"
+      hint="Отчёт недели: цифры, топ-сделки и выводы Мозга"
+    >
+      <p className="text-[12.5px] leading-snug text-ink-soft">
+        Каждое воскресенье в 18:00 такой отчёт уходит в Telegram:
+        выручка, маржа, новые клиенты, топ-5 сделок, проблемные клиенты и
+        выводы Мозга. Здесь его можно собрать и посмотреть в любой день.
+      </p>
+      <button
+        type="button"
+        onClick={showReport}
+        disabled={busy}
+        className="mt-3 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground transition-all hover:bg-accent/90 active:scale-[0.98] disabled:opacity-50"
+      >
+        <BarChart3 className="size-4" />
+        {busy ? "Собираем отчёт…" : "Показать отчёт"}
+      </button>
+      {error && <InlineResult ok={false}>{error}</InlineResult>}
+
+      {/* Свежий отчёт */}
+      {currentReport && (
+        <div className="mt-4 rounded-2xl border border-border bg-bg p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[13.5px] font-semibold text-ink">
+              Отчёт недели · {currentReport.period}
+            </p>
+            <span className="font-mono text-[11px] text-ink-soft">
+              {new Date(currentReport.createdAt).toLocaleString("ru-RU")}
+            </span>
+          </div>
+          <pre className="fryflow-scroll mt-2 max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl bg-surface p-3.5 font-sans text-[13px] leading-relaxed text-ink">
+            {currentReport.text}
+          </pre>
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => sendReport(currentReport.id)}
+              disabled={sendingId === currentReport.id}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-[13px] font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/10 disabled:opacity-50"
+            >
+              <Send className="size-3.5 text-accent" />
+              {sendingId === currentReport.id
+                ? "Отправляем…"
+                : currentReport.sentToTelegram
+                  ? "Отправить ещё раз"
+                  : "Отправить в Telegram"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrent(null)}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink"
+            >
+              Свернуть
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* История отчётов */}
+      {reports.length > 0 && (
+        <div className="mt-5 border-t border-border pt-4">
+          <p className="text-[12px] font-medium text-ink-soft">Сохранённые отчёты</p>
+          <ul className="mt-2 space-y-1.5">
+            {reports.map((r) => (
+              <li key={r.id} className="flex items-center gap-2.5 rounded-xl border border-border bg-surface/60 px-3.5 py-2.5">
+                <FileText className="size-4 shrink-0 text-ink-soft" />
+                <button
+                  type="button"
+                  onClick={() => setCurrent(r.id === current ? null : r.id)}
+                  className="min-w-0 flex-1 text-left"
+                >
+                  <span className="block truncate text-[13.5px] font-medium text-ink">
+                    {r.period}
+                  </span>
+                  <span className="block font-mono text-[11px] text-ink-soft">
+                    {new Date(r.createdAt).toLocaleString("ru-RU")}
+                    {r.sentToTelegram ? " · отправлен в Telegram" : ""}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => sendReport(r.id)}
+                  disabled={sendingId === r.id}
+                  aria-label="Отправить в Telegram"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink-soft transition-colors hover:bg-accent/15 hover:text-accent disabled:opacity-50"
+                >
+                  <Send className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeReport(r.id)}
+                  aria-label="Удалить отчёт"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-tint text-ink-soft transition-colors hover:text-tier-red"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </Section>
   );
 }
@@ -1158,6 +1406,9 @@ export default function SettingsPage() {
 
         {/* ── Telegram ── */}
         <TelegramSection />
+
+        {/* ── Отчёты (задача 24) ── */}
+        <ReportsSection />
 
         {/* ── Реквизиты для счетов ── */}
         <Section

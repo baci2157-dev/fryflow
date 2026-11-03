@@ -6,6 +6,7 @@ import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { AiAdviceCard } from "@/components/dashboard/ai-advice";
+import { CallbacksWidget } from "@/components/dashboard/callbacks-widget";
 import { Sk } from "@/components/dashboard/bento-card";
 import {
   CrossSellCard,
@@ -128,6 +129,10 @@ export default function DashboardPage() {
           calls={callsCount}
           debts={debtsCount}
         />
+
+        {/* Задача 24: перезвоны на сегодня/завтра — виджет + календарь
+         * (на мобильном — сразу под KPI, в первом экране). */}
+        <CallbacksWidget loading={loading} />
 
         {/* Совет ИИ — на всю ширину */}
         <AiAdviceCard loading={loading} />

@@ -16,14 +16,14 @@
   {
     "name": "Турецкая Лавка 30",
     "address": "пр. Соколова, 80",
-    "district": "Ленинский",
+    "district": "Кировский",
     "phone": "+7 972 640-53-32",
     "type": "shawarma",
     "status": "callback",
     "priority_tier": "red",
     "coordinates": {
-      "lat": 47.232919,
-      "lng": 39.695274
+      "lat": 47.232741,
+      "lng": 39.717582
     },
     "notes": ""
   },
@@ -70,16 +70,20 @@
     "notes": ""
   },
   {
-    "name": "Штефан Бургер (ул. Королёва, 51)",
-    "address": "ул. Королёва, 51",
+    "name": "Штефан Бургер (пр. Королёва, 51)",
+    "address": "пр. Королёва, 51",
     "district": "Ворошиловский",
-    "phone": "+7 956 729-15-72",
+    "phone": "+7 (863) 229-54-54",
     "type": "burger",
     "status": "cold",
     "priority_tier": "red",
     "chain_name": "Штефан Бургер",
     "chain_size": 5,
-    "notes": "Сеть: филиал 2 из 5 — один звонок в офис закрывает все точки"
+    "notes": "Телефон сети уточнён по 2ГИС (задача 24)",
+    "coordinates": {
+      "lat": 47.296195,
+      "lng": 39.71365
+    }
   },
   {
     "name": "Шаурма Shop (ул. Гэсэвская, 145)",
@@ -466,14 +470,14 @@
   {
     "name": "Шаурма Восход 31",
     "address": "пр. Соколова, 104",
-    "district": "Ленинский",
+    "district": "Кировский",
     "phone": "",
     "type": "shawarma",
     "status": "cold",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.231226,
-      "lng": 39.694697
+      "lat": 47.234415,
+      "lng": 39.71667
     },
     "notes": ""
   },
@@ -524,14 +528,14 @@
   {
     "name": "Штефан Бургер (пр. Соколова, 144)",
     "address": "пр. Соколова, 144",
-    "district": "Ленинский",
+    "district": "Кировский",
     "phone": "+7 973 223-47-77",
     "type": "burger",
     "status": "cold",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.232398,
-      "lng": 39.695308
+      "lat": 47.235218,
+      "lng": 39.716006
     },
     "chain_name": "Штефан Бургер",
     "chain_size": 5,
@@ -668,16 +672,16 @@
     "notes": ""
   },
   {
-    "name": "Шаурма Shop (ул. Соколова, 91)",
-    "address": "ул. Соколова, 91",
-    "district": "Ворошиловский",
+    "name": "Шаурма Shop (пр. Соколова, 91)",
+    "address": "пр. Соколова, 91",
+    "district": "Кировский",
     "phone": "+7 930 366-66-72",
     "type": "shawarma",
     "status": "callback",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.236296,
-      "lng": 39.708283
+      "lat": 47.232831,
+      "lng": 39.717964
     },
     "chain_name": "Шаурма Shop",
     "chain_size": 5,
@@ -957,15 +961,15 @@
   },
   {
     "name": "Сити-Фуд 2",
-    "address": "ул. Соколова, 119",
-    "district": "Ворошиловский",
+    "address": "пр. Соколова, 119",
+    "district": "Кировский",
     "phone": "+7 985 411-94-84",
     "type": "foodcourt",
     "status": "regular",
     "priority_tier": "red",
     "coordinates": {
-      "lat": 47.236148,
-      "lng": 39.711811
+      "lat": 47.234147,
+      "lng": 39.71692
     },
     "notes": "Берёт стабильно, объём растёт"
   },
@@ -1144,14 +1148,14 @@
   {
     "name": "Гриль-Барbecue 7",
     "address": "пр. Соколова, 152",
-    "district": "Ленинский",
+    "district": "Кировский",
     "phone": "+7 967 499-81-60",
     "type": "burger",
     "status": "regular",
     "priority_tier": "red",
     "coordinates": {
-      "lat": 47.228015,
-      "lng": 39.697479
+      "lat": 47.235471,
+      "lng": 39.716312
     },
     "notes": ""
   },
@@ -1747,22 +1751,22 @@
   },
   {
     "name": "Шаурма Дяди Дена 9",
-    "address": "ул. Соколова, 47",
-    "district": "Ворошиловский",
+    "address": "пр. Соколова, 47",
+    "district": "Кировский",
     "phone": "+7 917 872-36-29",
     "type": "shawarma",
     "status": "no_answer",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.23648,
-      "lng": 39.710979
+      "lat": 47.228096,
+      "lng": 39.718525
     },
     "notes": ""
   },
   {
     "name": "Kikchak (пр. Вертикальная, 151)",
     "address": "пр. Вертикальная, 151",
-    "district": "Советский район",
+    "district": "Советский",
     "phone": "+7 953 315-65-39",
     "type": "shawarma",
     "status": "trial",
@@ -1923,15 +1927,15 @@
   },
   {
     "name": "Гастро-Ряд 8",
-    "address": "ул. Соколова, 27",
-    "district": "Ворошиловский",
+    "address": "пр. Соколова, 27",
+    "district": "Кировский",
     "phone": "+7 945 145-37-27",
     "type": "foodcourt",
     "status": "cold",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.235787,
-      "lng": 39.713528
+      "lat": 47.225521,
+      "lng": 39.720477
     },
     "notes": ""
   },
@@ -2007,15 +2011,15 @@
   },
   {
     "name": "Турецкая Лавка 30",
-    "address": "ул. Соколова, 90",
-    "district": "Ворошиловский",
+    "address": "пр. Соколова, 90",
+    "district": "Кировский",
     "phone": "+7 922 872-71-19",
     "type": "shawarma",
     "status": "callback",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.234765,
-      "lng": 39.71313
+      "lat": 47.232423,
+      "lng": 39.718691
     },
     "notes": ""
   },
@@ -2036,7 +2040,7 @@
   {
     "name": "Столовая Заводская 3",
     "address": "ул. 2-я Краснодарская, 161",
-    "district": "Советский район",
+    "district": "Советский",
     "phone": "",
     "type": "canteen",
     "status": "cold",
@@ -2092,14 +2096,14 @@
   {
     "name": "Гост-Китчен 5",
     "address": "пр. Соколова, 165",
-    "district": "Ленинский",
+    "district": "Кировский",
     "phone": "+7 987 990-55-35",
     "type": "darkkitchen",
     "status": "callback",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.227351,
-      "lng": 39.695417
+      "lat": 47.235602,
+      "lng": 39.716792
     },
     "notes": ""
   },
@@ -2134,14 +2138,14 @@
   {
     "name": "Кухня-Призрак 2",
     "address": "пр. Соколова, 144",
-    "district": "Ленинский",
+    "district": "Кировский",
     "phone": "",
     "type": "darkkitchen",
     "status": "cold",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.233373,
-      "lng": 39.692164
+      "lat": 47.234437,
+      "lng": 39.716705
     },
     "notes": ""
   },
@@ -2304,14 +2308,14 @@
   {
     "name": "Шиша-Лаунж 2",
     "address": "пр. Соколова, 42",
-    "district": "Ленинский",
+    "district": "Кировский",
     "phone": "+7 927 317-10-41",
     "type": "hookah",
     "status": "cold",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.229873,
-      "lng": 39.693379
+      "lat": 47.22552,
+      "lng": 39.720805
     },
     "notes": ""
   },
@@ -2402,14 +2406,14 @@
   {
     "name": "Король Кебаба 20",
     "address": "пр. Соколова, 112",
-    "district": "Ленинский",
+    "district": "Кировский",
     "phone": "",
     "type": "shawarma",
     "status": "callback",
     "priority_tier": "yellow",
     "coordinates": {
-      "lat": 47.227433,
-      "lng": 39.694663
+      "lat": 47.234339,
+      "lng": 39.716575
     },
     "notes": ""
   },
@@ -6195,15 +6199,15 @@
   },
   {
     "name": "Шаурма на Соколова",
-    "address": "ул. Соколова, 80",
-    "district": "Ворошиловский",
+    "address": "пр. Соколова, 80",
+    "district": "Кировский",
     "phone": "",
     "type": "shawarma",
     "status": "cold",
     "priority_tier": "green",
     "coordinates": {
-      "lat": 47.232692,
-      "lng": 39.717931
+      "lat": 47.232984,
+      "lng": 39.717852
     },
     "notes": ""
   },

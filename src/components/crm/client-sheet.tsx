@@ -11,6 +11,7 @@ import {
   Phone,
   PhoneOff,
   Plus,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 
@@ -120,9 +121,11 @@ export function ClientSheet({
         </span>
       }
     >
-      {/* ── Health Score + статус ── */}
+      {/* ── Health Score + статус ──
+       * Задача 24: без дублей — статус воронки одним текстом (основной),
+       * приоритет — только цветной полоской в заголовке листа (без текста). */}
       <section className="mt-4 flex items-center gap-4 rounded-2xl border border-border bg-tint/60 p-4">
-        <ClientHealthBlock client={client} />
+        <ClientHealthBlock client={client} hasCalls={clientCalls.length > 0} />
       </section>
 
       {/* ── Действия ── */}
@@ -191,7 +194,6 @@ export function ClientSheet({
         </h4>
         <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2.5 rounded-2xl border border-border p-4 sm:grid-cols-2">
           <InfoRow label="Сегмент" value={CLIENT_TYPE_LABEL[client.type]} />
-          <InfoRow label="Статус" value={<StatusBadge status={client.status} />} />
           <InfoRow label="Район" value={client.district} />
           <InfoRow
             label="Телефон"
@@ -331,35 +333,50 @@ export function ClientSheet({
 
 /* ── Вспомогательные блоки ─────────────────────────────────── */
 
-function ClientHealthBlock({ client }: { client: Client }) {
+function ClientHealthBlock({
+  client,
+  hasCalls,
+}: {
+  client: Client;
+  hasCalls: boolean;
+}) {
   const health = calcHealthScore(client);
+  const noHistory = health.score === null;
   return (
     <>
-      <div
-        className="flex size-14 shrink-0 items-center justify-center rounded-full border-[3px] font-mono text-base font-bold"
-        style={{
-          borderColor:
-            health.score === null ? "var(--border)" : healthScoreColor(health.score),
-          color: health.score === null ? "var(--ink-soft)" : healthScoreColor(health.score),
-        }}
-        aria-label={`Health Score ${health.score ?? "нет данных"}`}
-      >
-        {health.score ?? "—"}
-      </div>
+      {/* Задача 24: нет ни заказов, ни звонков — «Новый клиент» серым,
+       * без кольца; пустое кольцо «неизвестен» выглядело как баг. */}
+      {noHistory && !hasCalls ? (
+        <div
+          className="flex size-14 shrink-0 items-center justify-center rounded-full border border-dashed border-border"
+          aria-label="Новый клиент — истории нет"
+        >
+          <Sparkles className="size-5 text-ink-soft/70" aria-hidden="true" />
+        </div>
+      ) : (
+        <div
+          className="flex size-14 shrink-0 items-center justify-center rounded-full border-[3px] font-mono text-base font-bold"
+          style={{
+            borderColor: noHistory ? "var(--border)" : healthScoreColor(health.score!),
+            color: noHistory ? "var(--ink-soft)" : healthScoreColor(health.score!),
+          }}
+          aria-label={`Health Score ${health.score ?? "нет данных"}`}
+        >
+          {health.score ?? "—"}
+        </div>
+      )}
       <div className="min-w-0">
         <p className="text-[13px] leading-snug text-ink">
-          {health.score === null
-            ? "Нет истории заказов"
-            : health.summary}
+          {noHistory && !hasCalls
+            ? "Новый клиент"
+            : noHistory
+              ? "Нет истории заказов"
+              : health.summary}
         </p>
+        {/* Статус воронки — основной, текстом (задача 24: приоритет —
+           только полоской в заголовке, текст убран). */}
         <p className="mt-1 text-[11px] text-ink-soft">
-          Статус: {CLIENT_STATUS_LABEL[client.status]} · приоритет{" "}
-          <span
-            className="font-semibold"
-            style={{ color: PRIORITY_COLOR_VAR[client.priorityTier] }}
-          >
-            {client.priorityTier.toUpperCase()}
-          </span>
+          Статус: {CLIENT_STATUS_LABEL[client.status]}
         </p>
       </div>
     </>

@@ -12,10 +12,13 @@ import { useAdviceStore } from "@/lib/advice-store";
 import { useAiChatStore } from "@/lib/ai-chat-store";
 import { useAiTriggers } from "@/lib/ai-triggers";
 import { useCrmStore } from "@/lib/clients-store";
+import { runDataMigrations } from "@/lib/data-migrations";
 import { ensureBaseSeeded } from "@/lib/seed-base";
 import { isLoggedIn } from "@/lib/auth";
 import { useDiscoveryStore } from "@/lib/discovery-store";
 import { initOfflineQueue } from "@/lib/offline-queue";
+import { syncTelegramSnapshot } from "@/lib/reports";
+import { useReportsStore } from "@/lib/reports-store";
 import { useMarketingStore } from "@/lib/marketing-store";
 import { useOrdersStore } from "@/lib/orders-store";
 import { useProductsStore } from "@/lib/products-store";
@@ -80,10 +83,21 @@ function GuardedShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     /* CRM первым: после его восстановления решаем, нужен ли
      * авто-сид базы (пустой localStorage / чистые демо-карточки →
-     * грузим 455 точек владельца из public/seed/clients.json). */
+     * грузим 455 точек владельца из public/seed/clients.json).
+     * Между rehydrate и сидом — миграции данных (задача 24):
+     * правки старого генератора и адреса-фантомы доезжают и до
+     * устройств с уже загруженной базой, где сид не запускается. */
     void (async () => {
       await useCrmStore.persist.rehydrate();
+      /* Разведчик нужен миграции (чистка фантомов из находок) —
+       * восстанавливаем его до прогона, чтобы не перезатёр.
+       * Остальные сторы — ниже, как раньше. */
+      await useDiscoveryStore.persist.rehydrate();
+      runDataMigrations();
       await ensureBaseSeeded();
+      /* Задача 24: снимок для утреннего дайджеста и отчёта недели —
+       * после сида, молчаливо (троттл внутри). */
+      void syncTelegramSnapshot();
     })();
     void useOrdersStore.persist.rehydrate();
     void useProductsStore.persist.rehydrate();
@@ -92,9 +106,19 @@ function GuardedShell({ children }: { children: React.ReactNode }) {
     void useRegionsStore.persist.rehydrate();
     void useAdviceStore.persist.rehydrate();
     void useMarketingStore.persist.rehydrate();
-    void useDiscoveryStore.persist.rehydrate();
+    void useReportsStore.persist.rehydrate();
     /* Офлайн-очередь: следим за сетью, при возврате — автосинхронизация. */
     initOfflineQueue();
+  }, []);
+
+  /* Задача 24: записали звонок (например, назначили перезвон) —
+   * обновляем снимок для утреннего дайджеста (троттл внутри,
+   * не чаще раза в 15 минут). */
+  useEffect(() => {
+    const unsub = useCrmStore.subscribe((state, prev) => {
+      if (state.calls !== prev.calls) void syncTelegramSnapshot();
+    });
+    return unsub;
   }, []);
 
   /* Проверяем сессию (мгновенно, из localStorage) — до ответа не мигаем. */

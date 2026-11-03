@@ -1,4 +1,5 @@
 import {
+  CalendarClock,
   Landmark,
   LayoutDashboard,
   Map,
@@ -43,6 +44,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "clients", title: "Клиенты", href: "/clients", icon: Users, primary: true, ready: true },
   { id: "discovery", title: "Найдено ИИ", href: "/ai-discovery", icon: Radar, primary: false, ready: true },
   { id: "calls", title: "Звонки", href: "/calls", icon: Phone, primary: true, ready: true },
+  { id: "callbacks", title: "Перезвоны", href: "/callbacks", icon: CalendarClock, primary: false, ready: true },
   { id: "logistics", title: "Карта", href: "/logistics", icon: Map, primary: true, ready: true },
   { id: "route", title: "Маршрут", href: "/route", icon: Route, primary: false, ready: true },
   { id: "orders", title: "Заказы", href: "/orders", icon: ShoppingCart, primary: false, ready: true },
