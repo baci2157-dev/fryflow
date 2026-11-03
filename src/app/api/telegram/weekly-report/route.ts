@@ -35,10 +35,13 @@ function authorized(request: Request): boolean {
   return header === `Bearer ${secret}`;
 }
 
-/** Мозг добавляет короткие выводы к цифрам (сбой — просто без выводов). */
-async function brainSummary(stats: WeeklyStats): Promise<string> {
+/** Мозг добавляет короткие выводы к цифрам (сбой — просто без выводов,
+ *  но с описанием ошибки для диагностики из «Настроек»). */
+async function brainSummary(
+  stats: WeeklyStats
+): Promise<{ text: string; error?: string }> {
   try {
-    const { reply } = await chatCompletion({
+    const { reply, error } = await chatCompletion({
       messages: [
         {
           role: "system",
@@ -59,9 +62,10 @@ async function brainSummary(stats: WeeklyStats): Promise<string> {
       temperature: 0.5,
     });
     const text = (reply ?? "").trim();
-    return text ? `\n\n🧠 Мозг: ${text}` : "";
-  } catch {
-    return "";
+    if (text) return { text: `\n\n🧠 Мозг: ${text}` };
+    return { text: "", error: error ?? "пустой ответ модели" };
+  } catch (e) {
+    return { text: "", error: e instanceof Error ? e.message : String(e) };
   }
 }
 
@@ -126,9 +130,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: r.ok, error: r.error, sent: r.ok, fresh: false });
   }
 
-  const text = buildWeeklyReportText(snap.stats) + (await brainSummary(snap.stats));
+  const brain = await brainSummary(snap.stats);
+  const text = buildWeeklyReportText(snap.stats) + brain.text;
   const r = await sendTelegramMessage(cfg.botToken, cfg.chatId, text);
-  return NextResponse.json({ ok: r.ok, error: r.error, sent: r.ok, fresh: true });
+  return NextResponse.json({
+    ok: r.ok,
+    error: r.error,
+    sent: r.ok,
+    fresh: true,
+    brainError: brain.error,
+  });
 }
 
 export async function POST(request: Request) {
@@ -148,8 +159,9 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    const text = buildWeeklyReportText(stats) + (await brainSummary(stats));
-    return NextResponse.json({ ok: true, text });
+    const brain = await brainSummary(stats);
+    const text = buildWeeklyReportText(stats) + brain.text;
+    return NextResponse.json({ ok: true, text, brainError: brain.error });
   }
 
   /* Ручная отправка из приложения (кнопка «Отправить отчёт в Telegram»). */
@@ -167,7 +179,8 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  const text = buildWeeklyReportText(stats) + (await brainSummary(stats));
+  const brain = await brainSummary(stats);
+  const text = buildWeeklyReportText(stats) + brain.text;
   const r = await sendTelegramMessage(cfg.botToken, cfg.chatId, text);
   return NextResponse.json({ ok: r.ok, error: r.error, sent: r.ok });
 }
