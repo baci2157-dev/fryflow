@@ -337,7 +337,19 @@ export async function runClientsImport(
       if (geocodedInRow > 0) await sleep(1100);
       geocodedInRow++;
       try {
-        const suggestions = await geocodeAddress(input.address);
+        /* Задача 19.5: без таймаута один «зависший» fetch к Nominatim
+         * замораживал весь импорт навсегда — авто-сид оставался частичным
+         * (18–21 точка из 330) и больше никогда не догонял. Теперь запрос
+         * абортируется через 6 секунд: хватает медленному мобильному
+         * интернету, а зависание не роняет загрузку базы. */
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 6000);
+        let suggestions: Awaited<ReturnType<typeof geocodeAddress>> = [];
+        try {
+          suggestions = await geocodeAddress(input.address, ctrl.signal);
+        } finally {
+          clearTimeout(timer);
+        }
         if (suggestions.length > 0) {
           input.coordinates = {
             lat: Math.round(suggestions[0].lat * 1e6) / 1e6,

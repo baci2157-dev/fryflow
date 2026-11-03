@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { CommandPalette } from "@/components/command-palette";
+import { SeedFallbackBanner } from "@/components/crm/seed-fallback-banner";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { SyncBanner } from "@/components/offline/network-status";
@@ -79,7 +80,7 @@ function GuardedShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     /* CRM первым: после его восстановления решаем, нужен ли
      * авто-сид базы (пустой localStorage / чистые демо-карточки →
-     * грузим 265 точек владельца из public/seed/clients.json). */
+     * грузим 330 точек владельца из public/seed/clients.json). */
     void (async () => {
       await useCrmStore.persist.rehydrate();
       await ensureBaseSeeded();
@@ -112,6 +113,9 @@ function GuardedShell({ children }: { children: React.ReactNode }) {
       <main className="min-w-0 flex-1 pb-24 lg:pb-0">
         {/* Баннер «Ожидает синхронизации» — когда в очереди есть действия */}
         <SyncBanner />
+        {/* Фолбэк авто-сида (задача 19.5): база < 100 точек после сида —
+            лента с кнопкой «Загрузить базу (330 точек)». */}
+        <SeedFallbackBanner />
         {children}
       </main>
       <MobileBottomNav />
