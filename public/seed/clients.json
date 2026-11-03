@@ -3154,5 +3154,355 @@
       "lng": 39.649292
     },
     "notes": ""
+  },
+  {
+    "name": "Шаурма на Измайловском",
+    "address": "Измайловский бульвар, 2",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.314131,
+      "lng": 39.678818
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе у дома",
+    "address": "Измайловский бульвар, 8",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.312784,
+      "lng": 39.676348
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "Измайловский бульвар, 16",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.312518,
+      "lng": 39.679407
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пиццерия",
+    "address": "ул. Сосновая, 3",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.314033,
+      "lng": 39.672772
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Сосновой",
+    "address": "ул. Сосновая, 7",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.313451,
+      "lng": 39.673994
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма №1",
+    "address": "ЖК Платовский, ул. Платовский, 2",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.319136,
+      "lng": 39.791267
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе Платовский",
+    "address": "ЖК Платовский, ул. Платовский, 4",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.317748,
+      "lng": 39.791881
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ЖК Платовский, ул. Платовский, 6",
+    "district": "Первомайский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.31854,
+      "lng": 39.790718
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пицца",
+    "address": "ул. Петренко, 5",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.320324,
+      "lng": 39.677468
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Петренко, 7",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.319318,
+      "lng": 39.678305
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе",
+    "address": "ул. Драгунская, 2",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.315202,
+      "lng": 39.675563
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Драгунская, 10",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.314537,
+      "lng": 39.675581
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Юрия Дубинина, 2",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.331702,
+      "lng": 39.68714
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пиццерия",
+    "address": "ул. Юрия Дубинина, 10",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.331715,
+      "lng": 39.686912
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе",
+    "address": "пер. Белоусова, 2",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.326345,
+      "lng": 39.685036
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "пер. Белоусова, 6",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.322367,
+      "lng": 39.684656
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Таганрогской",
+    "address": "ул. Таганрогская, 145",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.262854,
+      "lng": 39.657632
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе",
+    "address": "ул. Таганрогская, 155",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.258957,
+      "lng": 39.64809
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Тульская, 5",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.265525,
+      "lng": 39.674297
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе",
+    "address": "ул. Тульская, 10",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.264212,
+      "lng": 39.667679
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Немировича-Данченко, 80",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.255075,
+      "lng": 39.703265
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пицца",
+    "address": "ул. Немировича-Данченко, 84",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.253809,
+      "lng": 39.702844
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Оганова, 41",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.280358,
+      "lng": 39.66157
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе",
+    "address": "ул. Мечникова, 140",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.236958,
+      "lng": 39.703912
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма",
+    "address": "ул. Добровольского, 32",
+    "district": "Октябрьский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.295676,
+      "lng": 39.703371
+    },
+    "notes": ""
   }
 ]
