@@ -5926,5 +5926,481 @@
       "lng": 39.741198
     },
     "notes": ""
+  },
+  {
+    "name": "Шаурма на Космонавтов",
+    "address": "пр. Космонавтов, 12",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.287108,
+      "lng": 39.717164
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма №1",
+    "address": "пр. Космонавтов, 20",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.292143,
+      "lng": 39.715315
+    },
+    "notes": ""
+  },
+  {
+    "name": "Восточная шаурма",
+    "address": "пр. Космонавтов, 28",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.293843,
+      "lng": 39.714126
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у рынка",
+    "address": "пр. Космонавтов, 15",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.283891,
+      "lng": 39.715082
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма у ТЦ",
+    "address": "пр. Космонавтов, 32",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.29586,
+      "lng": 39.714334
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Королёва",
+    "address": "пр. Королёва, 5",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.294071,
+      "lng": 39.697905
+    },
+    "notes": ""
+  },
+  {
+    "name": "Гриль-хаус",
+    "address": "пр. Королёва, 15",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.29556,
+      "lng": 39.70859
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-бар",
+    "address": "ул. Добровольского, 8",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.28482,
+      "lng": 39.70708
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Добровольского",
+    "address": "ул. Добровольского, 20",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.290039,
+      "lng": 39.704725
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Волкова",
+    "address": "ул. Волкова, 3",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.283307,
+      "lng": 39.709358
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Волкова 2",
+    "address": "ул. Волкова, 15",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.283931,
+      "lng": 39.718372
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Пацаева",
+    "address": "ул. Пацаева, 12",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.281055,
+      "lng": 39.701991
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Орбитальной",
+    "address": "ул. Орбитальная, 8",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.298549,
+      "lng": 39.691065
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма-Сити",
+    "address": "ул. Орбитальная, 20",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.298736,
+      "lng": 39.704151
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Комарова",
+    "address": "бульвар Комарова, 28",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.28905,
+      "lng": 39.711417
+    },
+    "notes": ""
+  },
+  {
+    "name": "Киоск шаурмы",
+    "address": "ул. Ленина, 105",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.249282,
+      "lng": 39.716157
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Евдокимова",
+    "address": "ул. Евдокимова, 50",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.270359,
+      "lng": 39.707533
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Ворошиловском",
+    "address": "пр. Ворошиловский, 45",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.222351,
+      "lng": 39.718724
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Ворошиловском 2",
+    "address": "пр. Ворошиловский, 67",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.225717,
+      "lng": 39.717384
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Соколова",
+    "address": "ул. Соколова, 80",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.232692,
+      "lng": 39.717931
+    },
+    "notes": ""
+  },
+  {
+    "name": "Шаурма на Мадояна",
+    "address": "ул. Мадояна, 60",
+    "district": "Железнодорожный",
+    "phone": "",
+    "type": "shawarma",
+    "status": "cold",
+    "priority_tier": "green",
+    "coordinates": {
+      "lat": 47.224311,
+      "lng": 39.652205
+    },
+    "notes": ""
+  },
+  {
+    "name": "Бургер Клаб",
+    "address": "пр. Космонавтов, 25",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.291606,
+      "lng": 39.713539
+    },
+    "notes": ""
+  },
+  {
+    "name": "Burger House",
+    "address": "пр. Королёва, 10",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.293541,
+      "lng": 39.705288
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пиццерия на Космонавтов",
+    "address": "пр. Космонавтов, 18",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.291816,
+      "lng": 39.715886
+    },
+    "notes": ""
+  },
+  {
+    "name": "Пицца 24",
+    "address": "ул. Добровольского, 15",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.293266,
+      "lng": 39.702507
+    },
+    "notes": ""
+  },
+  {
+    "name": "Додо Пицца",
+    "address": "пр. Космонавтов, 35",
+    "district": "Ворошиловский",
+    "phone": "+7 (800) 333-00-60",
+    "type": "burger",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.29432,
+      "lng": 39.713186
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая на Королёва",
+    "address": "пр. Королёва, 20",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.29462,
+      "lng": 39.712108
+    },
+    "notes": ""
+  },
+  {
+    "name": "Домашняя столовая",
+    "address": "ул. Добровольского, 25",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.287432,
+      "lng": 39.704419
+    },
+    "notes": ""
+  },
+  {
+    "name": "Столовая у ТЦ",
+    "address": "пр. Космонавтов, 40",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.299775,
+      "lng": 39.714008
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кулинария на Волкова",
+    "address": "ул. Волкова, 8",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.282515,
+      "lng": 39.712181
+    },
+    "notes": ""
+  },
+  {
+    "name": "Булочная на Пацаева",
+    "address": "ул. Пацаева, 5",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.281588,
+      "lng": 39.703306
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе на Орбитальной",
+    "address": "ул. Орбитальная, 15",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.302528,
+      "lng": 39.724957
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кафе у парка",
+    "address": "ул. Орбитальная, 30",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.299183,
+      "lng": 39.708386
+    },
+    "notes": ""
+  },
+  {
+    "name": "Кофейня на Комарова",
+    "address": "бульвар Комарова, 15",
+    "district": "Ворошиловский",
+    "phone": "",
+    "type": "canteen",
+    "status": "cold",
+    "priority_tier": "yellow",
+    "coordinates": {
+      "lat": 47.288366,
+      "lng": 39.71641
+    },
+    "notes": ""
   }
 ]
